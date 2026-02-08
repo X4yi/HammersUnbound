@@ -1,0 +1,16 @@
+[
+{
+  "modid": "hammersunbound",
+  "name": "Hammers Unbound",
+  "description": "The mod is in BETA, If you want to help improve the mod, you can report bugs or glitches on my github forum, I  am X4yi, and i dont speak english, this description is translated :D ",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": [""],
+  "credits": "X4yi to code and Qdarteer to made models",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

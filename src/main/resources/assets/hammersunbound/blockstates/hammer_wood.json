@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "inventory": {
+      "model": "hammers:hammer_wood"
+    }
+  }
+}
