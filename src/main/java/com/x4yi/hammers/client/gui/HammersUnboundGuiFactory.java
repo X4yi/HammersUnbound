@@ -1,13 +1,12 @@
 package com.x4yi.hammers.client.gui;
 
-import com.x4yi.hammers.client.util.ConfigFileOpener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.fml.client.IModGuiFactory;
 
 import java.util.Set;
 
-public class HammersGuiFactory implements IModGuiFactory {
+public class HammersUnboundGuiFactory implements IModGuiFactory {
 
     @Override
     public void initialize(Minecraft minecraftInstance) {
@@ -20,8 +19,7 @@ public class HammersGuiFactory implements IModGuiFactory {
 
     @Override
     public GuiScreen createConfigGui(GuiScreen parentScreen) {
-        ConfigFileOpener.open();
-        return null;
+        return new com.x4yi.hammers.client.gui.GuiHammersUnboundConfig(parentScreen);
     }
 
     @Override

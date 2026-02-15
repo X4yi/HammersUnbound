@@ -1,11 +1,14 @@
 package com.x4yi.hammers.items;
 
 import com.google.common.collect.Multimap;
-import com.x4yi.hammers.config.HammerConfig;
+import com.x4yi.hammers.config.HammersUnboundItems;
+import com.x4yi.hammers.config.Items;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 
 import java.util.UUID;
 
@@ -21,31 +24,37 @@ public class ItemSpikeHammer extends Item {
     public ItemSpikeHammer(MaterialType type) {
         this.type = type;
 
-        HammerConfig.SpikeHammer cfg = getBaseCfg();
+        HammersUnboundItems.SpikeHammer cfg = getBaseCfg();
         setMaxStackSize(1);
         setMaxDamage(cfg.durability);
+        setCreativeTab(CreativeTabs.COMBAT);
     }
 
-    public HammerConfig.SpikeHammer getBaseCfg() {
+    @Override
+    public boolean hitEntity(ItemStack stack, net.minecraft.entity.EntityLivingBase target,
+                             net.minecraft.entity.EntityLivingBase attacker) {
+        stack.damageItem(1, attacker);
+        return true;
+    }
+
+    public HammersUnboundItems.SpikeHammer getBaseCfg() {
         switch (type) {
-            case WOOD:    return HammerConfig.spikehammer.WOOD;
-            case STONE:   return HammerConfig.spikehammer.STONE;
-            case IRON:    return HammerConfig.spikehammer.IRON;
-            case GOLD:    return HammerConfig.spikehammer.GOLD;
-            case DIAMOND: return HammerConfig.spikehammer.DIAMOND;
+            case WOOD:
+                return Items.spikehammer.WOOD;
+            case STONE:
+                return Items.spikehammer.STONE;
+            case IRON:
+                return Items.spikehammer.IRON;
+            case GOLD:
+                return Items.spikehammer.GOLD;
+            case DIAMOND:
+                return Items.spikehammer.DIAMOND;
         }
-        return HammerConfig.spikehammer.WOOD;
+        return Items.spikehammer.DIAMOND;
     }
 
     public SpikeCfg getSpikeCfg() {
-        switch (type) {
-            case WOOD:    return new SpikeCfg(HammerConfig.spikehammer.WOOD);
-            case STONE:   return new SpikeCfg(HammerConfig.spikehammer.STONE);
-            case IRON:    return new SpikeCfg(HammerConfig.spikehammer.IRON);
-            case GOLD:    return new SpikeCfg(HammerConfig.spikehammer.GOLD);
-            case DIAMOND: return new SpikeCfg(HammerConfig.spikehammer.DIAMOND);
-        }
-        return new SpikeCfg(HammerConfig.spikehammer.WOOD);
+        return new SpikeCfg(getBaseCfg());
     }
 
     @Override
@@ -53,7 +62,7 @@ public class ItemSpikeHammer extends Item {
         Multimap<String, AttributeModifier> map = super.getItemAttributeModifiers(slot);
 
         if (slot == EntityEquipmentSlot.MAINHAND) {
-            HammerConfig.SpikeHammer cfg = getBaseCfg();
+            HammersUnboundItems.SpikeHammer cfg = getBaseCfg();
 
             map.put(
                     SharedMonsterAttributes.ATTACK_DAMAGE.getName(),
@@ -72,6 +81,7 @@ public class ItemSpikeHammer extends Item {
         }
         return map;
     }
+
     public MaterialType getMaterialType() {
         return this.type;
     }
@@ -87,11 +97,44 @@ public class ItemSpikeHammer extends Item {
         public final int minInterval;
         public final int maxInterval;
 
-        public SpikeCfg(HammerConfig.SpikeHammer s) {
+        public SpikeCfg(HammersUnboundItems.SpikeHammer s) {
             this.maxLevel = s.maxLevel;
             this.baseDuration = s.baseDuration;
             this.minInterval = s.minInterval;
             this.maxInterval = s.maxInterval;
         }
     }
+
+    @Override
+    public void addInformation(ItemStack stack, net.minecraft.world.World world,
+                               java.util.List<String> tooltip,
+                               net.minecraft.client.util.ITooltipFlag flag) {
+
+        hideModifiers(stack);
+
+        HammersUnboundItems.SpikeHammer cfg = getBaseCfg();
+
+        tooltip.add("§cDamage: §f" + cfg.damage);
+        tooltip.add("§eAttack Speed: §f" + cfg.speed);
+
+        tooltip.add("");
+
+        if (net.minecraft.client.gui.GuiScreen.isShiftKeyDown()) {
+            tooltip.add("§4Bleeding");
+            tooltip.add(" §7• Max Level: §f" + cfg.maxLevel);
+            tooltip.add(" §7• Duration: §f" + (cfg.baseDuration / 20f) + "s");
+            tooltip.add(" §7• Interval: §f" +
+                    cfg.minInterval + " - " + cfg.maxInterval + " ticks");
+        } else {
+            tooltip.add("§8Hold §fShift §8for bleeding details");
+        }
+    }
+
+    private static void hideModifiers(ItemStack stack) {
+        if (!stack.hasTagCompound()) {
+            stack.setTagCompound(new net.minecraft.nbt.NBTTagCompound());
+        }
+        stack.getTagCompound().setInteger("HideFlags", 2);
+    }
+
 }

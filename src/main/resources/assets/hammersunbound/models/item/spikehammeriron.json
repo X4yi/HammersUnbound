@@ -4,7 +4,7 @@
 	"texture_size": [64, 64],
 	"textures": {
 		"1": "minecraft:blocks/log_oak",
-		"2": "minecraft:blocks/planks_oak"
+		"2": "minecraft:blocks/iron_block"
 	},
 	"elements": [
 		{

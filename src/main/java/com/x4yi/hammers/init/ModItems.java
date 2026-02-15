@@ -1,4 +1,3 @@
-
 package com.x4yi.hammers.init;
 
 import com.x4yi.hammers.items.ItemSpikeHammer;
@@ -35,6 +34,7 @@ public class ModItems {
             new ItemWarHammer(ItemWarHammer.Type.DIAMOND)
                     .setRegistryName("warhammerdiamond")
                     .setUnlocalizedName("warhammerdiamond");
+
 
     public static final Item SPIKEHAMMER_WOOD =
             new ItemSpikeHammer(ItemSpikeHammer.MaterialType.WOOD)

@@ -1,5 +1,14 @@
-item.warhammerwood.name=WarHammer Wood
-item.warhammerstone.name=WarHammer Stone
-item.warhammeriron.name=WarHammer Iron
-item.warhammergold.name=WarHammer Gold
-item.warhammerdiamond.name=WarHammer  asdnueausd/agu              Diamond
+item.warhammerwood.name=Wooden WarHammer
+item.spikehammerwood.name=Wooden SpikeHammer
+
+item.warhammerstone.name=Stone WarHammer
+item.spikehammerstone.name=Stone SpikeHammer
+
+item.warhammeriron.name=Iron WarHammner
+item.spikehammeriron.name=Iron SpikeHammer
+
+item.warhammergold.name=Golden WarHammer
+item.spikehammergold.name=Golden SpikeHammer
+
+item.warhammerdiamond.name=Diamond WarHammer
+item.spikehammerdiamond.name=Diamond SpikeHammer

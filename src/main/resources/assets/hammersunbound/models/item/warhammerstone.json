@@ -3,7 +3,7 @@
 	"credit": "Made with Blockbench",
 	"textures": {
 		"4": "hammersunbound:items/logrod",
-		"5": "blocks/stone"
+		"5": "minecraft:blocks/stone"
 	},
 	"elements": [
 		{

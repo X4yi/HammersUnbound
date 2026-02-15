@@ -1,6 +1,7 @@
 package com.x4yi.hammers.handlers;
 
-import com.x4yi.hammers.config.HammerConfig;
+import com.x4yi.hammers.config.HammersUnboundClient;
+import com.x4yi.hammers.config.Items;
 import com.x4yi.hammers.items.ItemSpikeHammer;
 import com.x4yi.hammers.items.ItemSpikeHammer.MaterialType;
 import net.minecraft.client.Minecraft;
@@ -88,7 +89,7 @@ public class SpikeHammerCore {
 
         root.setTag(key, n);
 
-        if (player.world.isRemote && HammerConfig.client.BleedParticlesEnabled) {
+        if (player.world.isRemote && HammersUnboundClient.client.bleedParticlesEnabled) {
             spawnImpactParticles(player, target, lvl);
         }
     }
@@ -121,7 +122,7 @@ public class SpikeHammerCore {
                     ent.hurtResistantTime = 0;
                     ent.attackEntityFrom(BLEED, lvl);
                     ent.hurtResistantTime = prev;
-                } else if (HammerConfig.client.BleedParticlesEnabled) {
+                } else if (HammersUnboundClient.client.bleedParticlesEnabled) {
                     spawnBleedParticles(ent, lvl);
                 }
 
@@ -158,11 +159,14 @@ public class SpikeHammerCore {
     private static ItemSpikeHammer.SpikeCfg cfgFromNBT(NBTTagCompound n) {
         MaterialType type = MaterialType.values()[n.getByte(M)];
         switch (type) {
-            case STONE:   return new ItemSpikeHammer.SpikeCfg(HammerConfig.spikehammer.STONE);
-            case IRON:    return new ItemSpikeHammer.SpikeCfg(HammerConfig.spikehammer.IRON);
-            case GOLD:    return new ItemSpikeHammer.SpikeCfg(HammerConfig.spikehammer.GOLD);
-            case DIAMOND: return new ItemSpikeHammer.SpikeCfg(HammerConfig.spikehammer.DIAMOND);
-            default:      return new ItemSpikeHammer.SpikeCfg(HammerConfig.spikehammer.WOOD);
+            case STONE:
+                return new ItemSpikeHammer.SpikeCfg(Items.spikehammer.STONE);
+            case IRON:
+                return new ItemSpikeHammer.SpikeCfg(Items.spikehammer.IRON);
+            case GOLD:
+                return new ItemSpikeHammer.SpikeCfg(Items.spikehammer.GOLD);
+            default:
+                return new ItemSpikeHammer.SpikeCfg(Items.spikehammer.DIAMOND);
         }
     }
 
@@ -173,14 +177,12 @@ public class SpikeHammerCore {
         return e.getEntityData().getCompoundTag(TAG_ROOT);
     }
 
-    // ================= IMPACT =================
-
     @SideOnly(Side.CLIENT)
     private static void spawnImpactParticles(EntityPlayer player, EntityLivingBase e, int lvl) {
 
         if (BLOOD_SPRITE == null) return;
 
-        int count = lvl * HammerConfig.client.BleedParticlesDensity;
+        int count = lvl * HammersUnboundClient.client.bleedParticlesDensity;
 
         for (int i = 0; i < count; i++) {
 
@@ -204,24 +206,20 @@ public class SpikeHammerCore {
         }
     }
 
-    // ================= BLEED =================
-
     @SideOnly(Side.CLIENT)
     private static void spawnBleedParticles(EntityLivingBase e, int lvl) {
 
         if (BLOOD_SPRITE == null) return;
 
-        int count = lvl * HammerConfig.client.BleedParticlesDensity;
+        int count = lvl * HammersUnboundClient.client.bleedParticlesDensity;
         World w = e.world;
 
         float halfWidth = e.width * 0.5F;
 
-        // Más nivel = más zonas activas alrededor del cuerpo
         int zones = Math.max(1, lvl);
 
         for (int i = 0; i < count; i++) {
 
-            // Elegimos una zona fija del cuerpo
             int zone = w.rand.nextInt(zones);
 
             double angle = (2 * Math.PI / zones) * zone;
@@ -230,10 +228,8 @@ public class SpikeHammerCore {
             double px = e.posX + Math.cos(angle) * radius;
             double pz = e.posZ + Math.sin(angle) * radius;
 
-            // Distribuido en toda la altura
             double py = e.posY + w.rand.nextDouble() * e.height;
 
-            // Caída natural
             double vx = (w.rand.nextDouble() - 0.5) * 0.02;
             double vy = -0.05 - w.rand.nextDouble() * 0.08;
             double vz = (w.rand.nextDouble() - 0.5) * 0.02;
@@ -244,10 +240,12 @@ public class SpikeHammerCore {
         }
     }
 
-    // ================= PARTICLE =================
-
     @SideOnly(Side.CLIENT)
     private static class BloodParticle extends Particle {
+
+        private boolean landed = false;
+        private int groundAge = 0;
+        private final int maxGroundAge;
 
         protected BloodParticle(World w,
                                 double x, double y, double z,
@@ -262,30 +260,69 @@ public class SpikeHammerCore {
 
             this.particleGravity = 1.1F;
 
-            float base = 0.4F;
-            float scale = MathHelper.clamp(base + lvl * 0.25F, 0.4F, 1.2F);
-            this.particleScale = scale + rand.nextFloat() * 0.25F;
+            float base = 0.6F;
+            float scale = MathHelper.clamp(base + lvl * 0.4F, 0.4F, 1.2F);
+            this.particleScale = scale + rand.nextFloat() * 0.3F;
 
-            this.particleMaxAge = 12 + rand.nextInt(8);
+            this.particleMaxAge = 20 + rand.nextInt(10);
+
+            this.maxGroundAge = HammersUnboundClient.client.bleedParticleGroundLife;
 
             this.setParticleTexture(BLOOD_SPRITE);
 
-            this.particleRed = 1.0F;
+            this.particleRed = 0.8F;
             this.particleGreen = 0.0F;
             this.particleBlue = 0.0F;
+            this.particleAlpha = 1.0F;
         }
 
         @Override
         public void onUpdate() {
-            super.onUpdate();
-            this.motionX *= 0.92;
-            this.motionZ *= 0.92;
-            this.particleScale *= 0.96F;
+
+            if (!landed) {
+                super.onUpdate();
+
+                this.motionX *= 0.92;
+                this.motionZ *= 0.92;
+
+                if (this.onGround) {
+                    landed = true;
+
+                    this.motionX = 0;
+                    this.motionY = 0;
+                    this.motionZ = 0;
+                    this.particleGravity = 0.0F;
+
+                    this.particleMaxAge = Integer.MAX_VALUE;
+
+                    this.prevPosX = this.posX;
+                    this.prevPosY = this.posY;
+                    this.prevPosZ = this.posZ;
+                }
+                return;
+            }
+
+            this.prevPosX = this.posX;
+            this.prevPosY = this.posY;
+            this.prevPosZ = this.posZ;
+
+            groundAge++;
+
+            if (HammersUnboundClient.client.bleedParticleFade) {
+                float life = 1.0F - (groundAge / (float) maxGroundAge);
+                this.particleAlpha = MathHelper.clamp(life, 0.0F, 1.0F);
+            }
+
+            if (groundAge >= maxGroundAge) {
+                setExpired();
+            }
         }
+
 
         @Override
         public int getFXLayer() {
             return 1;
         }
     }
+
 }
