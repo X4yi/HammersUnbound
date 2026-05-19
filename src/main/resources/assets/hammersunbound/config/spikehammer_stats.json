@@ -1,0 +1,94 @@
+{
+  "materials": {
+    "wood": {
+      "baseDamage": 5.0,
+      "attackSpeed": -3.2,
+      "durability": 60,
+      "bleeding": {
+        "maxLevels": 3,
+        "baseDuration": 60,
+        "damagePerLevel": 1.0,
+        "tickInterval": 20,
+        "decayTicks": 200
+      },
+      "bloodPact": {
+        "range": 8.0,
+        "drainPercent": 0.15,
+        "tetherBreakDistance": 12.0,
+        "drainInterval": 10
+      }
+    },
+    "stone": {
+      "baseDamage": 7.0,
+      "attackSpeed": -3.2,
+      "durability": 132,
+      "bleeding": {
+        "maxLevels": 4,
+        "baseDuration": 80,
+        "damagePerLevel": 1.5,
+        "tickInterval": 18,
+        "decayTicks": 200
+      },
+      "bloodPact": {
+        "range": 10.0,
+        "drainPercent": 0.20,
+        "tetherBreakDistance": 15.0,
+        "drainInterval": 10
+      }
+    },
+    "iron": {
+      "baseDamage": 9.0,
+      "attackSpeed": -3.2,
+      "durability": 251,
+      "bleeding": {
+        "maxLevels": 5,
+        "baseDuration": 100,
+        "damagePerLevel": 2.0,
+        "tickInterval": 16,
+        "decayTicks": 200
+      },
+      "bloodPact": {
+        "range": 12.0,
+        "drainPercent": 0.25,
+        "tetherBreakDistance": 18.0,
+        "drainInterval": 8
+      }
+    },
+    "gold": {
+      "baseDamage": 4.0,
+      "attackSpeed": -2.8,
+      "durability": 33,
+      "bleeding": {
+        "maxLevels": 3,
+        "baseDuration": 50,
+        "damagePerLevel": 1.2,
+        "tickInterval": 20,
+        "decayTicks": 150
+      },
+      "bloodPact": {
+        "range": 14.0,
+        "drainPercent": 0.30,
+        "tetherBreakDistance": 20.0,
+        "drainInterval": 6
+      }
+    },
+    "diamond": {
+      "baseDamage": 12.0,
+      "attackSpeed": -3.2,
+      "durability": 1562,
+      "bleeding": {
+        "maxLevels": 7,
+        "baseDuration": 140,
+        "damagePerLevel": 3.0,
+        "tickInterval": 12,
+        "decayTicks": 200
+      },
+      "bloodPact": {
+        "range": 16.0,
+        "drainPercent": 0.40,
+        "tetherBreakDistance": 24.0,
+        "drainInterval": 5
+      }
+    }
+  }
+}

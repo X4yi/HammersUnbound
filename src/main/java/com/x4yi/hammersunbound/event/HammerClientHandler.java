@@ -1,0 +1,153 @@
+package com.x4yi.hammersunbound.event;
+
+import com.x4yi.hammersunbound.item.base.ItemHammer;
+import com.x4yi.hammersunbound.network.PacketBloodPactVisual;
+import com.x4yi.hammersunbound.capability.IBleedingCapability;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.lwjgl.opengl.GL11;
+
+import java.util.Iterator;
+import java.util.List;
+
+public class HammerClientHandler {
+
+    @SubscribeEvent
+    public void onLivingUpdate(net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent event) {
+        EntityLivingBase entity = event.getEntityLiving();
+        if (entity == null || !entity.world.isRemote) return;
+
+        if (com.x4yi.hammersunbound.config.ClientConfig.bleedingParticleEnabled && entity.hasCapability(IBleedingCapability.CAPABILITY, null)) {
+            IBleedingCapability cap = entity.getCapability(IBleedingCapability.CAPABILITY, null);
+            if (cap != null && cap.getBleedingEffect().isActive()) {
+                int level = cap.getBleedingEffect().getLevel();
+                if (entity.world.rand.nextFloat() < 0.15f * level) {
+                    double x = entity.posX + (entity.world.rand.nextDouble() - 0.5) * entity.width;
+                    double y = entity.posY + entity.world.rand.nextDouble() * entity.height * 0.8;
+                    double z = entity.posZ + (entity.world.rand.nextDouble() - 0.5) * entity.width;
+                    
+                    double mx = (entity.world.rand.nextDouble() - 0.5) * 0.06D;
+                    double my = entity.world.rand.nextDouble() * 0.06D;
+                    double mz = (entity.world.rand.nextDouble() - 0.5) * 0.06D;
+                    
+                    com.x4yi.hammersunbound.client.particle.ParticleBlood particle = new com.x4yi.hammersunbound.client.particle.ParticleBlood(entity.world, x, y, z, mx, my, mz);
+                    net.minecraft.client.Minecraft.getMinecraft().effectRenderer.addEffect(particle);
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onRenderWorldLast(RenderWorldLastEvent event) {
+        List<PacketBloodPactVisual.BloodPactVisual> visuals = PacketBloodPactVisual.getActiveVisuals();
+        if (visuals.isEmpty()) return;
+
+        Minecraft mc = Minecraft.getMinecraft();
+        float partialTicks = event.getPartialTicks();
+        Entity renderView = mc.getRenderViewEntity();
+        if (renderView == null) return;
+
+        double rx = renderView.lastTickPosX + (renderView.posX - renderView.lastTickPosX) * partialTicks;
+        double ry = renderView.lastTickPosY + (renderView.posY - renderView.lastTickPosY) * partialTicks;
+        double rz = renderView.lastTickPosZ + (renderView.posZ - renderView.lastTickPosZ) * partialTicks;
+
+        for (PacketBloodPactVisual.BloodPactVisual visual : visuals) {
+            Vec3d playerPos = visual.getPlayerPos();
+            Vec3d targetPos = visual.getTargetPos();
+
+            if (playerPos == null || targetPos == null) continue;
+
+            Vec3d renderPlayerPos = new Vec3d(playerPos.x - rx, playerPos.y - ry, playerPos.z - rz);
+            Vec3d renderTargetPos = new Vec3d(targetPos.x - rx, targetPos.y - ry, targetPos.z - rz);
+
+            renderBloodTether(renderPlayerPos, renderTargetPos, partialTicks);
+        }
+    }
+
+    @SubscribeEvent
+    public void onItemTooltip(ItemTooltipEvent event) {
+        ItemStack stack = event.getItemStack();
+        if (stack.isEmpty()) return;
+        if (!(stack.getItem() instanceof ItemHammer)) return;
+
+        List<String> tooltip = event.getToolTip();
+        String mainHandHeader = net.minecraft.client.resources.I18n.format("item.modifiers.mainhand");
+        String offHandHeader = net.minecraft.client.resources.I18n.format("item.modifiers.offhand");
+
+        int removeIndex = -1;
+        for (int i = 0; i < tooltip.size(); i++) {
+            String line = TextFormatting.getTextWithoutFormattingCodes(tooltip.get(i));
+            if (line != null && (line.equals(mainHandHeader) || line.equals(offHandHeader) || line.toLowerCase().contains("main hand") || line.toLowerCase().contains("mainhand"))) {
+                removeIndex = i;
+                if (i > 0 && TextFormatting.getTextWithoutFormattingCodes(tooltip.get(i - 1)).trim().isEmpty()) {
+                    removeIndex = i - 1;
+                }
+                break;
+            }
+        }
+
+        if (removeIndex != -1) {
+            while (tooltip.size() > removeIndex) {
+                tooltip.remove(removeIndex);
+            }
+        }
+    }
+
+    private void renderBloodTether(Vec3d from, Vec3d to, float partialTicks) {
+        GlStateManager.pushMatrix();
+        GlStateManager.disableTexture2D();
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GlStateManager.disableLighting();
+        GlStateManager.depthMask(false);
+
+        double dx = to.x - from.x;
+        double dy = to.y - from.y;
+        double dz = to.z - from.z;
+
+        int segments = 20;
+        float amplitude = 0.3f;
+
+        GlStateManager.color(0.8f, 0.0f, 0.0f, 0.6f);
+        GL11.glLineWidth(3.0f);
+
+        GL11.glBegin(GL11.GL_LINE_STRIP);
+        for (int i = 0; i <= segments; i++) {
+            float t = (float) i / segments;
+            double x = from.x + dx * t;
+            double y = from.y + dy * t + Math.sin(t * (float) Math.PI * 4.0f) * amplitude;
+            double z = from.z + dz * t;
+            GL11.glVertex3d(x, y, z);
+        }
+        GL11.glEnd();
+
+        GL11.glBegin(GL11.GL_LINE_STRIP);
+        for (int i = 0; i <= segments; i++) {
+            float t = (float) i / segments;
+            double x = from.x + dx * t;
+            double y = from.y + dy * t + Math.cos(t * (float) Math.PI * 4.0f) * amplitude;
+            double z = from.z + dz * t;
+            GL11.glVertex3d(x, y, z);
+        }
+        GL11.glEnd();
+
+        GlStateManager.depthMask(true);
+        GlStateManager.enableLighting();
+        GlStateManager.disableBlend();
+        GlStateManager.enableTexture2D();
+        GlStateManager.popMatrix();
+    }
+
+    @SubscribeEvent
+    public void onClientDisconnect(net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+        PacketBloodPactVisual.getActiveVisuals().clear();
+    }
+}

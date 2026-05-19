@@ -13,9 +13,9 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '1.0'
-group = 'com.yourname.modid' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = 'modid'
+version = 'beta-3'
+group = 'com.x4yi.hammers'
+archivesBaseName = 'hammersunbound'
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
@@ -36,6 +36,11 @@ minecraft {
     runs {
         client {
             workingDirectory project.file('run')
+            
+            // Wayland support configuration
+            jvmArgs '-Dorg.lwjgl.opengl.Display.allowSoftwareOpenGL=true'
+            jvmArgs '-Djava.awt.headless=false'
+            environment 'DISPLAY', System.getenv('DISPLAY') ?: ':0'
 
             // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
@@ -81,16 +86,26 @@ dependencies {
 
 }
 
+// Fix ASM dependency conflicts
+configurations.all {
+    resolutionStrategy {
+        force 'org.ow2.asm:asm:6.0'
+        force 'org.ow2.asm:asm-tree:6.0'
+        force 'org.ow2.asm:asm-util:6.0'
+        force 'org.ow2.asm:asm-analysis:6.0'
+    }
+}
+
 // Example for how to get properties into the manifest for reading by the runtime..
 jar {
     manifest {
         attributes([
-            "Specification-Title": "examplemod",
-            "Specification-Vendor": "examplemodsareus",
-            "Specification-Version": "1", // We are version 1 of ourselves
+            "Specification-Title": "hammersunbound",
+            "Specification-Vendor": "X4yi",
+            "Specification-Version": "1",
             "Implementation-Title": project.name,
             "Implementation-Version": "${version}",
-            "Implementation-Vendor" :"examplemodsareus",
+            "Implementation-Vendor" :"X4yi",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }

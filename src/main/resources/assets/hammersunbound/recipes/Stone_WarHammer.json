@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "forge:ore_shaped",
   "pattern": [
     "LLL",
     "LLL",
@@ -7,14 +7,16 @@
   ],
   "key": {
     "L": {
-      "item": "minecraft:stoneblock"
+      "type": "forge:ore_dict",
+      "ore": "cobblestone"
     },
     "S": {
-      "item": "minecraft:stick"
+      "type": "forge:ore_dict",
+      "ore": "stickWood"
     }
   },
   "result": {
-    "item": "hammersunbound:warhammerstone",
+    "item": "hammersunbound:warhammer_stone",
     "count": 1
   }
 }

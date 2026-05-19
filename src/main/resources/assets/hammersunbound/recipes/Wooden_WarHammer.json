@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "forge:ore_shaped",
   "pattern": [
     "LLL",
     "LLL",
@@ -7,14 +7,16 @@
   ],
   "key": {
     "L": {
-      "item": "minecraft:log"
+      "type": "forge:ore_dict",
+      "ore": "plankWood"
     },
     "S": {
-      "item": "minecraft:stick"
+      "type": "forge:ore_dict",
+      "ore": "stickWood"
     }
   },
   "result": {
-    "item": "hammersunbound:warhammerwood",
+    "item": "hammersunbound:warhammer_wood",
     "count": 1
   }
 }

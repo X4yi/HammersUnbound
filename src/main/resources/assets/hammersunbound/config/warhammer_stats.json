@@ -1,0 +1,69 @@
+{
+  "materials": {
+    "wood": {
+      "baseDamage": 5.0,
+      "attackSpeed": -3.2,
+      "durability": 60,
+      "abilities": {
+        "stunDuration": 10,
+        "stunAmplifier": 3,
+        "aoeRadius": 1.5,
+        "aoeDamage": 2.5,
+        "aoeStunDuration": 30,
+        "aoeStunAmplifier": 1
+      }
+    },
+    "stone": {
+      "baseDamage": 7.0,
+      "attackSpeed": -3.2,
+      "durability": 132,
+      "abilities": {
+        "stunDuration": 15,
+        "stunAmplifier": 3,
+        "aoeRadius": 2.0,
+        "aoeDamage": 4.2,
+        "aoeStunDuration": 40,
+        "aoeStunAmplifier": 1
+      }
+    },
+    "iron": {
+      "baseDamage": 9.0,
+      "attackSpeed": -3.2,
+      "durability": 251,
+      "abilities": {
+        "stunDuration": 20,
+        "stunAmplifier": 4,
+        "aoeRadius": 2.5,
+        "aoeDamage": 6.75,
+        "aoeStunDuration": 50,
+        "aoeStunAmplifier": 1
+      }
+    },
+    "gold": {
+      "baseDamage": 4.0,
+      "attackSpeed": -2.8,
+      "durability": 33,
+      "abilities": {
+        "stunDuration": 8,
+        "stunAmplifier": 2,
+        "aoeRadius": 1.5,
+        "aoeDamage": 1.6,
+        "aoeStunDuration": 20,
+        "aoeStunAmplifier": 0
+      }
+    },
+    "diamond": {
+      "baseDamage": 12.0,
+      "attackSpeed": -3.2,
+      "durability": 1562,
+      "abilities": {
+        "stunDuration": 30,
+        "stunAmplifier": 5,
+        "aoeRadius": 3.5,
+        "aoeDamage": 12.0,
+        "aoeStunDuration": 60,
+        "aoeStunAmplifier": 2
+      }
+    }
+  }
+}

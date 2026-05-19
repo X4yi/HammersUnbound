@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "forge:ore_shaped",
   "pattern": [
     "LLL",
     "LLL",
@@ -7,14 +7,16 @@
   ],
   "key": {
     "L": {
-      "item": "minecraft:gold_ingot"
+      "type": "forge:ore_dict",
+      "ore": "ingotGold"
     },
     "S": {
-      "item": "minecraft:stick"
+      "type": "forge:ore_dict",
+      "ore": "stickWood"
     }
   },
   "result": {
-    "item": "hammersunbound:warhammergold",
+    "item": "hammersunbound:warhammer_gold",
     "count": 1
   }
 }

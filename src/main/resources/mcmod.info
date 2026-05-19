@@ -2,13 +2,13 @@
 {
   "modid": "hammersunbound",
   "name": "Hammers Unbound",
-  "description": "The mod is in BETA, If you want to help improve the mod, you can report bugs or glitches on my github forum, I  am X4yi, and i dont speak english, this description is translated :D ",
-  "version": "Beta-SpikeHammer-Configs",
+  "description": "Adds two new weapon types to Minecraft: the WarHammer (heavy AOE stun weapon) and the SpikeHammer (bleed-based combat weapon with BloodPact mechanic). Both come in all 5 material tiers with fully configurable stats.",
+  "version": "r1.0b1",
   "mcversion": "1.12.2",
   "url": "",
   "updateUrl": "",
-  "authorList": [""],
-  "credits": "X4yi to code and Qdarteer to made models",
+  "authorList": ["X4yi"],
+  "credits": "X4yi (code), Qdarteer (models)",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []
