@@ -326,6 +326,8 @@ public class GuiConfigScreen extends GuiBaseScreen {
         }
 
         // Changelog Button click
+        int sidebarX = startX;
+        int sidebarHeight = totalHeight - headerHeight - footerHeight;
         int changelogX1 = sidebarX + 8;
         int changelogY1 = startY + headerHeight + sidebarHeight - 24;
         int changelogX2 = sidebarX + sidebarWidth - 8;
