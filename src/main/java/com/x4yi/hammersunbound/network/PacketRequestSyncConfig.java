@@ -1,40 +1,36 @@
-package com.x4yi.hammersunbound.command;
+package com.x4yi.hammersunbound.network;
 
-import com.x4yi.hammersunbound.config.ConfigManager;
 import com.x4yi.hammersunbound.config.ServerConfig;
 import com.x4yi.hammersunbound.config.SpikeHammerConfig;
 import com.x4yi.hammersunbound.config.WarHammerConfig;
-import com.x4yi.hammersunbound.network.ModNetworkHandler;
-import com.x4yi.hammersunbound.network.PacketSyncConfig;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
 
-public class ConfigReloadCommand extends CommandBase {
+public class PacketRequestSyncConfig implements IMessage {
 
-    @Override
-    public String getName() {
-        return "hammersunbound";
-    }
+    public PacketRequestSyncConfig() {}
 
     @Override
-    public String getUsage(ICommandSender sender) {
-        return "/hammersunbound reload";
-    }
+    public void fromBytes(ByteBuf buf) {}
 
     @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-        if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
-            // 1. Reload configs from file system
-            ConfigManager.reload();
-            ServerConfig.load();
+    public void toBytes(ByteBuf buf) {}
 
-            // 2. Serialize server configuration data
+    public static class Handler implements IMessageHandler<PacketRequestSyncConfig, IMessage> {
+        @Override
+        public IMessage onMessage(PacketRequestSyncConfig message, MessageContext ctx) {
+            if (ctx.side != Side.SERVER) return null;
+
+            EntityPlayerMP player = ctx.getServerHandler().player;
+            if (player == null) return null;
+
+            // Gather and serialize current server config state
             JsonObject itemsJson = new JsonObject();
             JsonObject whMats = new JsonObject();
             for (java.util.Map.Entry<String, WarHammerConfig.WarHammerMaterialEntry> entry : WarHammerConfig.getAllMaterials().entrySet()) {
@@ -74,17 +70,10 @@ public class ConfigReloadCommand extends CommandBase {
             String itemsStr = gson.toJson(itemsJson);
             String serverStr = gson.toJson(serverJson);
 
-            // 3. Broadcast sync packet to all connected players
-            ModNetworkHandler.INSTANCE.sendToAll(new PacketSyncConfig(itemsStr, serverStr));
+            // Send full serialized configs back to player
+            ModNetworkHandler.INSTANCE.sendTo(new PacketSyncConfig(itemsStr, serverStr), player);
 
-            sender.sendMessage(new TextComponentString(TextFormatting.GREEN + "[Hammers Unbound] Configuration reloaded and synchronized with all clients."));
-        } else {
-            sender.sendMessage(new TextComponentString(TextFormatting.YELLOW + "Usage: /hammersunbound reload"));
+            return null;
         }
-    }
-
-    @Override
-    public int getRequiredPermissionLevel() {
-        return 2;
     }
 }

@@ -11,5 +11,7 @@ public class ModNetworkHandler {
         INSTANCE.registerMessage(PacketBleedingSync.Handler.class, PacketBleedingSync.class, 0, Side.CLIENT);
         INSTANCE.registerMessage(PacketBloodPactVisual.Handler.class, PacketBloodPactVisual.class, 1, Side.CLIENT);
         INSTANCE.registerMessage(PacketAOEParticleSpawn.Handler.class, PacketAOEParticleSpawn.class, 2, Side.CLIENT);
+        INSTANCE.registerMessage(PacketRequestSyncConfig.Handler.class, PacketRequestSyncConfig.class, 3, Side.SERVER);
+        INSTANCE.registerMessage(PacketSyncConfig.Handler.class, PacketSyncConfig.class, 4, Side.CLIENT);
     }
 }

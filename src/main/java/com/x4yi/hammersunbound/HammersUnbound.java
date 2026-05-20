@@ -28,6 +28,10 @@ public class HammersUnbound {
         ServerConfig.load();
         ModNetworkHandler.init();
         proxy.preInit(event);
+
+        if (event.getSide() == net.minecraftforge.fml.relauncher.Side.CLIENT) {
+            com.x4yi.hammersunbound.util.UpdateChecker.check();
+        }
     }
 
     @Mod.EventHandler

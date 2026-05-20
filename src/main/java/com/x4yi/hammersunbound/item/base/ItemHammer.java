@@ -50,10 +50,32 @@ public abstract class ItemHammer extends net.minecraft.item.Item {
     }
 
     public float getAttackDamage() {
+        if ("warhammer".equals(getHammerType())) {
+            com.x4yi.hammersunbound.config.WarHammerConfig.WarHammerMaterialEntry entry = com.x4yi.hammersunbound.config.WarHammerConfig.getMaterial(this.materialName);
+            if (entry != null && entry.data != null) {
+                return entry.data.baseDamage;
+            }
+        } else if ("spikehammer".equals(getHammerType())) {
+            com.x4yi.hammersunbound.config.SpikeHammerConfig.SpikeHammerMaterialEntry entry = com.x4yi.hammersunbound.config.SpikeHammerConfig.getMaterial(this.materialName);
+            if (entry != null && entry.data != null) {
+                return entry.data.baseDamage;
+            }
+        }
         return attackDamage;
     }
 
     public float getAttackSpeed() {
+        if ("warhammer".equals(getHammerType())) {
+            com.x4yi.hammersunbound.config.WarHammerConfig.WarHammerMaterialEntry entry = com.x4yi.hammersunbound.config.WarHammerConfig.getMaterial(this.materialName);
+            if (entry != null && entry.data != null) {
+                return entry.data.attackSpeed;
+            }
+        } else if ("spikehammer".equals(getHammerType())) {
+            com.x4yi.hammersunbound.config.SpikeHammerConfig.SpikeHammerMaterialEntry entry = com.x4yi.hammersunbound.config.SpikeHammerConfig.getMaterial(this.materialName);
+            if (entry != null && entry.data != null) {
+                return entry.data.attackSpeed;
+            }
+        }
         return attackSpeed;
     }
 
@@ -82,14 +104,33 @@ public abstract class ItemHammer extends net.minecraft.item.Item {
     }
 
     @Override
+    public int getMaxDamage(ItemStack stack) {
+        if ("warhammer".equals(getHammerType())) {
+            com.x4yi.hammersunbound.config.WarHammerConfig.WarHammerMaterialEntry entry = com.x4yi.hammersunbound.config.WarHammerConfig.getMaterial(this.materialName);
+            if (entry != null && entry.data != null) {
+                return entry.data.durability;
+            }
+        } else if ("spikehammer".equals(getHammerType())) {
+            com.x4yi.hammersunbound.config.SpikeHammerConfig.SpikeHammerMaterialEntry entry = com.x4yi.hammersunbound.config.SpikeHammerConfig.getMaterial(this.materialName);
+            if (entry != null && entry.data != null) {
+                return entry.data.durability;
+            }
+        }
+        return this.maxDurability;
+    }
+
+    @Override
     public Multimap<String, AttributeModifier> getItemAttributeModifiers(EntityEquipmentSlot equipmentSlot) {
         Multimap<String, AttributeModifier> multimap = super.getItemAttributeModifiers(equipmentSlot);
 
         if (equipmentSlot == EntityEquipmentSlot.MAINHAND) {
+            float currentDamage = getAttackDamage();
+            float currentSpeed = getAttackSpeed();
+
             multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(),
-                    new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier", attackDamage, 0));
+                    new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier", currentDamage, 0));
             multimap.put(SharedMonsterAttributes.ATTACK_SPEED.getName(),
-                    new AttributeModifier(ATTACK_SPEED_MODIFIER, "Weapon modifier", attackSpeed, 0));
+                    new AttributeModifier(ATTACK_SPEED_MODIFIER, "Weapon modifier", currentSpeed, 0));
         }
 
         return multimap;
@@ -98,37 +139,20 @@ public abstract class ItemHammer extends net.minecraft.item.Item {
     @Override
     @SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-        if (FMLCommonHandler.instance().getEffectiveSide() != Side.CLIENT) return;
+        if (FMLCommonHandler.instance().getEffectiveSide() != Side.CLIENT)
+            return;
 
-        tooltip.add(TextFormatting.GREEN + "Damage: " + DAMAGE_FORMAT.format(attackDamage));
+        float currentDamage = getAttackDamage();
+        float currentSpeed = getAttackSpeed();
 
-        float displaySpeed = attackSpeed + 4.0F;
-        tooltip.add(TextFormatting.YELLOW + "Speed: " + SPEED_FORMAT.format(displaySpeed));
+        tooltip.add(TextFormatting.DARK_GREEN + "Damage: " + DAMAGE_FORMAT.format(currentDamage));
 
-        int currentDurability = stack.getMaxDamage() - stack.getItemDamage();
-        tooltip.add(TextFormatting.GRAY + "Durability: " + currentDurability + "/" + stack.getMaxDamage());
+        float displaySpeed = currentSpeed + 4.0F;
+        tooltip.add(TextFormatting.DARK_GRAY + "Speed: " + SPEED_FORMAT.format(displaySpeed));
 
-        if (flagIn.isAdvanced()) {
-            tooltip.add(TextFormatting.DARK_GRAY + "Material: " + materialName);
-            tooltip.add(TextFormatting.DARK_GRAY + "Type: " + getHammerType());
-        }
-
-        addAbilityTooltips(tooltip);
-    }
-
-
-
-    protected void addAbilityTooltips(List<String> tooltip) {
-        tooltip.add("");
-        tooltip.add(TextFormatting.GOLD + "Special Abilities:");
-
-        if (this instanceof com.x4yi.hammersunbound.item.warhammer.WarHammerItem) {
-            tooltip.add(TextFormatting.RED + "  Critical Hit: AOE Damage + Stun");
-        } else if (this instanceof com.x4yi.hammersunbound.item.spikehammer.SpikeHammerItem) {
-            tooltip.add(TextFormatting.DARK_RED + "  Sprint Hit: Applies Bleeding");
-            tooltip.add(TextFormatting.DARK_RED + "  Critical Hit: Enhanced Bleeding");
-            tooltip.add(TextFormatting.DARK_PURPLE + "  Right Click: Blood Pact");
-        }
+        int maxDur = getMaxDamage(stack);
+        int currentDurability = maxDur - stack.getItemDamage();
+        tooltip.add(TextFormatting.GRAY + "Durability: " + currentDurability + "/" + maxDur);
     }
 
     @Override
@@ -169,18 +193,20 @@ public abstract class ItemHammer extends net.minecraft.item.Item {
         return player.isSprinting();
     }
 
-    protected List<EntityLivingBase> getEntitiesInRadius(World world, Vec3d center, float radius, EntityLivingBase... exclude) {
+    protected List<EntityLivingBase> getEntitiesInRadius(World world, Vec3d center, float radius,
+            EntityLivingBase... exclude) {
         List<EntityLivingBase> result = new ArrayList<>();
-        if (world == null || center == null || radius <= 0) return result;
+        if (world == null || center == null || radius <= 0)
+            return result;
 
         AxisAlignedBB aabb = new AxisAlignedBB(
                 center.x - radius, center.y - radius, center.z - radius,
-                center.x + radius, center.y + radius, center.z + radius
-        );
+                center.x + radius, center.y + radius, center.z + radius);
 
         List<EntityLivingBase> entities = world.getEntitiesWithinAABB(EntityLivingBase.class, aabb);
         for (EntityLivingBase entity : entities) {
-            if (entity == null || entity.isDead) continue;
+            if (entity == null || entity.isDead)
+                continue;
 
             boolean shouldExclude = false;
             for (EntityLivingBase ex : exclude) {
@@ -189,16 +215,19 @@ public abstract class ItemHammer extends net.minecraft.item.Item {
                     break;
                 }
             }
-            if (shouldExclude) continue;
+            if (shouldExclude)
+                continue;
 
             if (entity instanceof net.minecraft.entity.passive.EntityTameable) {
                 net.minecraft.entity.passive.EntityTameable tameable = (net.minecraft.entity.passive.EntityTameable) entity;
-                if (tameable.isTamed() && exclude.length > 0 && tameable.getOwner() == exclude[0]) continue;
+                if (tameable.isTamed() && exclude.length > 0 && tameable.getOwner() == exclude[0])
+                    continue;
             }
 
             if (entity instanceof EntityPlayer) {
                 EntityPlayer player = (EntityPlayer) entity;
-                if (player.capabilities.isCreativeMode) continue;
+                if (player.capabilities.isCreativeMode)
+                    continue;
             }
 
             result.add(entity);

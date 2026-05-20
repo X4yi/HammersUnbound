@@ -18,7 +18,10 @@ public class ServerConfig {
     public static boolean spikehammerEnableBloodPact = true;
 
     public static void load() {
-        JsonObject json = ConfigManager.loadServer();
+        parse(ConfigManager.loadServer());
+    }
+
+    public static void parse(JsonObject json) {
         if (json == null) return;
 
         JsonObject warhammer = json.getAsJsonObject("warhammer");

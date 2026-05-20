@@ -44,8 +44,6 @@ public abstract class GuiBaseScreen extends GuiScreen {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         updateAnimation();
-        drawDefaultBackground();
-        drawBackground(mouseX, mouseY, partialTicks);
         drawTitle();
 
         for (GuiComponent component : components) {

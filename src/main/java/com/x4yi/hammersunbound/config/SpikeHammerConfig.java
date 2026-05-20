@@ -10,8 +10,11 @@ public class SpikeHammerConfig {
     private static final Map<String, SpikeHammerMaterialEntry> materials = new HashMap<>();
 
     public static void load() {
+        parse(ConfigManager.loadItems());
+    }
+
+    public static void parse(JsonObject json) {
         materials.clear();
-        JsonObject json = ConfigManager.loadItems();
         if (json == null) {
             loadFromAssets();
             return;
@@ -19,7 +22,12 @@ public class SpikeHammerConfig {
 
         JsonObject spikehammer = json.getAsJsonObject("spikehammer");
         if (spikehammer == null) {
-            loadFromAssets();
+            JsonObject mats = json.getAsJsonObject("materials");
+            if (mats != null) {
+                parseMaterials(json);
+            } else {
+                loadFromAssets();
+            }
             return;
         }
 

@@ -21,9 +21,23 @@ import java.util.List;
 public class HammerClientHandler {
 
     @SubscribeEvent
+    public void onClientConnected(net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent event) {
+        com.x4yi.hammersunbound.network.ModNetworkHandler.INSTANCE.sendToServer(new com.x4yi.hammersunbound.network.PacketRequestSyncConfig());
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.mouseHelper != null && !(mc.mouseHelper instanceof com.x4yi.hammersunbound.client.input.StunMouseHelper)) {
+            mc.mouseHelper = new com.x4yi.hammersunbound.client.input.StunMouseHelper(mc.mouseHelper);
+        }
+    }
+
+    @SubscribeEvent
     public void onLivingUpdate(net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent event) {
         EntityLivingBase entity = event.getEntityLiving();
         if (entity == null || !entity.world.isRemote) return;
+
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.mouseHelper != null && !(mc.mouseHelper instanceof com.x4yi.hammersunbound.client.input.StunMouseHelper)) {
+            mc.mouseHelper = new com.x4yi.hammersunbound.client.input.StunMouseHelper(mc.mouseHelper);
+        }
 
         if (com.x4yi.hammersunbound.config.ClientConfig.bleedingParticleEnabled && entity.hasCapability(IBleedingCapability.CAPABILITY, null)) {
             IBleedingCapability cap = entity.getCapability(IBleedingCapability.CAPABILITY, null);
@@ -47,10 +61,12 @@ public class HammerClientHandler {
 
     @SubscribeEvent
     public void onRenderWorldLast(RenderWorldLastEvent event) {
-        List<PacketBloodPactVisual.BloodPactVisual> visuals = PacketBloodPactVisual.getActiveVisuals();
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.world == null) return;
+
+        List<PacketBloodPactVisual.BloodPactVisual> visuals = PacketBloodPactVisual.getActiveVisuals(mc.world);
         if (visuals.isEmpty()) return;
 
-        Minecraft mc = Minecraft.getMinecraft();
         float partialTicks = event.getPartialTicks();
         Entity renderView = mc.getRenderViewEntity();
         if (renderView == null) return;
@@ -60,8 +76,8 @@ public class HammerClientHandler {
         double rz = renderView.lastTickPosZ + (renderView.posZ - renderView.lastTickPosZ) * partialTicks;
 
         for (PacketBloodPactVisual.BloodPactVisual visual : visuals) {
-            Vec3d playerPos = visual.getPlayerPos();
-            Vec3d targetPos = visual.getTargetPos();
+            Vec3d playerPos = visual.getPlayerPos(mc.world);
+            Vec3d targetPos = visual.getTargetPos(mc.world);
 
             if (playerPos == null || targetPos == null) continue;
 
@@ -148,6 +164,49 @@ public class HammerClientHandler {
 
     @SubscribeEvent
     public void onClientDisconnect(net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
-        PacketBloodPactVisual.getActiveVisuals().clear();
+        PacketBloodPactVisual.getActiveVisuals(null).clear();
+    }
+
+    private float lockedYaw = 0.0F;
+    private float lockedPitch = 0.0F;
+    private boolean wasStunned = false;
+
+    @SubscribeEvent
+    public void onInputUpdate(net.minecraftforge.client.event.InputUpdateEvent event) {
+        if (com.x4yi.hammersunbound.init.ModPotions.STUN != null && event.getEntityPlayer().isPotionActive(com.x4yi.hammersunbound.init.ModPotions.STUN)) {
+            net.minecraft.util.MovementInput input = event.getMovementInput();
+            input.moveForward = 0.0F;
+            input.moveStrafe = 0.0F;
+            input.forwardKeyDown = false;
+            input.backKeyDown = false;
+            input.leftKeyDown = false;
+            input.rightKeyDown = false;
+            input.jump = false;
+            input.sneak = false;
+        }
+    }
+
+    @SubscribeEvent
+    public void onRenderTick(net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent event) {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.player != null) {
+            if (com.x4yi.hammersunbound.init.ModPotions.STUN != null && mc.player.isPotionActive(com.x4yi.hammersunbound.init.ModPotions.STUN)) {
+                if (mc.mouseHelper != null) {
+                    mc.mouseHelper.deltaX = 0;
+                    mc.mouseHelper.deltaY = 0;
+                }
+                if (!wasStunned) {
+                    lockedYaw = mc.player.rotationYaw;
+                    lockedPitch = mc.player.rotationPitch;
+                    wasStunned = true;
+                }
+                mc.player.rotationYaw = lockedYaw;
+                mc.player.rotationPitch = lockedPitch;
+                mc.player.prevRotationYaw = lockedYaw;
+                mc.player.prevRotationPitch = lockedPitch;
+            } else {
+                wasStunned = false;
+            }
+        }
     }
 }

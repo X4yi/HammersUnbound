@@ -72,8 +72,9 @@ public class WarHammerItem extends ItemHammer {
             EntityPlayer player = (EntityPlayer) target;
             if (player.capabilities.isCreativeMode) return;
         }
-        target.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, duration, amplifier));
-        target.addPotionEffect(new PotionEffect(MobEffects.MINING_FATIGUE, duration, amplifier));
+        if (com.x4yi.hammersunbound.init.ModPotions.STUN != null) {
+            target.addPotionEffect(new PotionEffect(com.x4yi.hammersunbound.init.ModPotions.STUN, duration, amplifier));
+        }
     }
 
     private void applyAOEDamage(EntityPlayer attacker, EntityLivingBase primaryTarget,
@@ -86,7 +87,9 @@ public class WarHammerItem extends ItemHammer {
         for (EntityLivingBase entity : entities) {
             entity.attackEntityFrom(DamageSource.causePlayerDamage(attacker), aoeDamage);
             if (aoeStunDuration > 0 && ServerConfig.warhammerEnableStun) {
-                entity.addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, aoeStunDuration, aoeStunAmplifier));
+                if (com.x4yi.hammersunbound.init.ModPotions.STUN != null) {
+                    entity.addPotionEffect(new PotionEffect(com.x4yi.hammersunbound.init.ModPotions.STUN, aoeStunDuration, aoeStunAmplifier));
+                }
             }
         }
     }

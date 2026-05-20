@@ -10,8 +10,11 @@ public class WarHammerConfig {
     private static final Map<String, WarHammerMaterialEntry> materials = new HashMap<>();
 
     public static void load() {
+        parse(ConfigManager.loadItems());
+    }
+
+    public static void parse(JsonObject json) {
         materials.clear();
-        JsonObject json = ConfigManager.loadItems();
         if (json == null) {
             loadFromAssets();
             return;
@@ -19,7 +22,12 @@ public class WarHammerConfig {
 
         JsonObject warhammer = json.getAsJsonObject("warhammer");
         if (warhammer == null) {
-            loadFromAssets();
+            JsonObject mats = json.getAsJsonObject("materials");
+            if (mats != null) {
+                parseMaterials(json);
+            } else {
+                loadFromAssets();
+            }
             return;
         }
 

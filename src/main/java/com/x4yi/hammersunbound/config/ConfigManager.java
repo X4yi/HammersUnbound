@@ -113,24 +113,49 @@ public class ConfigManager {
     }
 
     public static JsonObject loadItems() {
+        if (itemsFile != null && !itemsFile.exists()) {
+            createDefaultItems();
+        }
         return loadJson(itemsFile);
     }
 
     public static JsonObject loadServer() {
+        if (serverFile != null && !serverFile.exists()) {
+            createDefaultServer();
+        }
         return loadJson(serverFile);
     }
 
     public static JsonObject loadClient() {
+        if (clientFile != null && !clientFile.exists()) {
+            createDefaultClient();
+        }
         return loadJson(clientFile);
     }
 
     private static JsonObject loadJson(File file) {
-        try {
-            if (!file.exists()) return null;
+        if (file == null || !file.exists()) return null;
+        try (FileReader reader = new FileReader(file)) {
             Gson gson = new Gson();
-            return gson.fromJson(new FileReader(file), JsonObject.class);
+            JsonObject json = gson.fromJson(reader, JsonObject.class);
+            if (json == null) {
+                throw new IOException("JSON structure is empty");
+            }
+            return json;
         } catch (Exception e) {
+            System.err.println("[Hammers Unbound] Failed to load config file: " + file.getAbsolutePath());
             e.printStackTrace();
+            try {
+                File corruptFile = new File(file.getParentFile(), file.getName() + ".corrupt");
+                if (corruptFile.exists()) {
+                    corruptFile.delete();
+                }
+                if (file.renameTo(corruptFile)) {
+                    System.err.println("[Hammers Unbound] Renamed corrupt file to: " + corruptFile.getName());
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
             return null;
         }
     }

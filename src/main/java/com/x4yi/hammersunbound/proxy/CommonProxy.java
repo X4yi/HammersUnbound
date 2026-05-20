@@ -21,4 +21,16 @@ public class CommonProxy {
 
     public void serverStarting(FMLServerStartingEvent event) {
     }
+
+    public void handleBleedingSync(int entityId, int level) {
+    }
+
+    public void handleBloodPactVisual(int playerEntityId, int targetEntityId, boolean active) {
+    }
+
+    public void handleAOEParticleSpawn(double posX, double posY, double posZ, float radius, int particleCount) {
+    }
+
+    public void handleConfigSync(String itemsJson, String serverJson) {
+    }
 }

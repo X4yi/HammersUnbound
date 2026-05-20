@@ -19,7 +19,67 @@ public class HammerCombatHandler {
     @SubscribeEvent
     public void onLivingUpdate(LivingEvent.LivingUpdateEvent event) {
         EntityLivingBase entity = event.getEntityLiving();
-        if (entity == null || entity.isDead || entity.world.isRemote) return;
+        if (entity == null || entity.isDead) return;
+
+        if (com.x4yi.hammersunbound.init.ModPotions.STUN != null && entity.isPotionActive(com.x4yi.hammersunbound.init.ModPotions.STUN)) {
+            if (!entity.world.isRemote) {
+                net.minecraft.nbt.NBTTagCompound data = entity.getEntityData();
+                if (!data.hasKey("StunnedRotationYaw")) {
+                    data.setFloat("StunnedRotationYaw", entity.rotationYaw);
+                    data.setFloat("StunnedRotationPitch", entity.rotationPitch);
+                    data.setFloat("StunnedRotationYawHead", entity.rotationYawHead);
+                    data.setFloat("StunnedRenderYawOffset", entity.renderYawOffset);
+                }
+
+                float yaw = data.getFloat("StunnedRotationYaw");
+                float pitch = data.getFloat("StunnedRotationPitch");
+                float yawHead = data.getFloat("StunnedRotationYawHead");
+                float renderOffset = data.getFloat("StunnedRenderYawOffset");
+
+                entity.rotationYaw = yaw;
+                entity.prevRotationYaw = yaw;
+                entity.rotationPitch = pitch;
+                entity.prevRotationPitch = pitch;
+                entity.rotationYawHead = yawHead;
+                entity.prevRotationYawHead = yawHead;
+                entity.renderYawOffset = renderOffset;
+                entity.prevRenderYawOffset = renderOffset;
+
+                entity.motionX = 0;
+                entity.motionZ = 0;
+                if (entity.motionY > 0.0) {
+                    entity.motionY = 0.0;
+                }
+
+                if (!(entity instanceof EntityPlayer)) {
+                    if (entity instanceof net.minecraft.entity.EntityLiving) {
+                        net.minecraft.entity.EntityLiving living = (net.minecraft.entity.EntityLiving) entity;
+                        living.getNavigator().clearPath();
+                        if (living.getAttackTarget() != null) {
+                            living.setAttackTarget(null);
+                        }
+                    }
+                    entity.moveForward = 0.0F;
+                    entity.moveVertical = 0.0F;
+                    entity.moveStrafing = 0.0F;
+                    entity.limbSwing = 0;
+                    entity.limbSwingAmount = 0;
+                    entity.prevLimbSwingAmount = 0;
+                }
+            }
+        } else {
+            if (!entity.world.isRemote) {
+                net.minecraft.nbt.NBTTagCompound data = entity.getEntityData();
+                if (data.hasKey("StunnedRotationYaw")) {
+                    data.removeTag("StunnedRotationYaw");
+                    data.removeTag("StunnedRotationPitch");
+                    data.removeTag("StunnedRotationYawHead");
+                    data.removeTag("StunnedRenderYawOffset");
+                }
+            }
+        }
+
+        if (entity.world.isRemote) return;
 
         if (IBleedingCapability.CAPABILITY != null && entity.hasCapability(IBleedingCapability.CAPABILITY, null)) {
             IBleedingCapability bleedingCap = entity.getCapability(IBleedingCapability.CAPABILITY, null);

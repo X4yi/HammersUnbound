@@ -24,6 +24,6 @@ public enum HammerMaterialType {
                 return type;
             }
         }
-        return IRON;
+        return WOOD;
     }
 }

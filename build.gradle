@@ -13,9 +13,9 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = 'beta-3'
-group = 'com.x4yi.hammers'
-archivesBaseName = 'hammersunbound'
+version = 'r1.0b1'
+group = 'com.x4yi.hammersunbound'
+archivesBaseName = 'HammersUnbound'
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
@@ -38,6 +38,8 @@ minecraft {
             workingDirectory project.file('run')
             
             // Wayland support configuration
+            jvmArgs '-Xmx768M'
+            jvmArgs '-Xms512M'
             jvmArgs '-Dorg.lwjgl.opengl.Display.allowSoftwareOpenGL=true'
             jvmArgs '-Djava.awt.headless=false'
             environment 'DISPLAY', System.getenv('DISPLAY') ?: ':0'

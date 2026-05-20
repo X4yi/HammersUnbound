@@ -109,7 +109,9 @@ public class ConfigSection {
         sections.clear();
 
         List<SubSection> itemSubs = new ArrayList<>();
-        for (String material : WarHammerConfig.getAllMaterials().keySet()) {
+        String[] orderedMaterials = {"wood", "stone", "iron", "gold", "diamond"};
+
+        for (String material : orderedMaterials) {
             WarHammerConfig.WarHammerMaterialEntry entry = WarHammerConfig.getMaterial(material);
             if (entry == null) continue;
 
@@ -130,7 +132,7 @@ public class ConfigSection {
             itemSubs.add(new SubSection("warhammer_" + material, "WarHammer " + capitalize(material), Section.ITEMS, fields));
         }
 
-        for (String material : SpikeHammerConfig.getAllMaterials().keySet()) {
+        for (String material : orderedMaterials) {
             SpikeHammerConfig.SpikeHammerMaterialEntry entry = SpikeHammerConfig.getMaterial(material);
             if (entry == null) continue;
 

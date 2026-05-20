@@ -1,10 +1,6 @@
 package com.x4yi.hammersunbound.network;
 
-import com.x4yi.hammersunbound.client.particle.AOEParticleSpawner;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -49,19 +45,9 @@ public class PacketAOEParticleSpawn implements IMessage {
     public static class Handler implements IMessageHandler<PacketAOEParticleSpawn, IMessage> {
         @Override
         public IMessage onMessage(final PacketAOEParticleSpawn message, MessageContext ctx) {
-            if (ctx.side != Side.CLIENT) return null;
-
-            Minecraft.getMinecraft().addScheduledTask(new Runnable() {
-                @Override
-                public void run() {
-                    World world = Minecraft.getMinecraft().world;
-                    if (world == null) return;
-
-                    Vec3d center = new Vec3d(message.posX, message.posY, message.posZ);
-                    AOEParticleSpawner.spawnAOEParticles(world, center, message.radius, message.particleCount);
-                }
-            });
-
+            if (ctx.side == Side.CLIENT) {
+                com.x4yi.hammersunbound.HammersUnbound.proxy.handleAOEParticleSpawn(message.posX, message.posY, message.posZ, message.radius, message.particleCount);
+            }
             return null;
         }
     }

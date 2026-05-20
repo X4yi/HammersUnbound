@@ -1,9 +1,9 @@
 package com.x4yi.hammersunbound.network;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -49,7 +49,14 @@ public class PacketBloodPactVisual implements IMessage {
         activeVisuals.removeIf(v -> v.playerEntityId == playerEntityId && v.targetEntityId == targetEntityId);
     }
 
-    public static List<BloodPactVisual> getActiveVisuals() {
+    public static List<BloodPactVisual> getActiveVisuals(World world) {
+        if (world != null) {
+            activeVisuals.removeIf(v -> {
+                Entity p = world.getEntityByID(v.playerEntityId);
+                Entity t = world.getEntityByID(v.targetEntityId);
+                return (p != null && p.isDead) || (t != null && t.isDead);
+            });
+        }
         return activeVisuals;
     }
 
@@ -62,16 +69,16 @@ public class PacketBloodPactVisual implements IMessage {
             this.targetEntityId = targetEntityId;
         }
 
-        public Vec3d getPlayerPos() {
-            if (Minecraft.getMinecraft().world == null) return null;
-            Entity e = Minecraft.getMinecraft().world.getEntityByID(playerEntityId);
+        public Vec3d getPlayerPos(World world) {
+            if (world == null) return null;
+            Entity e = world.getEntityByID(playerEntityId);
             if (e == null) return null;
             return new Vec3d(e.posX, e.posY + e.height / 2.0, e.posZ);
         }
 
-        public Vec3d getTargetPos() {
-            if (Minecraft.getMinecraft().world == null) return null;
-            Entity e = Minecraft.getMinecraft().world.getEntityByID(targetEntityId);
+        public Vec3d getTargetPos(World world) {
+            if (world == null) return null;
+            Entity e = world.getEntityByID(targetEntityId);
             if (e == null) return null;
             return new Vec3d(e.posX, e.posY + e.height / 2.0, e.posZ);
         }
@@ -80,13 +87,9 @@ public class PacketBloodPactVisual implements IMessage {
     public static class Handler implements IMessageHandler<PacketBloodPactVisual, IMessage> {
         @Override
         public IMessage onMessage(PacketBloodPactVisual message, MessageContext ctx) {
-            Minecraft.getMinecraft().addScheduledTask(() -> {
-                if (message.active) {
-                    addVisual(message.playerEntityId, message.targetEntityId);
-                } else {
-                    removeVisual(message.playerEntityId, message.targetEntityId);
-                }
-            });
+            if (ctx.side == net.minecraftforge.fml.relauncher.Side.CLIENT) {
+                com.x4yi.hammersunbound.HammersUnbound.proxy.handleBloodPactVisual(message.playerEntityId, message.targetEntityId, message.active);
+            }
             return null;
         }
     }

@@ -51,8 +51,8 @@ public class GuiConfigScreen extends GuiBaseScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        updateAnimation();
         drawDefaultBackground();
+        updateAnimation();
 
         int startX = width / 2 - 230;
         int startY = height / 2 - 120;
@@ -125,13 +125,7 @@ public class GuiConfigScreen extends GuiBaseScreen {
         drawBorder(cancelX1, cancelY1, cancelX2, cancelY2, cancelHovered ? 0xFFFFFFFF : 0xFF2C2C36);
         drawCenteredString("Cancel", cancelX1 + 35, cancelY1 + 5, cancelHovered ? 0xFFFFFFFF : 0xFFFF3D00);
 
-        // Yellow Badge (Premium Branding '+ r1.0')
-        int badgeX1 = startX + totalWidth - 65;
-        int badgeY1 = startY + totalHeight - footerHeight + 6;
-        int badgeX2 = startX + totalWidth - 8;
-        int badgeY2 = startY + totalHeight - 6;
-        drawRect(badgeX1, badgeY1, badgeX2, badgeY2, 0xFFFFD600);
-        drawCenteredString("+ " + com.x4yi.hammersunbound.HammersUnbound.VERSION, badgeX1 + 28, badgeY1 + 3, 0xFF000000);
+
 
         // Left Sidebar: Clean Flat Category Tabs
         int sidebarX = startX;
@@ -278,6 +272,8 @@ public class GuiConfigScreen extends GuiBaseScreen {
             drawRect(trackX, thumbY, trackX + 2, thumbY + thumbHeight, 0xFF424248);
         }
 
+
+
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
 
@@ -303,8 +299,10 @@ public class GuiConfigScreen extends GuiBaseScreen {
 
         int headerHeight = 22;
         int footerHeight = 26;
-        int sidebarWidth = 110;
 
+
+
+        int sidebarWidth = 110;
         int panelX = startX + sidebarWidth;
         int panelY = startY + headerHeight;
         int panelWidth = totalWidth - sidebarWidth;
