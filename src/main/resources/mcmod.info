@@ -1,0 +1,16 @@
+[
+{
+  "modid": "hammersunbound",
+  "name": "Hammers Unbound",
+  "description": "Adds two new weapon types to Minecraft: the WarHammer (heavy AOE stun weapon) and the SpikeHammer (bleed-based combat weapon with BloodPact mechanic). Both come in all 5 material tiers with fully configurable stats.",
+  "version": "r1.0b1",
+  "mcversion": "1.12.2",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["X4yi"],
+  "credits": "X4yi (code), Qdarteer (models)",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

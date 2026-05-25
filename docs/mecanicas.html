@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mecánicas — Hammers Unbound</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <div id="cur"></div>
+
+  <nav>
+    <a class="nav-name" href="index.html">Hammers Unbound</a>
+    <ul class="nav-links">
+      <li><a href="guia-usuario.html">Guía</a></li>
+      <li><a href="mecanicas.html">Mecánicas</a></li>
+      <li><a href="items.html">Items</a></li>
+      <div class="lang-switch">
+        <a href="mechanics.html">EN</a>
+      </div>
+    </ul>
+  </nav>
+
+  <div class="page doc-content">
+
+    <h2>Warhammer — Control de masas</h2>
+
+    <div class="mechanic-card stagger">
+      <span class="tag warhammer">Warhammer</span>
+      <h3>Golpe Crítico: Stun + AoE</h3>
+      <p>Al conectar un <strong>golpe crítico</strong> con un Warhammer, se activan dos efectos simultáneos:</p>
+      <ul>
+        <li><strong>Stun al objetivo principal:</strong> El enemigo queda completamente inmovilizado durante un tiempo determinado por el material del martillo. No puede moverse, atacar ni usar habilidades.</li>
+        <li><strong>Daño en área (AoE):</strong> Una onda de choque se expande desde el punto de impacto, dañando y aturdiendo brevemente a todos los enemigos cercanos dentro del radio del martillo.</li>
+      </ul>
+      <p>La onda de choque genera un sonido de explosión y un efecto visual de grietas en el suelo, además de las partículas de impacto características.</p>
+    </div>
+
+    <div class="screenshot-placeholder">
+      <span>📷 Screenshot: Warhammer golpeando un grupo de mobs, mostrando la onda de choque y enemigos aturdidos</span>
+      <small>Resolución recomendada: 1920x1080, F1 para ocultar HUD</small>
+    </div>
+
+    <div class="callout info">
+      <p><strong>Tip:</strong> El Warhammer de diamante tiene el mayor radio de AoE y la duración de stun más larga. Ideal para controlar hordas enteras.</p>
+    </div>
+
+    <h2>Spikehammer — Desgaste y drenaje</h2>
+
+    <div class="mechanic-card stagger">
+      <span class="tag spikehammer">Spikehammer</span>
+      <h3>Sangrado acumulable</h3>
+      <p>El Spikehammer aplica <strong>sangrado</strong> al enemigo con cada <strong>golpe crítico</strong> o <strong>golpe en sprint</strong> (siempre que el ataque esté completamente cargado). El sangrado funciona así:</p>
+      <ul>
+        <li><strong>Niveles acumulables:</strong> Cada golpe añade un nivel de sangrado, hasta un máximo determinado por el material.</li>
+        <li><strong>Daño por tick:</strong> El sangrado inflige daño mágico periódico. A mayor nivel, más daño y más frecuencia.</li>
+        <li><strong>Decaimiento:</strong> Si no se refresca, el sangrado pierde niveles gradualmente hasta desaparecer.</li>
+        <li><strong>Partículas de sangre:</strong> El efecto genera partículas de sangre oscuras que salen del objetivo, proporcionando feedback visual claro.</li>
+      </ul>
+    </div>
+
+    <div class="screenshot-placeholder">
+      <span>📷 Screenshot: Enemigo con múltiples niveles de sangrado activo, mostrando partículas de sangre</span>
+      <small>Resolución recomendada: 1920x1080, F1 para ocultar HUD</small>
+    </div>
+
+    <div class="mechanic-card stagger">
+      <span class="tag spikehammer">Spikehammer</span>
+      <h3>Pacto de Sangre</h3>
+      <p>Al hacer <strong>click derecho</strong> con un Spikehammer en la mano, se activa el <strong>Pacto de Sangre</strong>:</p>
+      <ul>
+        <li><strong>Vínculo a distancia:</strong> Se crea un enlace visual entre tú y el enemigo objetivo.</li>
+        <li><strong>Drenaje de vida:</strong> El pacto drena vida del enemigo periódicamente y te cura a ti con un porcentaje del daño drenado.</li>
+        <li><strong>Rango limitado:</strong> Si te alejas demasiado del objetivo, el vínculo se rompe.</li>
+        <li><strong>Daño adicional al golpear:</strong> Mientras el pacto está activo, cada golpe que le des al enemigo te cura adicionalmente.</li>
+      </ul>
+      <p>El pacto se desactiva automáticamente si el enemigo muere, si te alejas demasiado, o si tú mueres.</p>
+    </div>
+
+    <div class="screenshot-placeholder">
+      <span>📷 Screenshot: Pacto de Sangre activo mostrando el vínculo visual entre el jugador y el enemigo</span>
+      <small>Resolución recomendada: 1920x1080, F1 para ocultar HUD</small>
+    </div>
+
+    <div class="callout warn">
+      <p><strong>Nota:</strong> El oro tiene el mayor porcentaje de drenaje pero la menor durabilidad. El diamante tiene el mayor rango y el drenaje más rápido.</p>
+    </div>
+
+    <h2>Efectos visuales</h2>
+
+    <div class="mechanic-card stagger">
+      <span class="tag warhammer">Visual</span>
+      <h3>Partículas de impacto AoE</h3>
+      <p>Cuando el Warhammer activa su efecto de área, se genera una onda de choque visible en el suelo con partículas que irradian desde el punto de impacto. El efecto incluye un sonido de explosión y un sonido de ruptura de bloques.</p>
+    </div>
+
+    <div class="mechanic-card stagger">
+      <span class="tag spikehammer">Visual</span>
+      <h3>Partículas de sangre</h3>
+      <p>El sangrado genera partículas de color rojo oscuro que salen del objetivo y caen al suelo con física realista. La intensidad visual escala con el nivel de sangrado activo.</p>
+    </div>
+
+    <div class="screenshot-placeholder">
+      <span>📷 Screenshot: Close-up de las partículas de sangre al golpear a un enemigo</span>
+      <small>Resolución recomendada: 1920x1080, F1 para ocultar HUD</small>
+    </div>
+
+    <div class="doc-nav">
+      <a href="guia-usuario.html">← Guía</a>
+      <a href="items.html" class="primary">Items →</a>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="page">
+      <div class="footer-bottom">
+        <span class="footer-sig">Hammers Unbound</span>
+        <div class="footer-contact">
+          <a class="footer-link" href="https://github.com/x4yi/HammersUnbounds" target="_blank">
+            GitHub <i class="arr">↗</i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+
+</html>

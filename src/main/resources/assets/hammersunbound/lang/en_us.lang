@@ -1,0 +1,16 @@
+item.hammersunbound.warhammer_wood.name=Wooden WarHammer
+item.hammersunbound.warhammer_stone.name=Stone WarHammer
+item.hammersunbound.warhammer_iron.name=Iron WarHammer
+item.hammersunbound.warhammer_gold.name=Golden WarHammer
+item.hammersunbound.warhammer_diamond.name=Diamond WarHammer
+
+item.hammersunbound.spikehammer_wood.name=Wooden SpikeHammer
+item.hammersunbound.spikehammer_stone.name=Stone SpikeHammer
+item.hammersunbound.spikehammer_iron.name=Iron SpikeHammer
+item.hammersunbound.spikehammer_gold.name=Golden SpikeHammer
+item.hammersunbound.spikehammer_diamond.name=Diamond SpikeHammer
+
+itemGroup.hammersunbound.hammers=Hammers Unbound
+
+key.category.hammersunbound=Hammers Unbound
+key.hammersunbound.open_config=Open Config GUI
