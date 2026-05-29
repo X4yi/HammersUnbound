@@ -20,7 +20,7 @@ public class HammerMaterialData {
 
     public static HammerMaterialData fromJson(String name, JsonObject json) {
         float baseDamage = json.has("baseDamage") ? json.get("baseDamage").getAsFloat() : 5.0f;
-        float attackSpeed = json.has("attackSpeed") ? json.get("attackSpeed").getAsFloat() : -3.2f;
+        float attackSpeed = fromConfigAttackSpeed(json.has("attackSpeed") ? json.get("attackSpeed").getAsFloat() : 0.8f);
         int durability = json.has("durability") ? json.get("durability").getAsInt() : 60;
         
         int defaultCooldown = 100; // 5s
@@ -29,8 +29,26 @@ public class HammerMaterialData {
         else if (name.equalsIgnoreCase("gold")) defaultCooldown = 80;  // 4s
         else if (name.equalsIgnoreCase("diamond")) defaultCooldown = 160; // 8s
         
-        int skillCooldown = json.has("skillCooldown") ? json.get("skillCooldown").getAsInt() : defaultCooldown;
+        int skillCooldown = json.has("skillCooldownSeconds")
+                ? secondsToTicks(json.get("skillCooldownSeconds").getAsFloat())
+                : (json.has("skillCooldown") ? json.get("skillCooldown").getAsInt() : defaultCooldown);
 
         return new HammerMaterialData(name, baseDamage, attackSpeed, durability, skillCooldown);
+    }
+
+    public static float toConfigAttackSpeed(float attributeSpeed) {
+        return attributeSpeed + 4.0f;
+    }
+
+    public static float fromConfigAttackSpeed(float configSpeed) {
+        return configSpeed >= 0.0f ? configSpeed - 4.0f : configSpeed;
+    }
+
+    public static int secondsToTicks(float seconds) {
+        return Math.max(0, Math.round(seconds * 20.0f));
+    }
+
+    public static float ticksToSeconds(int ticks) {
+        return ticks / 20.0f;
     }
 }

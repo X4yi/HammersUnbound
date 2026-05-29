@@ -21,7 +21,10 @@ public class HammerCombatHandler {
         EntityLivingBase entity = event.getEntityLiving();
         if (entity == null || entity.isDead) return;
 
-        if (com.x4yi.hammersunbound.init.ModPotions.STUN != null && entity.isPotionActive(com.x4yi.hammersunbound.init.ModPotions.STUN)) {
+        boolean hasStun = com.x4yi.hammersunbound.init.ModPotions.STUN != null && entity.isPotionActive(com.x4yi.hammersunbound.init.ModPotions.STUN);
+        if (!hasStun && !entity.hasCapability(IBleedingCapability.CAPABILITY, null) && !entity.hasCapability(IBloodPactCapability.CAPABILITY, null)) return;
+
+        if (hasStun) {
             if (!entity.world.isRemote) {
                 net.minecraft.nbt.NBTTagCompound data = entity.getEntityData();
                 if (!data.hasKey("StunnedRotationYaw")) {
@@ -154,8 +157,7 @@ public class HammerCombatHandler {
 
         com.x4yi.hammersunbound.item.base.ItemHammer hammer = (com.x4yi.hammersunbound.item.base.ItemHammer) stack.getItem();
         boolean isCrit = event.isVanillaCritical() || event.getResult() == net.minecraftforge.fml.common.eventhandler.Event.Result.ALLOW;
-        
-        // Cooldown check for sprint/crit hits
+
         boolean isFullyCharged = player.getCooledAttackStrength(0.5F) > 0.9F;
         boolean isSprint = player.isSprinting() && isFullyCharged;
 

@@ -21,11 +21,15 @@ public class WarHammerAbilities {
     }
 
     public static WarHammerAbilities fromJson(JsonObject json) {
-        int stunDuration = json.has("stunDuration") ? json.get("stunDuration").getAsInt() : 20;
+        int stunDuration = json.has("stunDurationSeconds")
+                ? HammerMaterialData.secondsToTicks(json.get("stunDurationSeconds").getAsFloat())
+                : (json.has("stunDuration") ? json.get("stunDuration").getAsInt() : 20);
         int stunAmplifier = json.has("stunAmplifier") ? json.get("stunAmplifier").getAsInt() : 3;
         float aoeRadius = json.has("aoeRadius") ? json.get("aoeRadius").getAsFloat() : 2.5f;
         float aoeDamage = json.has("aoeDamage") ? json.get("aoeDamage").getAsFloat() : 6.0f;
-        int aoeStunDuration = json.has("aoeStunDuration") ? json.get("aoeStunDuration").getAsInt() : 40;
+        int aoeStunDuration = json.has("aoeStunDurationSeconds")
+                ? HammerMaterialData.secondsToTicks(json.get("aoeStunDurationSeconds").getAsFloat())
+                : (json.has("aoeStunDuration") ? json.get("aoeStunDuration").getAsInt() : 40);
         int aoeStunAmplifier = json.has("aoeStunAmplifier") ? json.get("aoeStunAmplifier").getAsInt() : 1;
         return new WarHammerAbilities(stunDuration, stunAmplifier, aoeRadius, aoeDamage, aoeStunDuration, aoeStunAmplifier);
     }

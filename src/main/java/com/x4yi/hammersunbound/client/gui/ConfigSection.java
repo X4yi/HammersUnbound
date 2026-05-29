@@ -118,17 +118,19 @@ public class ConfigSection {
             List<ConfigField> fields = new ArrayList<>();
             fields.add(new ConfigField("damage", "Damage", ConfigField.Type.FLOAT, 0, 100,
                     null, null, null, null));
-            fields.add(new ConfigField("speed", "Attack Speed", ConfigField.Type.FLOAT, -10, 10,
+            fields.add(new ConfigField("speed", "Attack Speed", ConfigField.Type.FLOAT, 0.1f, 4.0f,
                     null, null, null, null));
             fields.add(new ConfigField("durability", "Durability", ConfigField.Type.INT, 1, 10000,
                     null, null, null, null));
-            fields.add(new ConfigField("skillCooldown", "Skill Cooldown (Ticks)", ConfigField.Type.INT, 0, 1200,
+            fields.add(new ConfigField("skillCooldown", "Skill Cooldown (s)", ConfigField.Type.FLOAT, 0, 60,
                     null, null, null, null));
             fields.add(new ConfigField("aoeRadius", "AOE Radius", ConfigField.Type.FLOAT, 0.5f, 10,
                     null, null, null, null));
             fields.add(new ConfigField("aoeDamage", "AOE Damage", ConfigField.Type.FLOAT, 0, 50,
                     null, null, null, null));
-            fields.add(new ConfigField("stunDuration", "Stun Duration", ConfigField.Type.INT, 0, 200,
+            fields.add(new ConfigField("stunDuration", "Stun Duration (s)", ConfigField.Type.FLOAT, 0, 20,
+                    null, null, null, null));
+            fields.add(new ConfigField("aoeStunDuration", "AOE Stun Duration (s)", ConfigField.Type.FLOAT, 0, 20,
                     null, null, null, null));
 
             itemSubs.add(new SubSection("warhammer_" + material, "WarHammer " + capitalize(material), Section.ITEMS, fields));
@@ -141,17 +143,23 @@ public class ConfigSection {
             List<ConfigField> fields = new ArrayList<>();
             fields.add(new ConfigField("damage", "Damage", ConfigField.Type.FLOAT, 0, 100,
                     null, null, null, null));
-            fields.add(new ConfigField("speed", "Attack Speed", ConfigField.Type.FLOAT, -10, 10,
+            fields.add(new ConfigField("speed", "Attack Speed", ConfigField.Type.FLOAT, 0.1f, 4.0f,
                     null, null, null, null));
             fields.add(new ConfigField("durability", "Durability", ConfigField.Type.INT, 1, 10000,
                     null, null, null, null));
-            fields.add(new ConfigField("skillCooldown", "Skill Cooldown (Ticks)", ConfigField.Type.INT, 0, 1200,
+            fields.add(new ConfigField("skillCooldown", "Skill Cooldown (s)", ConfigField.Type.FLOAT, 0, 60,
                     null, null, null, null));
             fields.add(new ConfigField("bleedDamage", "Bleed Damage", ConfigField.Type.FLOAT, 0, 10,
                     null, null, null, null));
-            fields.add(new ConfigField("bleedDuration", "Bleed Duration", ConfigField.Type.INT, 0, 500,
+            fields.add(new ConfigField("bleedDuration", "Bleed Duration (s)", ConfigField.Type.FLOAT, 0, 60,
+                    null, null, null, null));
+            fields.add(new ConfigField("bleedTickInterval", "Bleed Tick Interval (s)", ConfigField.Type.FLOAT, 0.25f, 10,
+                    null, null, null, null));
+            fields.add(new ConfigField("bleedDecay", "Bleed Decay (s)", ConfigField.Type.FLOAT, 0, 60,
                     null, null, null, null));
             fields.add(new ConfigField("bloodPactRange", "Blood Pact Range", ConfigField.Type.FLOAT, 1, 32,
+                    null, null, null, null));
+            fields.add(new ConfigField("bloodPactDrainInterval", "Pact Drain Interval (s)", ConfigField.Type.FLOAT, 0.25f, 10,
                     null, null, null, null));
 
             itemSubs.add(new SubSection("spikehammer_" + material, "SpikeHammer " + capitalize(material), Section.ITEMS, fields));
@@ -185,22 +193,30 @@ public class ConfigSection {
         sections.put(Section.SERVER, serverSubs);
 
         List<SubSection> clientSubs = new ArrayList<>();
-        List<ConfigField> particleFields = new ArrayList<>();
-        particleFields.add(new ConfigField("aoeEnabled", "AOE Particles Enabled", ConfigField.Type.BOOLEAN, 0, 1,
+        List<ConfigField> aoeParticleFields = new ArrayList<>();
+        aoeParticleFields.add(new ConfigField("aoeEnabled", "AOE Particles Enabled", ConfigField.Type.BOOLEAN, 0, 1,
                 null, null, null, null));
-        particleFields.add(new ConfigField("aoeCountMultiplier", "AOE Particle Count Multiplier", ConfigField.Type.FLOAT, 0.1f, 5.0f,
+        aoeParticleFields.add(new ConfigField("aoeCountMultiplier", "AOE Particle Count Multiplier", ConfigField.Type.FLOAT, 0.1f, 5.0f,
                 null, null, null, null));
-        particleFields.add(new ConfigField("aoeDensityMultiplier", "AOE Particle Density Multiplier", ConfigField.Type.FLOAT, 0.1f, 5.0f,
+        aoeParticleFields.add(new ConfigField("aoeDensityMultiplier", "AOE Particle Density Multiplier", ConfigField.Type.FLOAT, 0.1f, 5.0f,
                 null, null, null, null));
-        particleFields.add(new ConfigField("aoeHeightMultiplier", "AOE Particle Height Multiplier", ConfigField.Type.FLOAT, 0.1f, 5.0f,
+        aoeParticleFields.add(new ConfigField("aoeHeightMultiplier", "AOE Particle Height Multiplier", ConfigField.Type.FLOAT, 0.1f, 5.0f,
                 null, null, null, null));
-        particleFields.add(new ConfigField("bloodPactEnabled", "Blood Pact Visual", ConfigField.Type.BOOLEAN, 0, 1,
+        clientSubs.add(new SubSection("client_aoe_particles", "AOE Particles", Section.CLIENT, aoeParticleFields));
+
+        List<ConfigField> combatVisualFields = new ArrayList<>();
+        combatVisualFields.add(new ConfigField("bloodPactEnabled", "Blood Pact Visual", ConfigField.Type.BOOLEAN, 0, 1,
                 null, null, null, null));
-        particleFields.add(new ConfigField("bleedingParticles", "Bleeding Particles", ConfigField.Type.BOOLEAN, 0, 1,
+        combatVisualFields.add(new ConfigField("bleedingParticles", "Bleeding Particles", ConfigField.Type.BOOLEAN, 0, 1,
                 null, null, null, null));
-        particleFields.add(new ConfigField("uiOverlayPosition", "UI Position (0-4)", ConfigField.Type.INT, 0, 4,
+        clientSubs.add(new SubSection("client_combat_visuals", "Combat Visuals", Section.CLIENT, combatVisualFields));
+
+        List<ConfigField> uiFields = new ArrayList<>();
+        uiFields.add(new ConfigField("showChangelogButton", "Main Menu Changelog Button", ConfigField.Type.BOOLEAN, 0, 1,
                 null, null, null, null));
-        clientSubs.add(new SubSection("client_particles", "Particles", Section.CLIENT, particleFields));
+        uiFields.add(new ConfigField("uiOverlayPosition", "UI Position (0-4)", ConfigField.Type.INT, 0, 4,
+                null, null, null, null));
+        clientSubs.add(new SubSection("client_ui", "UI", Section.CLIENT, uiFields));
         sections.put(Section.CLIENT, clientSubs);
     }
 

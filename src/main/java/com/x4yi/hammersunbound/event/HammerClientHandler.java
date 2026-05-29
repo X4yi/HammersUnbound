@@ -1,11 +1,13 @@
 package com.x4yi.hammersunbound.event;
 
 import com.x4yi.hammersunbound.item.base.ItemHammer;
-import com.x4yi.hammersunbound.client.gui.DevWarningPopup;
+import com.x4yi.hammersunbound.client.gui.DevWarningOverlay;
+import com.x4yi.hammersunbound.client.gui.GuiChangelogScreen;
 import com.x4yi.hammersunbound.config.ClientConfig;
 import com.x4yi.hammersunbound.network.PacketBloodPactVisual;
 import com.x4yi.hammersunbound.capability.IBleedingCapability;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
@@ -13,6 +15,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -199,7 +202,50 @@ public class HammerClientHandler {
     public void onGuiOpen(net.minecraftforge.client.event.GuiOpenEvent event) {
         if (event.getGui() instanceof GuiMainMenu && ClientConfig.showDevWarning && !devWarningShownThisSession) {
             devWarningShownThisSession = true;
-            event.setGui(new DevWarningPopup(event.getGui()));
+            event.setGui(new DevWarningOverlay(event.getGui()));
+        }
+    }
+
+    @SubscribeEvent
+    public void onInitGui(GuiScreenEvent.InitGuiEvent.Post event) {
+        if (event.getGui() instanceof GuiMainMenu && ClientConfig.showChangelogButton) {
+            GuiButton changelogBtn = new GuiButton(9999, 6, 6, 74, 16, "Log") {
+                @Override
+                public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+                    if (!this.visible) return;
+
+                    this.hovered = mouseX >= this.x && mouseY >= this.y
+                            && mouseX < this.x + this.width && mouseY < this.y + this.height;
+
+                    int bg = this.hovered ? 0xEE16161E : 0xCC0B0B0D;
+                    int border = this.hovered ? 0xFF00C853 : 0xFF2C2C36;
+                    int accent = this.hovered ? 0xFF00E676 : 0xFF00A846;
+                    int text = this.hovered ? 0xFFFFFFFF : 0xFFE0E0E6;
+
+                    GlStateManager.disableTexture2D();
+                    drawRect(this.x - 1, this.y - 1, this.x + this.width + 1, this.y + this.height + 1, 0x66000000);
+                    drawRect(this.x, this.y, this.x + this.width, this.y + this.height, bg);
+                    drawRect(this.x, this.y, this.x + 2, this.y + this.height, accent);
+                    drawRect(this.x, this.y, this.x + this.width, this.y + 1, border);
+                    drawRect(this.x, this.y + this.height - 1, this.x + this.width, this.y + this.height, border);
+                    drawRect(this.x, this.y, this.x + 1, this.y + this.height, border);
+                    drawRect(this.x + this.width - 1, this.y, this.x + this.width, this.y + this.height, border);
+                    GlStateManager.enableTexture2D();
+
+                    mc.fontRenderer.drawString("\u00A7lHU", this.x + 7, this.y + 4, accent);
+                    mc.fontRenderer.drawString("Log", this.x + 30, this.y + 4, text);
+                }
+
+                @Override
+                public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+                    if (super.mousePressed(mc, mouseX, mouseY)) {
+                        mc.displayGuiScreen(new GuiChangelogScreen(event.getGui()));
+                        return true;
+                    }
+                    return false;
+                }
+            };
+            event.getButtonList().add(changelogBtn);
         }
     }
 }

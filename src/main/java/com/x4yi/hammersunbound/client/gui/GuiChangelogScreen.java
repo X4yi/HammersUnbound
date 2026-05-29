@@ -2,10 +2,13 @@ package com.x4yi.hammersunbound.client.gui;
 
 import com.x4yi.hammersunbound.HammersUnbound;
 import com.x4yi.hammersunbound.client.gui.base.GuiBaseScreen;
+import com.x4yi.hammersunbound.config.ClientConfig;
+import com.x4yi.hammersunbound.config.ConfigManager;
 import com.x4yi.hammersunbound.util.UpdateChecker;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.opengl.GL11;
 
@@ -15,8 +18,11 @@ import java.util.List;
 
 public class GuiChangelogScreen extends GuiBaseScreen {
 
+    private static final ResourceLocation FLAG_US = new ResourceLocation("hammersunbound", "textures/gui/flag_us.png");
+    private static final ResourceLocation FLAG_ES = new ResourceLocation("hammersunbound", "textures/gui/flag_es.png");
+
     private int selectedReleaseIndex = 0;
-    private String currentLanguage = "es"; // Default to Spanish as requested
+    private String currentLanguage;
 
     private float scrollY = 0;
     private float targetScrollY = 0;
@@ -24,6 +30,10 @@ public class GuiChangelogScreen extends GuiBaseScreen {
 
     public GuiChangelogScreen(GuiScreen parent) {
         super(parent, "Hammers Unbound - Changelog");
+        currentLanguage = ClientConfig.language;
+        if (currentLanguage == null || (!currentLanguage.equals("es") && !currentLanguage.equals("en"))) {
+            currentLanguage = "es";
+        }
     }
 
     @Override
@@ -92,7 +102,7 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         drawRect(startX, startY + headerHeight - 1, startX + totalWidth, startY + headerHeight, 0xFF222228);
 
         // Header branding
-        fontRenderer.drawString("Changelog Reader", startX + 8, startY + 7, 0xFFFFFFFF);
+        fontRenderer.drawString("Changelog", startX + 8, startY + 7, 0xFFFFFFFF);
         fontRenderer.drawString(HammersUnbound.VERSION, startX + 110, startY + 7, 0xFF707077);
 
         // Close Button 'X'
@@ -130,6 +140,16 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         } else if (!UpdateChecker.checkStatus.isEmpty()) {
             fontRenderer.drawString(UpdateChecker.checkStatus, startX + 165, startY + totalHeight - footerHeight + 8, 0xFFFFFFFF);
         }
+
+        // Footer Buttons: Config Button
+        int cfgX1 = startX + totalWidth - 78;
+        int cfgY1 = startY + totalHeight - footerHeight + 4;
+        int cfgX2 = startX + totalWidth - 8;
+        int cfgY2 = startY + totalHeight - 4;
+        boolean cfgHovered = mouseX >= cfgX1 && mouseX <= cfgX2 && mouseY >= cfgY1 && mouseY <= cfgY2;
+        drawRect(cfgX1, cfgY1, cfgX2, cfgY2, cfgHovered ? 0xFF1565C0 : 0xFF16161E);
+        drawBorder(cfgX1, cfgY1, cfgX2, cfgY2, cfgHovered ? 0xFFFFFFFF : 0xFF2C2C36);
+        drawCenteredString("Config", cfgX1 + 35, cfgY1 + 5, cfgHovered ? 0xFFFFFFFF : 0xFF90CAF9);
 
         // Yellow Branding Badge in Bottom Right (only draw if there is actually a new update available!)
         if (hasUpdate) {
@@ -178,7 +198,7 @@ public class GuiChangelogScreen extends GuiBaseScreen {
             }
         }
 
-        // Sidebar: Language selection badges at the bottom of the sidebar
+        // Sidebar: Language selection flags at the bottom of the sidebar
         int langES_X1 = sidebarX + 15;
         int langES_X2 = sidebarX + 50;
         int langEN_X1 = sidebarX + 70;
@@ -192,12 +212,20 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         boolean isES = currentLanguage.equals("es");
         drawRect(langES_X1, langY1, langES_X2, langY2, isES ? 0xFF00C853 : (langESHovered ? 0xFF2C2C36 : 0xFF1E1E24));
         drawBorder(langES_X1, langY1, langES_X2, langY2, isES ? 0xFFFFFFFF : 0xFF2C2C36);
-        drawCenteredString("ES", langES_X1 + 17, langY1 + 5, isES ? 0xFF000000 : 0xFFE0E0E6);
+
+        mc.getTextureManager().bindTexture(FLAG_ES);
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+        int flagOffX = 3;
+        int flagOffY = 1;
+        drawModalRectWithCustomSizedTexture(langES_X1 + flagOffX, langY1 + flagOffY, 0, 0, 29, 14, 32, 22);
 
         boolean isEN = currentLanguage.equals("en");
         drawRect(langEN_X1, langY1, langEN_X2, langY2, isEN ? 0xFF00C853 : (langENHovered ? 0xFF2C2C36 : 0xFF1E1E24));
         drawBorder(langEN_X1, langY1, langEN_X2, langY2, isEN ? 0xFFFFFFFF : 0xFF2C2C36);
-        drawCenteredString("EN", langEN_X1 + 17, langY1 + 5, isEN ? 0xFF000000 : 0xFFE0E0E6);
+
+        mc.getTextureManager().bindTexture(FLAG_US);
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+        drawModalRectWithCustomSizedTexture(langEN_X1 + flagOffX, langY1 + flagOffY, 0, 0, 29, 14, 32, 22);
 
 
         // Right Panel: Scrollable viewport using scissor test
@@ -429,6 +457,17 @@ public class GuiChangelogScreen extends GuiBaseScreen {
             return;
         }
 
+        // Config button click
+        int cfgX1 = startX + totalWidth - 78;
+        int cfgY1 = startY + totalHeight - footerHeight + 4;
+        int cfgX2 = startX + totalWidth - 8;
+        int cfgY2 = startY + totalHeight - 4;
+        if (mouseX >= cfgX1 && mouseX <= cfgX2 && mouseY >= cfgY1 && mouseY <= cfgY2) {
+            playClickSound();
+            mc.displayGuiScreen(new GuiConfigScreen(this));
+            return;
+        }
+
         // Sidebar version clicks
         int verY = sidebarY1 + 6;
         synchronized (UpdateChecker.cachedReleases) {
@@ -458,6 +497,8 @@ public class GuiChangelogScreen extends GuiBaseScreen {
             if (!currentLanguage.equals("es")) {
                 playClickSound();
                 currentLanguage = "es";
+                ClientConfig.language = "es";
+                ConfigManager.save();
                 targetScrollY = 0;
                 scrollY = 0;
             }
@@ -468,6 +509,8 @@ public class GuiChangelogScreen extends GuiBaseScreen {
             if (!currentLanguage.equals("en")) {
                 playClickSound();
                 currentLanguage = "en";
+                ClientConfig.language = "en";
+                ConfigManager.save();
                 targetScrollY = 0;
                 scrollY = 0;
             }

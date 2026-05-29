@@ -78,9 +78,9 @@ public class SpikeHammerConfig {
         public JsonObject toJson() {
             JsonObject json = new JsonObject();
             json.addProperty("baseDamage", data.baseDamage);
-            json.addProperty("attackSpeed", data.attackSpeed);
+            json.addProperty("attackSpeed", HammerMaterialData.toConfigAttackSpeed(data.attackSpeed));
             json.addProperty("durability", data.durability);
-            json.addProperty("skillCooldown", data.skillCooldown);
+            json.addProperty("skillCooldownSeconds", HammerMaterialData.ticksToSeconds(data.skillCooldown));
 
             json.add("bleeding", bleeding.toJson());
             json.add("bloodPact", bloodPact.toJson());

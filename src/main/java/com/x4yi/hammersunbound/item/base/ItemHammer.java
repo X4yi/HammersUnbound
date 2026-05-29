@@ -93,12 +93,6 @@ public abstract class ItemHammer extends net.minecraft.item.Item {
 
     @Override
     public boolean hitEntity(ItemStack stack, EntityLivingBase target, EntityLivingBase attacker) {
-        if (attacker instanceof EntityPlayer) {
-            EntityPlayer player = (EntityPlayer) attacker;
-            if (isCriticalHit(player)) {
-                onCriticalHit(target, attacker, stack);
-            }
-        }
         stack.damageItem(1, attacker);
         return true;
     }
@@ -178,21 +172,6 @@ public abstract class ItemHammer extends net.minecraft.item.Item {
     @Override
     public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
         return false;
-    }
-
-    protected boolean isCriticalHit(EntityPlayer player) {
-        return player.fallDistance > 0.0F
-                && !player.onGround
-                && !player.isOnLadder()
-                && !player.isInWater()
-                && !player.isPotionActive(net.minecraft.init.MobEffects.BLINDNESS)
-                && player.getRidingEntity() == null
-                && !player.isSprinting()
-                && player.getCooledAttackStrength(0.5F) > 0.9F;
-    }
-
-    protected boolean isSprintHit(EntityPlayer player) {
-        return player.isSprinting() && player.getCooledAttackStrength(0.5F) > 0.9F;
     }
 
     protected List<EntityLivingBase> getEntitiesInRadius(World world, Vec3d center, float radius,

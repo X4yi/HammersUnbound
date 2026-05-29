@@ -27,14 +27,15 @@ public class AOEParticleSpawner {
         if (world == null || !world.isRemote) return;
         if (!ClientConfig.aoeEnabled) return;
 
-        int adjustedCount = (int) (particleCount * ClientConfig.aoeParticleCountMultiplier * ClientConfig.aoeParticleDensityMultiplier);
+        int adjustedCount = (int) Math.ceil(particleCount * ClientConfig.aoeParticleCountMultiplier * ClientConfig.aoeParticleDensityMultiplier);
+        adjustedCount = Math.max(adjustedCount, (int) Math.ceil(radius * 18.0f));
         if (adjustedCount <= 0) return;
 
         // Use MutableBlockPos to avoid object allocation in loop
         BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos();
 
         int numRings = Math.max(3, (int) Math.ceil(radius / 0.75));
-        double velocityMultiplier = ClientConfig.aoeParticleHeightMultiplier;
+        double velocityMultiplier = ClientConfig.aoeParticleHeightMultiplier * 1.15;
 
         int totalWeight = (numRings * (numRings + 1)) / 2;
 

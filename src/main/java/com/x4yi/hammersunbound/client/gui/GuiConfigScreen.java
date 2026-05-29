@@ -250,6 +250,8 @@ public class GuiConfigScreen extends GuiBaseScreen {
                         String displayStr = field.getLabel() + ": " + String.format(formatStr, val);
                         if (field.getLabel().contains("Multiplier")) {
                             displayStr += "x";
+                        } else if (field.getLabel().contains("(s)")) {
+                            displayStr += "s";
                         }
                         fontRenderer.drawString(displayStr, panelX + 24, drawY + 5, labelColor);
 
@@ -525,12 +527,13 @@ public class GuiConfigScreen extends GuiBaseScreen {
 
             switch (key) {
                 case "damage": return entry.data.baseDamage;
-                case "speed": return entry.data.attackSpeed;
+                case "speed": return HammerMaterialData.toConfigAttackSpeed(entry.data.attackSpeed);
                 case "durability": return entry.data.durability;
-                case "skillCooldown": return entry.data.skillCooldown;
+                case "skillCooldown": return HammerMaterialData.ticksToSeconds(entry.data.skillCooldown);
                 case "aoeRadius": return entry.abilities.aoeRadius;
                 case "aoeDamage": return entry.abilities.aoeDamage;
-                case "stunDuration": return entry.abilities.stunDuration;
+                case "stunDuration": return HammerMaterialData.ticksToSeconds(entry.abilities.stunDuration);
+                case "aoeStunDuration": return HammerMaterialData.ticksToSeconds(entry.abilities.aoeStunDuration);
             }
         } else if (sub.getId().startsWith("spikehammer_")) {
             String material = sub.getId().substring("spikehammer_".length());
@@ -539,12 +542,15 @@ public class GuiConfigScreen extends GuiBaseScreen {
 
             switch (key) {
                 case "damage": return entry.data.baseDamage;
-                case "speed": return entry.data.attackSpeed;
+                case "speed": return HammerMaterialData.toConfigAttackSpeed(entry.data.attackSpeed);
                 case "durability": return entry.data.durability;
-                case "skillCooldown": return entry.data.skillCooldown;
+                case "skillCooldown": return HammerMaterialData.ticksToSeconds(entry.data.skillCooldown);
                 case "bleedDamage": return entry.bleeding.damagePerLevel;
-                case "bleedDuration": return entry.bleeding.baseDuration;
+                case "bleedDuration": return HammerMaterialData.ticksToSeconds(entry.bleeding.baseDuration);
+                case "bleedTickInterval": return HammerMaterialData.ticksToSeconds(entry.bleeding.tickInterval);
+                case "bleedDecay": return HammerMaterialData.ticksToSeconds(entry.bleeding.decayTicks);
                 case "bloodPactRange": return entry.bloodPact.range;
+                case "bloodPactDrainInterval": return HammerMaterialData.ticksToSeconds(entry.bloodPact.drainInterval);
             }
         } else if (sub.getId().startsWith("server_")) {
             switch (key) {
@@ -554,7 +560,7 @@ public class GuiConfigScreen extends GuiBaseScreen {
                 case "bloodPactRangeMult": return ServerConfig.spikehammerBloodPactRangeMultiplier;
                 case "bloodPactDrainMult": return ServerConfig.spikehammerBloodPactDrainMultiplier;
             }
-        } else if (sub.getId().equals("client_particles")) {
+        } else if (sub.getId().equals("client_aoe_particles") || sub.getId().equals("client_ui")) {
             switch (key) {
                 case "aoeCountMultiplier": return ClientConfig.aoeParticleCountMultiplier;
                 case "aoeDensityMultiplier": return ClientConfig.aoeParticleDensityMultiplier;
@@ -580,11 +586,12 @@ public class GuiConfigScreen extends GuiBaseScreen {
                 case "enableBleeding": return ServerConfig.spikehammerEnableBleeding;
                 case "enableBloodPact": return ServerConfig.spikehammerEnableBloodPact;
             }
-        } else if (sub.getId().equals("client_particles")) {
+        } else if (sub.getId().equals("client_aoe_particles") || sub.getId().equals("client_combat_visuals") || sub.getId().equals("client_ui")) {
             switch (key) {
                 case "aoeEnabled": return ClientConfig.aoeEnabled;
                 case "bloodPactEnabled": return ClientConfig.bloodPactEnabled;
                 case "bleedingParticles": return ClientConfig.bleedingParticleEnabled;
+                case "showChangelogButton": return ClientConfig.showChangelogButton;
             }
         }
 
@@ -602,12 +609,13 @@ public class GuiConfigScreen extends GuiBaseScreen {
 
             switch (key) {
                 case "damage": entry.data.baseDamage = value; break;
-                case "speed": entry.data.attackSpeed = value; break;
+                case "speed": entry.data.attackSpeed = HammerMaterialData.fromConfigAttackSpeed(value); break;
                 case "durability": entry.data.durability = (int) value; break;
-                case "skillCooldown": entry.data.skillCooldown = (int) value; break;
+                case "skillCooldown": entry.data.skillCooldown = HammerMaterialData.secondsToTicks(value); break;
                 case "aoeRadius": entry.abilities.aoeRadius = value; break;
                 case "aoeDamage": entry.abilities.aoeDamage = value; break;
-                case "stunDuration": entry.abilities.stunDuration = (int) value; break;
+                case "stunDuration": entry.abilities.stunDuration = HammerMaterialData.secondsToTicks(value); break;
+                case "aoeStunDuration": entry.abilities.aoeStunDuration = HammerMaterialData.secondsToTicks(value); break;
             }
         } else if (sub.getId().startsWith("spikehammer_")) {
             String material = sub.getId().substring("spikehammer_".length());
@@ -616,12 +624,15 @@ public class GuiConfigScreen extends GuiBaseScreen {
 
             switch (key) {
                 case "damage": entry.data.baseDamage = value; break;
-                case "speed": entry.data.attackSpeed = value; break;
+                case "speed": entry.data.attackSpeed = HammerMaterialData.fromConfigAttackSpeed(value); break;
                 case "durability": entry.data.durability = (int) value; break;
-                case "skillCooldown": entry.data.skillCooldown = (int) value; break;
+                case "skillCooldown": entry.data.skillCooldown = HammerMaterialData.secondsToTicks(value); break;
                 case "bleedDamage": entry.bleeding.damagePerLevel = value; break;
-                case "bleedDuration": entry.bleeding.baseDuration = (int) value; break;
+                case "bleedDuration": entry.bleeding.baseDuration = HammerMaterialData.secondsToTicks(value); break;
+                case "bleedTickInterval": entry.bleeding.tickInterval = HammerMaterialData.secondsToTicks(value); break;
+                case "bleedDecay": entry.bleeding.decayTicks = HammerMaterialData.secondsToTicks(value); break;
                 case "bloodPactRange": entry.bloodPact.range = value; break;
+                case "bloodPactDrainInterval": entry.bloodPact.drainInterval = HammerMaterialData.secondsToTicks(value); break;
             }
         } else if (sub.getId().startsWith("server_")) {
             switch (key) {
@@ -631,7 +642,7 @@ public class GuiConfigScreen extends GuiBaseScreen {
                 case "bloodPactRangeMult": ServerConfig.spikehammerBloodPactRangeMultiplier = value; break;
                 case "bloodPactDrainMult": ServerConfig.spikehammerBloodPactDrainMultiplier = value; break;
             }
-        } else if (sub.getId().equals("client_particles")) {
+        } else if (sub.getId().equals("client_aoe_particles") || sub.getId().equals("client_ui")) {
             switch (key) {
                 case "aoeCountMultiplier": ClientConfig.aoeParticleCountMultiplier = value; break;
                 case "aoeDensityMultiplier": ClientConfig.aoeParticleDensityMultiplier = value; break;
@@ -655,11 +666,12 @@ public class GuiConfigScreen extends GuiBaseScreen {
                 case "enableBleeding": ServerConfig.spikehammerEnableBleeding = value; break;
                 case "enableBloodPact": ServerConfig.spikehammerEnableBloodPact = value; break;
             }
-        } else if (sub.getId().equals("client_particles")) {
+        } else if (sub.getId().equals("client_aoe_particles") || sub.getId().equals("client_combat_visuals") || sub.getId().equals("client_ui")) {
             switch (key) {
                 case "aoeEnabled": ClientConfig.aoeEnabled = value; break;
                 case "bloodPactEnabled": ClientConfig.bloodPactEnabled = value; break;
                 case "bleedingParticles": ClientConfig.bleedingParticleEnabled = value; break;
+                case "showChangelogButton": ClientConfig.showChangelogButton = value; break;
             }
         }
     }

@@ -94,18 +94,24 @@ public class ConfigManager {
             JsonObject client = new JsonObject();
             client.addProperty("configVersion", com.x4yi.hammersunbound.HammersUnbound.VERSION);
 
-            JsonObject particles = new JsonObject();
-            particles.addProperty("aoeParticleCountMultiplier", 1.0);
-            particles.addProperty("aoeParticleDensityMultiplier", 1.0);
-            particles.addProperty("aoeParticleHeightMultiplier", 1.0);
-            particles.addProperty("aoeEnabled", true);
-            particles.addProperty("bloodPactEnabled", true);
-            particles.addProperty("bloodPactParticleCount", 5);
-            particles.addProperty("bleedingParticleEnabled", true);
-            client.add("particles", particles);
+            JsonObject aoeParticles = new JsonObject();
+            aoeParticles.addProperty("aoeEnabled", true);
+            aoeParticles.addProperty("aoeParticleCountMultiplier", 1.0);
+            aoeParticles.addProperty("aoeParticleDensityMultiplier", 1.0);
+            aoeParticles.addProperty("aoeParticleHeightMultiplier", 1.0);
+            client.add("aoeParticles", aoeParticles);
+
+            JsonObject combatVisuals = new JsonObject();
+            combatVisuals.addProperty("bloodPactEnabled", true);
+            combatVisuals.addProperty("bloodPactParticleCount", 5);
+            combatVisuals.addProperty("bleedingParticleEnabled", true);
+            client.add("combatVisuals", combatVisuals);
 
             JsonObject ui = new JsonObject();
+            ui.addProperty("uiOverlayPosition", 0);
             ui.addProperty("showDevWarning", true);
+            ui.addProperty("showChangelogButton", true);
+            ui.addProperty("language", "es");
             client.add("ui", ui);
 
             saveJson(clientFile, client);
@@ -235,17 +241,24 @@ public class ConfigManager {
 
         JsonObject client = new JsonObject();
         client.addProperty("configVersion", com.x4yi.hammersunbound.HammersUnbound.VERSION);
-        JsonObject particles = new JsonObject();
-        particles.addProperty("aoeParticleCountMultiplier", ClientConfig.aoeParticleCountMultiplier);
-        particles.addProperty("aoeParticleDensityMultiplier", ClientConfig.aoeParticleDensityMultiplier);
-        particles.addProperty("aoeParticleHeightMultiplier", ClientConfig.aoeParticleHeightMultiplier);
-        particles.addProperty("aoeEnabled", ClientConfig.aoeEnabled);
-        particles.addProperty("bloodPactEnabled", ClientConfig.bloodPactEnabled);
-        particles.addProperty("bloodPactParticleCount", ClientConfig.bloodPactParticleCount);
-        particles.addProperty("bleedingParticleEnabled", ClientConfig.bleedingParticleEnabled);
-        client.add("particles", particles);
+        JsonObject aoeParticles = new JsonObject();
+        aoeParticles.addProperty("aoeEnabled", ClientConfig.aoeEnabled);
+        aoeParticles.addProperty("aoeParticleCountMultiplier", ClientConfig.aoeParticleCountMultiplier);
+        aoeParticles.addProperty("aoeParticleDensityMultiplier", ClientConfig.aoeParticleDensityMultiplier);
+        aoeParticles.addProperty("aoeParticleHeightMultiplier", ClientConfig.aoeParticleHeightMultiplier);
+        client.add("aoeParticles", aoeParticles);
+
+        JsonObject combatVisuals = new JsonObject();
+        combatVisuals.addProperty("bloodPactEnabled", ClientConfig.bloodPactEnabled);
+        combatVisuals.addProperty("bloodPactParticleCount", ClientConfig.bloodPactParticleCount);
+        combatVisuals.addProperty("bleedingParticleEnabled", ClientConfig.bleedingParticleEnabled);
+        client.add("combatVisuals", combatVisuals);
+
         JsonObject ui = new JsonObject();
+        ui.addProperty("uiOverlayPosition", ClientConfig.uiOverlayPosition);
         ui.addProperty("showDevWarning", ClientConfig.showDevWarning);
+        ui.addProperty("showChangelogButton", ClientConfig.showChangelogButton);
+        ui.addProperty("language", ClientConfig.language);
         client.add("ui", ui);
 
         saveJson(clientFile, client);

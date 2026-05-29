@@ -75,16 +75,16 @@ public class WarHammerConfig {
         public JsonObject toJson() {
             JsonObject json = new JsonObject();
             json.addProperty("baseDamage", data.baseDamage);
-            json.addProperty("attackSpeed", data.attackSpeed);
+            json.addProperty("attackSpeed", HammerMaterialData.toConfigAttackSpeed(data.attackSpeed));
             json.addProperty("durability", data.durability);
-            json.addProperty("skillCooldown", data.skillCooldown);
+            json.addProperty("skillCooldownSeconds", HammerMaterialData.ticksToSeconds(data.skillCooldown));
 
             JsonObject ab = new JsonObject();
-            ab.addProperty("stunDuration", abilities.stunDuration);
+            ab.addProperty("stunDurationSeconds", HammerMaterialData.ticksToSeconds(abilities.stunDuration));
             ab.addProperty("stunAmplifier", abilities.stunAmplifier);
             ab.addProperty("aoeRadius", abilities.aoeRadius);
             ab.addProperty("aoeDamage", abilities.aoeDamage);
-            ab.addProperty("aoeStunDuration", abilities.aoeStunDuration);
+            ab.addProperty("aoeStunDurationSeconds", HammerMaterialData.ticksToSeconds(abilities.aoeStunDuration));
             ab.addProperty("aoeStunAmplifier", abilities.aoeStunAmplifier);
             json.add("abilities", ab);
 

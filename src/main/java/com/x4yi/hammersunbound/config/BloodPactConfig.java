@@ -21,7 +21,7 @@ public class BloodPactConfig {
         json.addProperty("range", range);
         json.addProperty("drainPercent", drainPercent);
         json.addProperty("tetherBreakDistance", tetherBreakDistance);
-        json.addProperty("drainInterval", drainInterval);
+        json.addProperty("drainIntervalSeconds", HammerMaterialData.ticksToSeconds(drainInterval));
         return json;
     }
 
@@ -29,7 +29,9 @@ public class BloodPactConfig {
         float range = json.has("range") ? json.get("range").getAsFloat() : 8.0f;
         float drainPercent = json.has("drainPercent") ? json.get("drainPercent").getAsFloat() : 0.15f;
         float tetherBreakDistance = json.has("tetherBreakDistance") ? json.get("tetherBreakDistance").getAsFloat() : 12.0f;
-        int drainInterval = json.has("drainInterval") ? json.get("drainInterval").getAsInt() : 10;
+        int drainInterval = json.has("drainIntervalSeconds")
+                ? HammerMaterialData.secondsToTicks(json.get("drainIntervalSeconds").getAsFloat())
+                : (json.has("drainInterval") ? json.get("drainInterval").getAsInt() : 10);
         return new BloodPactConfig(range, drainPercent, tetherBreakDistance, drainInterval);
     }
 }

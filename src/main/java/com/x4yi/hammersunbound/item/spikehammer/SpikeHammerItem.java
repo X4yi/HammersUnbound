@@ -45,7 +45,9 @@ public class SpikeHammerItem extends ItemHammer {
 
     @Override
     public void onCriticalHit(EntityLivingBase target, EntityLivingBase attacker, ItemStack stack) {
-        applyBleeding(target);
+        if (ServerConfig.spikehammerEnableBleeding) {
+            applyBleeding(target);
+        }
     }
 
     @Override

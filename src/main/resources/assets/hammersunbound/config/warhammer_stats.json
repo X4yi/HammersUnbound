@@ -2,66 +2,66 @@
   "materials": {
     "wood": {
       "baseDamage": 5.0,
-      "attackSpeed": -3.2,
+      "attackSpeed": 0.8,
       "durability": 60,
       "abilities": {
-        "stunDuration": 10,
+        "stunDurationSeconds": 0.5,
         "stunAmplifier": 3,
         "aoeRadius": 1.5,
         "aoeDamage": 2.5,
-        "aoeStunDuration": 30,
+        "aoeStunDurationSeconds": 1.5,
         "aoeStunAmplifier": 1
       }
     },
     "stone": {
       "baseDamage": 7.0,
-      "attackSpeed": -3.2,
+      "attackSpeed": 0.8,
       "durability": 132,
       "abilities": {
-        "stunDuration": 15,
+        "stunDurationSeconds": 0.75,
         "stunAmplifier": 3,
         "aoeRadius": 2.0,
         "aoeDamage": 4.2,
-        "aoeStunDuration": 40,
+        "aoeStunDurationSeconds": 2.0,
         "aoeStunAmplifier": 1
       }
     },
     "iron": {
       "baseDamage": 9.0,
-      "attackSpeed": -3.2,
+      "attackSpeed": 0.8,
       "durability": 251,
       "abilities": {
-        "stunDuration": 20,
+        "stunDurationSeconds": 1.0,
         "stunAmplifier": 4,
         "aoeRadius": 2.5,
         "aoeDamage": 6.75,
-        "aoeStunDuration": 50,
+        "aoeStunDurationSeconds": 2.5,
         "aoeStunAmplifier": 1
       }
     },
     "gold": {
       "baseDamage": 4.0,
-      "attackSpeed": -2.8,
+      "attackSpeed": 1.2,
       "durability": 33,
       "abilities": {
-        "stunDuration": 8,
+        "stunDurationSeconds": 0.4,
         "stunAmplifier": 2,
         "aoeRadius": 1.5,
         "aoeDamage": 1.6,
-        "aoeStunDuration": 20,
+        "aoeStunDurationSeconds": 1.0,
         "aoeStunAmplifier": 0
       }
     },
     "diamond": {
       "baseDamage": 12.0,
-      "attackSpeed": -3.2,
+      "attackSpeed": 0.8,
       "durability": 1562,
       "abilities": {
-        "stunDuration": 30,
+        "stunDurationSeconds": 1.5,
         "stunAmplifier": 5,
         "aoeRadius": 3.5,
         "aoeDamage": 12.0,
-        "aoeStunDuration": 60,
+        "aoeStunDurationSeconds": 3.0,
         "aoeStunAmplifier": 2
       }
     }

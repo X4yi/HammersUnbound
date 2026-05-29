@@ -106,7 +106,7 @@ public class WarHammerItem extends ItemHammer {
                     2.0F, 0.8F + player.world.rand.nextFloat() * 0.2F);
         }
 
-        int particleCount = (int) (radius * 15);
+        int particleCount = Math.max(48, (int) Math.ceil(radius * 28.0f));
         PacketAOEParticleSpawn packet = new PacketAOEParticleSpawn(
                 target.posX, target.posY, target.posZ,
                 radius, particleCount
