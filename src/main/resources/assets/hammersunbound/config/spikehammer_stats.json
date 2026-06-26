@@ -14,8 +14,7 @@
       "bloodPact": {
         "range": 8.0,
         "drainPercent": 0.15,
-        "tetherBreakDistance": 12.0,
-        "drainIntervalSeconds": 0.5
+        "tetherBreakDistance": 12.0
       }
     },
     "stone": {
@@ -32,8 +31,7 @@
       "bloodPact": {
         "range": 10.0,
         "drainPercent": 0.20,
-        "tetherBreakDistance": 15.0,
-        "drainIntervalSeconds": 0.5
+        "tetherBreakDistance": 15.0
       }
     },
     "iron": {
@@ -50,8 +48,7 @@
       "bloodPact": {
         "range": 12.0,
         "drainPercent": 0.25,
-        "tetherBreakDistance": 18.0,
-        "drainIntervalSeconds": 0.4
+        "tetherBreakDistance": 18.0
       }
     },
     "gold": {
@@ -68,8 +65,7 @@
       "bloodPact": {
         "range": 14.0,
         "drainPercent": 0.30,
-        "tetherBreakDistance": 20.0,
-        "drainIntervalSeconds": 0.3
+        "tetherBreakDistance": 20.0
       }
     },
     "diamond": {
@@ -86,8 +82,7 @@
       "bloodPact": {
         "range": 16.0,
         "drainPercent": 0.40,
-        "tetherBreakDistance": 24.0,
-        "drainIntervalSeconds": 0.25
+        "tetherBreakDistance": 24.0
       }
     }
   }

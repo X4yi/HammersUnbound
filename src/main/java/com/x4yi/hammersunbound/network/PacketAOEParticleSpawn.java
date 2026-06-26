@@ -1,21 +1,16 @@
 package com.x4yi.hammersunbound.network;
-
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
-
 public class PacketAOEParticleSpawn implements IMessage {
-
     private double posX;
     private double posY;
     private double posZ;
     private float radius;
     private int particleCount;
-
     public PacketAOEParticleSpawn() {}
-
     public PacketAOEParticleSpawn(double posX, double posY, double posZ, float radius, int particleCount) {
         this.posX = posX;
         this.posY = posY;
@@ -23,7 +18,6 @@ public class PacketAOEParticleSpawn implements IMessage {
         this.radius = radius;
         this.particleCount = particleCount;
     }
-
     @Override
     public void fromBytes(ByteBuf buf) {
         posX = buf.readDouble();
@@ -32,7 +26,6 @@ public class PacketAOEParticleSpawn implements IMessage {
         radius = buf.readFloat();
         particleCount = buf.readInt();
     }
-
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeDouble(posX);
@@ -41,7 +34,6 @@ public class PacketAOEParticleSpawn implements IMessage {
         buf.writeFloat(radius);
         buf.writeInt(particleCount);
     }
-
     public static class Handler implements IMessageHandler<PacketAOEParticleSpawn, IMessage> {
         @Override
         public IMessage onMessage(final PacketAOEParticleSpawn message, MessageContext ctx) {

@@ -1,19 +1,15 @@
 package com.x4yi.hammersunbound.client.resources;
-
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.MetadataSerializer;
 import net.minecraft.util.ResourceLocation;
-
 import javax.annotation.Nullable;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Set;
-
 public class HammerResourcePack implements IResourcePack {
-
     @Override
     public InputStream getInputStream(ResourceLocation location) throws IOException {
         ResourceLocation redirected = redirect(location);
@@ -24,7 +20,6 @@ public class HammerResourcePack implements IResourcePack {
         }
         return stream;
     }
-
     @Override
     public boolean resourceExists(ResourceLocation location) {
         ResourceLocation redirected = redirect(location);
@@ -35,7 +30,6 @@ public class HammerResourcePack implements IResourcePack {
             return false;
         }
     }
-
     private ResourceLocation redirect(ResourceLocation location) {
         if ("hammersunbound".equals(location.getResourceDomain())) {
             String path = location.getResourcePath();
@@ -46,23 +40,19 @@ public class HammerResourcePack implements IResourcePack {
         }
         return location;
     }
-
     @Override
     public Set<String> getResourceDomains() {
         return Collections.singleton("hammersunbound");
     }
-
     @Nullable
     @Override
     public <T extends IMetadataSection> T getPackMetadata(MetadataSerializer metadataSerializer, String metadataSectionName) throws IOException {
         return null;
     }
-
     @Override
     public BufferedImage getPackImage() throws IOException {
         return null;
     }
-
     @Override
     public String getPackName() {
         return "Hammers Unbound Redirect Pack";

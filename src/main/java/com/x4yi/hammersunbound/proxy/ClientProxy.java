@@ -1,5 +1,4 @@
 package com.x4yi.hammersunbound.proxy;
-
 import com.x4yi.hammersunbound.client.gui.GuiConfigScreen;
 import com.x4yi.hammersunbound.client.input.ModKeybinds;
 import com.x4yi.hammersunbound.client.particle.HammerParticleFactory;
@@ -31,9 +30,7 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-
 public class ClientProxy extends CommonProxy {
-
     @Override
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
@@ -54,7 +51,6 @@ public class ClientProxy extends CommonProxy {
             e.printStackTrace();
         }
     }
-
     @Override
     public void init(FMLInitializationEvent event) {
         super.init(event);
@@ -63,17 +59,9 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.register(ModKeybinds.class);
         registerParticles();
     }
-
     @Override
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
-    }
-
-    @Override
-    public void serverStarting(FMLServerStartingEvent event) {
-        super.serverStarting(event);
-        ServerCommandManager manager = (ServerCommandManager) event.getServer().getCommandManager();
-        manager.registerCommand(new ConfigReloadCommand());
     }
 
     @SubscribeEvent
@@ -95,12 +83,10 @@ public class ClientProxy extends CommonProxy {
             }
         }
     }
-
     private void registerParticles() {
         Minecraft.getMinecraft().effectRenderer.registerParticle(
                 100, new HammerParticleFactory());
     }
-
     @Override
     public void handleBleedingSync(int entityId, int level) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
@@ -114,18 +100,16 @@ public class ClientProxy extends CommonProxy {
             }
         });
     }
-
     @Override
-    public void handleBloodPactVisual(int playerEntityId, int targetEntityId, boolean active) {
+    public void handleBloodPactVisual(int playerEntityId, int[] targetEntityIds, boolean active) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
             if (active) {
-                PacketBloodPactVisual.addVisual(playerEntityId, targetEntityId);
+                PacketBloodPactVisual.addVisual(playerEntityId, targetEntityIds);
             } else {
-                PacketBloodPactVisual.removeVisual(playerEntityId, targetEntityId);
+                PacketBloodPactVisual.removeVisual(playerEntityId);
             }
         });
     }
-
     @Override
     public void handleAOEParticleSpawn(double posX, double posY, double posZ, float radius, int particleCount) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
@@ -134,14 +118,12 @@ public class ClientProxy extends CommonProxy {
             AOEParticleSpawner.spawnAOEParticles(Minecraft.getMinecraft().world, center, radius, particleCount);
         });
     }
-
     @Override
     public void handleConfigSync(String itemsJson, String serverJson) {
         Minecraft.getMinecraft().addScheduledTask(() -> {
             try {
                 JsonObject itemsObj = new JsonParser().parse(itemsJson).getAsJsonObject();
                 JsonObject serverObj = new JsonParser().parse(serverJson).getAsJsonObject();
-
                 WarHammerConfig.parse(itemsObj);
                 SpikeHammerConfig.parse(itemsObj);
                 ServerConfig.parse(serverObj);

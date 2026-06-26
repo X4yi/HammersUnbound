@@ -35,22 +35,6 @@ Hammers Unbound es un mod para Minecraft Forge 1.12.2 que agrega dos familias de
 - [Guia para modpacks](docs/PACKMAKER_GUIDE.md)
 - [Desarrollo y build](docs/DEVELOPMENT.md)
 
-## Build desde codigo fuente
-
-Este proyecto usa ForgeGradle 2.3 para Minecraft 1.12.2.
-
-```sh
-./gradlew build
-```
-
-El jar final se genera en:
-
-```text
-build/libs/hammersunbound-1.0b2.jar
-```
-
-Nota: necesitas Java 8 correctamente disponible en `PATH` o `JAVA_HOME`.
-
 ## Estado del proyecto
 
 Hammers Unbound esta en desarrollo. Si algo se rompe, revisa primero las configs generadas y el changelog. El mod intenta conservar compatibilidad con configs viejas, especialmente en cambios recientes como `attackSpeed` positivo y timers expresados en segundos.

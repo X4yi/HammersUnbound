@@ -1,13 +1,9 @@
 package com.x4yi.hammersunbound.config;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
 public class ConfigLoader {
-
     public static JsonObject loadConfig(String resourcePath) {
         try {
             InputStream stream = ConfigLoader.class.getClassLoader().getResourceAsStream(resourcePath);
@@ -15,7 +11,7 @@ public class ConfigLoader {
                 return null;
             }
             JsonParser parser = new JsonParser();
-            JsonObject json = parser.parse(new InputStreamReader(stream)).getAsJsonObject();
+            JsonObject json = parser.parse(new InputStreamReader(stream, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
             stream.close();
             return json;
         } catch (Exception e) {

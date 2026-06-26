@@ -14,3 +14,12 @@ itemGroup.hammersunbound.hammers=Hammers Unbound
 
 key.category.hammersunbound=Hammers Unbound
 key.hammersunbound.open_config=Open Config GUI
+
+gui.hammersunbound.title=Hammers Unbound
+gui.hammersunbound.save_close=Save & Close
+gui.hammersunbound.cancel=Cancel
+gui.hammersunbound.changelog=Changelog
+gui.hammersunbound.section.items=Items
+gui.hammersunbound.section.server=Server
+gui.hammersunbound.section.client=Client
+

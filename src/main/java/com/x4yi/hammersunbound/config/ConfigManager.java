@@ -1,46 +1,35 @@
 package com.x4yi.hammersunbound.config;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-
 import java.io.*;
-
 public class ConfigManager {
-
     private static final String CONFIG_DIR = "hammersunbound";
     public static final String ITEMS_CFG = "items.json";
     public static final String SERVER_CFG = "server.json";
     public static final String CLIENT_CFG = "client.json";
-
     private static File configDir;
     private static File itemsFile;
     private static File serverFile;
     private static File clientFile;
-
     public static void init(FMLPreInitializationEvent event) {
         configDir = new File(event.getModConfigurationDirectory(), CONFIG_DIR);
         if (!configDir.exists()) {
             configDir.mkdirs();
         }
-
         itemsFile = new File(configDir, ITEMS_CFG);
         serverFile = new File(configDir, SERVER_CFG);
         clientFile = new File(configDir, CLIENT_CFG);
-
         copyDefaultsIfMissing();
 
-        // Migrate configs to current version if needed
         ConfigUpdater.updateConfigs(configDir, com.x4yi.hammersunbound.HammersUnbound.VERSION);
-
         WarHammerConfig.load();
         SpikeHammerConfig.load();
         ServerConfig.load();
         ClientConfig.load();
     }
-
     private static void copyDefaultsIfMissing() {
         if (!itemsFile.exists()) {
             createDefaultItems();
@@ -48,34 +37,28 @@ public class ConfigManager {
         createDefaultServer();
         createDefaultClient();
     }
-
     private static void createDefaultItems() {
         JsonObject items = new JsonObject();
-
         JsonObject warhammer = ConfigLoader.loadConfig("assets/hammersunbound/config/warhammer_stats.json");
         if (warhammer != null) {
             items.add("warhammer", warhammer);
         }
-
         JsonObject spikehammer = ConfigLoader.loadConfig("assets/hammersunbound/config/spikehammer_stats.json");
         if (spikehammer != null) {
             items.add("spikehammer", spikehammer);
         }
-
         saveJson(itemsFile, items);
     }
-
     private static void createDefaultServer() {
         if (!serverFile.exists()) {
             JsonObject server = new JsonObject();
             server.addProperty("configVersion", com.x4yi.hammersunbound.HammersUnbound.VERSION);
-
             JsonObject warhammer = new JsonObject();
             warhammer.addProperty("stunDurationMultiplier", 1.0);
             warhammer.addProperty("enableAOE", true);
             warhammer.addProperty("enableStun", true);
+            warhammer.addProperty("serverAoeParticleSyncDistance", 64.0);
             server.add("warhammer", warhammer);
-
             JsonObject spikehammer = new JsonObject();
             spikehammer.addProperty("bleedingDamageMultiplier", 1.0);
             spikehammer.addProperty("bleedingDurationMultiplier", 1.0);
@@ -84,72 +67,61 @@ public class ConfigManager {
             spikehammer.addProperty("enableBleeding", true);
             spikehammer.addProperty("enableBloodPact", true);
             server.add("spikehammer", spikehammer);
-
             saveJson(serverFile, server);
         }
     }
-
     private static void createDefaultClient() {
         if (!clientFile.exists()) {
             JsonObject client = new JsonObject();
             client.addProperty("configVersion", com.x4yi.hammersunbound.HammersUnbound.VERSION);
-
             JsonObject aoeParticles = new JsonObject();
             aoeParticles.addProperty("aoeEnabled", true);
             aoeParticles.addProperty("aoeParticleCountMultiplier", 1.0);
             aoeParticles.addProperty("aoeParticleDensityMultiplier", 1.0);
             aoeParticles.addProperty("aoeParticleHeightMultiplier", 1.0);
             client.add("aoeParticles", aoeParticles);
-
             JsonObject combatVisuals = new JsonObject();
             combatVisuals.addProperty("bloodPactEnabled", true);
             combatVisuals.addProperty("bloodPactParticleCount", 5);
             combatVisuals.addProperty("bleedingParticleEnabled", true);
             client.add("combatVisuals", combatVisuals);
-
             JsonObject ui = new JsonObject();
             ui.addProperty("uiOverlayPosition", 0);
             ui.addProperty("showDevWarning", true);
             ui.addProperty("showChangelogButton", true);
             ui.addProperty("language", "es");
             client.add("ui", ui);
-
             saveJson(clientFile, client);
         }
     }
-
     public static void reload() {
         WarHammerConfig.load();
         SpikeHammerConfig.load();
         ServerConfig.load();
         ClientConfig.load();
     }
-
     public static JsonObject loadItems() {
         if (itemsFile != null && !itemsFile.exists()) {
             createDefaultItems();
         }
         return loadJson(itemsFile);
     }
-
     public static JsonObject loadServer() {
         if (serverFile != null && !serverFile.exists()) {
             createDefaultServer();
         }
         return loadJson(serverFile);
     }
-
     public static JsonObject loadClient() {
         if (clientFile != null && !clientFile.exists()) {
             createDefaultClient();
         }
         return loadJson(clientFile);
     }
-
     private static JsonObject loadJson(File file) {
         if (file == null || !file.exists())
             return null;
-        try (FileReader reader = new FileReader(file)) {
+        try (InputStreamReader reader = new InputStreamReader(new FileInputStream(file), java.nio.charset.StandardCharsets.UTF_8)) {
             Gson gson = new Gson();
             JsonObject json = gson.fromJson(reader, JsonObject.class);
             if (json == null) {
@@ -173,18 +145,16 @@ public class ConfigManager {
             return null;
         }
     }
-
     private static void saveJson(File file, JsonObject json) {
         try {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            try (FileWriter writer = new FileWriter(file)) {
+            try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), java.nio.charset.StandardCharsets.UTF_8)) {
                 writer.write(gson.toJson(json));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
     public static void save() {
         if (configDir == null || itemsFile == null || serverFile == null || clientFile == null) {
             File baseDir = new File("config");
@@ -196,10 +166,8 @@ public class ConfigManager {
             serverFile = new File(configDir, SERVER_CFG);
             clientFile = new File(configDir, CLIENT_CFG);
         }
-
         JsonObject items = new JsonObject();
         items.addProperty("configVersion", com.x4yi.hammersunbound.HammersUnbound.VERSION);
-
         JsonObject warhammerJson = new JsonObject();
         JsonObject whMats = new JsonObject();
         for (java.util.Map.Entry<String, WarHammerConfig.WarHammerMaterialEntry> entry : WarHammerConfig
@@ -208,7 +176,6 @@ public class ConfigManager {
         }
         warhammerJson.add("materials", whMats);
         items.add("warhammer", warhammerJson);
-
         JsonObject spikehammerJson = new JsonObject();
         JsonObject shMats = new JsonObject();
         for (java.util.Map.Entry<String, SpikeHammerConfig.SpikeHammerMaterialEntry> entry : SpikeHammerConfig
@@ -217,17 +184,15 @@ public class ConfigManager {
         }
         spikehammerJson.add("materials", shMats);
         items.add("spikehammer", spikehammerJson);
-
         saveJson(itemsFile, items);
-
         JsonObject server = new JsonObject();
         server.addProperty("configVersion", com.x4yi.hammersunbound.HammersUnbound.VERSION);
         JsonObject whServer = new JsonObject();
         whServer.addProperty("stunDurationMultiplier", ServerConfig.warhammerStunDurationMultiplier);
         whServer.addProperty("enableAOE", ServerConfig.warhammerEnableAOE);
         whServer.addProperty("enableStun", ServerConfig.warhammerEnableStun);
+        whServer.addProperty("serverAoeParticleSyncDistance", ServerConfig.serverAoeParticleSyncDistance);
         server.add("warhammer", whServer);
-
         JsonObject shServer = new JsonObject();
         shServer.addProperty("bleedingDamageMultiplier", ServerConfig.spikehammerBleedingDamageMultiplier);
         shServer.addProperty("bleedingDurationMultiplier", ServerConfig.spikehammerBleedingDurationMultiplier);
@@ -236,9 +201,7 @@ public class ConfigManager {
         shServer.addProperty("enableBleeding", ServerConfig.spikehammerEnableBleeding);
         shServer.addProperty("enableBloodPact", ServerConfig.spikehammerEnableBloodPact);
         server.add("spikehammer", shServer);
-
         saveJson(serverFile, server);
-
         JsonObject client = new JsonObject();
         client.addProperty("configVersion", com.x4yi.hammersunbound.HammersUnbound.VERSION);
         JsonObject aoeParticles = new JsonObject();
@@ -247,35 +210,28 @@ public class ConfigManager {
         aoeParticles.addProperty("aoeParticleDensityMultiplier", ClientConfig.aoeParticleDensityMultiplier);
         aoeParticles.addProperty("aoeParticleHeightMultiplier", ClientConfig.aoeParticleHeightMultiplier);
         client.add("aoeParticles", aoeParticles);
-
         JsonObject combatVisuals = new JsonObject();
         combatVisuals.addProperty("bloodPactEnabled", ClientConfig.bloodPactEnabled);
         combatVisuals.addProperty("bloodPactParticleCount", ClientConfig.bloodPactParticleCount);
         combatVisuals.addProperty("bleedingParticleEnabled", ClientConfig.bleedingParticleEnabled);
         client.add("combatVisuals", combatVisuals);
-
         JsonObject ui = new JsonObject();
         ui.addProperty("uiOverlayPosition", ClientConfig.uiOverlayPosition);
         ui.addProperty("showDevWarning", ClientConfig.showDevWarning);
         ui.addProperty("showChangelogButton", ClientConfig.showChangelogButton);
         ui.addProperty("language", ClientConfig.language);
         client.add("ui", ui);
-
         saveJson(clientFile, client);
     }
-
     public static File getConfigDir() {
         return configDir;
     }
-
     public static File getItemsFile() {
         return itemsFile;
     }
-
     public static File getServerFile() {
         return serverFile;
     }
-
     public static File getClientFile() {
         return clientFile;
     }

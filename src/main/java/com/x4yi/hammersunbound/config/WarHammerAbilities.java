@@ -1,16 +1,12 @@
 package com.x4yi.hammersunbound.config;
-
 import com.google.gson.JsonObject;
-
 public class WarHammerAbilities {
-
     public int stunDuration;
     public int stunAmplifier;
     public float aoeRadius;
     public float aoeDamage;
     public int aoeStunDuration;
     public int aoeStunAmplifier;
-
     public WarHammerAbilities(int stunDuration, int stunAmplifier, float aoeRadius, float aoeDamage, int aoeStunDuration, int aoeStunAmplifier) {
         this.stunDuration = stunDuration;
         this.stunAmplifier = stunAmplifier;
@@ -19,7 +15,6 @@ public class WarHammerAbilities {
         this.aoeStunDuration = aoeStunDuration;
         this.aoeStunAmplifier = aoeStunAmplifier;
     }
-
     public static WarHammerAbilities fromJson(JsonObject json) {
         int stunDuration = json.has("stunDurationSeconds")
                 ? HammerMaterialData.secondsToTicks(json.get("stunDurationSeconds").getAsFloat())

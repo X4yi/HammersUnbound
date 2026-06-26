@@ -28,7 +28,6 @@ forge version: 14.23.5.2847
 - manten actualizada la documentacion del mod al hacer cambios, siempre y cuando yo lo indique.
 - el formato de los changelos debe ser resumido, pensado para el usuario casual (nada tecnico), con actualizaciones evidentes (si metes algo interno, almenos no expliques demasiado)
 
-
 ## Comandos
  cuando el usuario escriba un comando/palabra clave en el promt en formato "comando", checa @s.md para encontrar el significado y contexto (reglas y roles).
  "Auditar" = Audit

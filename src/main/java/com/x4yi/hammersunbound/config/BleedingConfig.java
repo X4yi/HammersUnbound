@@ -1,15 +1,11 @@
 package com.x4yi.hammersunbound.config;
-
 import com.google.gson.JsonObject;
-
 public class BleedingConfig {
-
     public int maxLevels;
     public int baseDuration;
     public float damagePerLevel;
     public int tickInterval;
     public int decayTicks;
-
     public BleedingConfig(int maxLevels, int baseDuration, float damagePerLevel, int tickInterval, int decayTicks) {
         this.maxLevels = maxLevels;
         this.baseDuration = baseDuration;
@@ -17,7 +13,6 @@ public class BleedingConfig {
         this.tickInterval = tickInterval;
         this.decayTicks = decayTicks;
     }
-
     public JsonObject toJson() {
         JsonObject json = new JsonObject();
         json.addProperty("maxLevels", maxLevels);
@@ -27,7 +22,6 @@ public class BleedingConfig {
         json.addProperty("decaySeconds", HammerMaterialData.ticksToSeconds(decayTicks));
         return json;
     }
-
     public static BleedingConfig fromJson(JsonObject json) {
         int maxLevels = json.has("maxLevels") ? json.get("maxLevels").getAsInt() : 5;
         int baseDuration = json.has("baseDurationSeconds")
