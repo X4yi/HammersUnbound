@@ -1,26 +1,40 @@
-# eclipse
-bin
+# Eclipse
+bin/
 *.launch
-.settings
-.metadata
+.settings/
+.metadata/
 .classpath
 .project
 
-# idea
-out
+# IntelliJ IDEA
+out/
 *.ipr
 *.iws
 *.iml
-.idea
-docs/*
+.idea/
 
-# gradle
-build
-.gradle
+# Gradle
+build/
+.gradle/
+mcmodsrepo/
 
-# other
-eclipse
-run
+# Minecraft run directory
+run/
 
-# Files from Forge MDK
+# Logs
+*.log
+log.txt
+
+# Compiled classes
+*.class
+
+# Jars (except gradle wrapper)
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Forge MDK
 forge*changelog.txt

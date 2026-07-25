@@ -60,6 +60,9 @@ public class DevWarningOverlay extends GuiBaseScreen {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         if (parentScreen != null) {
+            if (parentScreen.mc == null) {
+                parentScreen.setWorldAndResolution(this.mc, this.width, this.height);
+            }
             parentScreen.drawScreen(mouseX, mouseY, partialTicks);
         }
         drawRect(0, 0, width, height, 0x88000000);

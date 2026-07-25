@@ -107,14 +107,7 @@ public class BloodPactEffect {
     }
     public void deactivate() {
         if (active && player != null && !player.world.isRemote) {
-            int[] targetsArr = getTargetEntityIdsArray();
-            com.x4yi.hammersunbound.network.PacketBloodPactVisual packet = new com.x4yi.hammersunbound.network.PacketBloodPactVisual(player.getEntityId(), targetsArr, false);
-            com.x4yi.hammersunbound.network.ModNetworkHandler.INSTANCE.sendToAllTracking(packet, player);
-            if (player instanceof net.minecraft.entity.player.EntityPlayerMP) {
-                com.x4yi.hammersunbound.network.ModNetworkHandler.INSTANCE.sendTo(packet, (net.minecraft.entity.player.EntityPlayerMP) player);
-                com.x4yi.hammersunbound.network.PacketBloodPactSync packetSync = new com.x4yi.hammersunbound.network.PacketBloodPactSync(false, new int[0], 0, 0, 200, 0.0f);
-                com.x4yi.hammersunbound.network.ModNetworkHandler.INSTANCE.sendTo(packetSync, (net.minecraft.entity.player.EntityPlayerMP) player);
-            }
+            BloodPactNetworkManager.sendDeactivation(player);
         }
         removeModifiers();
         cancelPingPong();
@@ -235,16 +228,7 @@ public class BloodPactEffect {
         this.pingPongTargetId = pingPongTargetId;
     }
     public void syncToTrackingAndSelf() {
-        if (player != null && !player.world.isRemote) {
-            int[] targetsArr = getTargetEntityIdsArray();
-            com.x4yi.hammersunbound.network.PacketBloodPactVisual packetVisual = new com.x4yi.hammersunbound.network.PacketBloodPactVisual(player.getEntityId(), targetsArr, active);
-            com.x4yi.hammersunbound.network.ModNetworkHandler.INSTANCE.sendToAllTracking(packetVisual, player);
-            if (player instanceof net.minecraft.entity.player.EntityPlayerMP) {
-                com.x4yi.hammersunbound.network.ModNetworkHandler.INSTANCE.sendTo(packetVisual, (net.minecraft.entity.player.EntityPlayerMP) player);
-                com.x4yi.hammersunbound.network.PacketBloodPactSync packetSync = new com.x4yi.hammersunbound.network.PacketBloodPactSync(active, targetsArr, remainingTicks, madness, burstTimer, accumulatedDamage, pingPongPhase, pingPongTargetId);
-                com.x4yi.hammersunbound.network.ModNetworkHandler.INSTANCE.sendTo(packetSync, (net.minecraft.entity.player.EntityPlayerMP) player);
-            }
-        }
+        BloodPactNetworkManager.syncToTrackingAndSelf(this, player);
     }
     private void updateModifiers() {
         if (player == null || player.world.isRemote) return;
@@ -381,64 +365,35 @@ public class BloodPactEffect {
         return pingPongDirection;
     }
     public NBTTagCompound serializeNBT() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setBoolean("active", active);
-        nbt.setInteger("remainingTicks", remainingTicks);
-        nbt.setInteger("madness", madness);
-        nbt.setIntArray("targetEntityIds", getTargetEntityIdsArray());
-        nbt.setFloat("range", range);
-        nbt.setFloat("drainPercent", drainPercent);
-        nbt.setFloat("tetherBreakDistance", tetherBreakDistance);
-        nbt.setInteger("maxTargets", maxTargets);
-        nbt.setFloat("fieldRadius", fieldRadius);
-        nbt.setFloat("repulsionForce", repulsionForce);
-        nbt.setFloat("attractionForce", attractionForce);
-        nbt.setInteger("baseDurationTicks", baseDurationTicks);
-        nbt.setInteger("hitBonusTicks", hitBonusTicks);
-        nbt.setInteger("damagePenaltyTicks", damagePenaltyTicks);
-        nbt.setInteger("burstTimer", burstTimer);
-        nbt.setFloat("accumulatedDamage", accumulatedDamage);
-        nbt.setFloat("aoeAttackSize", aoeAttackSize);
-        nbt.setInteger("pingPongTargetId", pingPongTargetId);
-        nbt.setInteger("pingPongTimer", pingPongTimer);
-        nbt.setInteger("pingPongPhase", pingPongPhase);
-        if (pingPongDirection != null) {
-            nbt.setDouble("ppDirX", pingPongDirection.x);
-            nbt.setDouble("ppDirY", pingPongDirection.y);
-            nbt.setDouble("ppDirZ", pingPongDirection.z);
-        }
-        return nbt;
+        return BloodPactNBTManager.serializeNBT(this);
     }
     public void deserializeNBT(NBTTagCompound nbt) {
-        active = nbt.getBoolean("active");
-        remainingTicks = nbt.getInteger("remainingTicks");
-        madness = nbt.getInteger("madness");
-        targetEntityIds.clear();
-        if (nbt.hasKey("targetEntityIds")) {
-            for (int id : nbt.getIntArray("targetEntityIds")) {
-                targetEntityIds.add(id);
-            }
-        }
-        range = nbt.hasKey("range") ? nbt.getFloat("range") : 8.0f;
-        drainPercent = nbt.hasKey("drainPercent") ? nbt.getFloat("drainPercent") : 0.15f;
-        tetherBreakDistance = nbt.hasKey("tetherBreakDistance") ? nbt.getFloat("tetherBreakDistance") : 12.0f;
-        maxTargets = nbt.hasKey("maxTargets") ? nbt.getInteger("maxTargets") : 3;
-        fieldRadius = nbt.hasKey("fieldRadius") ? nbt.getFloat("fieldRadius") : 5.0f;
-        repulsionForce = nbt.hasKey("repulsionForce") ? nbt.getFloat("repulsionForce") : 0.20f;
-        attractionForce = nbt.hasKey("attractionForce") ? nbt.getFloat("attractionForce") : 0.03f;
-        baseDurationTicks = nbt.hasKey("baseDurationTicks") ? nbt.getInteger("baseDurationTicks") : 100;
-        hitBonusTicks = nbt.hasKey("hitBonusTicks") ? nbt.getInteger("hitBonusTicks") : 40;
-        damagePenaltyTicks = nbt.hasKey("damagePenaltyTicks") ? nbt.getInteger("damagePenaltyTicks") : 40;
-        burstTimer = nbt.hasKey("burstTimer") ? nbt.getInteger("burstTimer") : 200;
-        accumulatedDamage = nbt.hasKey("accumulatedDamage") ? nbt.getFloat("accumulatedDamage") : 0.0F;
-        aoeAttackSize = nbt.hasKey("aoeAttackSize") ? nbt.getFloat("aoeAttackSize") : 1.5f;
-        pingPongTargetId = nbt.hasKey("pingPongTargetId") ? nbt.getInteger("pingPongTargetId") : -1;
-        pingPongTimer = nbt.hasKey("pingPongTimer") ? nbt.getInteger("pingPongTimer") : 0;
-        pingPongPhase = nbt.hasKey("pingPongPhase") ? nbt.getInteger("pingPongPhase") : 0;
-        if (nbt.hasKey("ppDirX")) {
-            pingPongDirection = new Vec3d(nbt.getDouble("ppDirX"), nbt.getDouble("ppDirY"), nbt.getDouble("ppDirZ"));
-        } else {
-            pingPongDirection = null;
-        }
+        BloodPactNBTManager.deserializeNBT(this, nbt);
     }
+    
+    // Getters and setters for NBT
+    public void setActive(boolean active) { this.active = active; }
+    public float getRange() { return range; }
+    public void setRange(float range) { this.range = range; }
+    public float getDrainPercent() { return drainPercent; }
+    public void setDrainPercent(float dp) { this.drainPercent = dp; }
+    public float getTetherBreakDistance() { return tetherBreakDistance; }
+    public void setTetherBreakDistance(float tbd) { this.tetherBreakDistance = tbd; }
+    public int getMaxTargets() { return maxTargets; }
+    public void setMaxTargets(int mt) { this.maxTargets = mt; }
+    public float getFieldRadius() { return fieldRadius; }
+    public void setFieldRadius(float fr) { this.fieldRadius = fr; }
+    public float getRepulsionForce() { return repulsionForce; }
+    public void setRepulsionForce(float rf) { this.repulsionForce = rf; }
+    public float getAttractionForce() { return attractionForce; }
+    public void setAttractionForce(float af) { this.attractionForce = af; }
+    public int getBaseDurationTicks() { return baseDurationTicks; }
+    public void setBaseDurationTicks(int bdt) { this.baseDurationTicks = bdt; }
+    public int getHitBonusTicks() { return hitBonusTicks; }
+    public void setHitBonusTicks(int hbt) { this.hitBonusTicks = hbt; }
+    public int getDamagePenaltyTicks() { return damagePenaltyTicks; }
+    public void setDamagePenaltyTicks(int dpt) { this.damagePenaltyTicks = dpt; }
+    public void setPingPongTargetId(int id) { this.pingPongTargetId = id; }
+    public void setPingPongDirection(Vec3d dir) { this.pingPongDirection = dir; }
+    public void setAoeAttackSize(float size) { this.aoeAttackSize = size; }
 }
