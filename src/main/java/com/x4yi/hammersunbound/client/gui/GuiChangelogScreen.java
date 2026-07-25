@@ -4,6 +4,7 @@ import com.x4yi.hammersunbound.client.gui.base.GuiBaseScreen;
 import com.x4yi.hammersunbound.config.ClientConfig;
 import com.x4yi.hammersunbound.config.ConfigManager;
 import com.x4yi.hammersunbound.util.UpdateChecker;
+import com.x4yi.hammersunbound.client.gui.util.MarkdownRenderer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
@@ -30,13 +31,11 @@ public class GuiChangelogScreen extends GuiBaseScreen {
     }
     @Override
     protected void drawTitle() {
-
     }
     @Override
     protected void initComponents() {
         components.clear();
         selectedReleaseIndex = 0;
-
         if (!UpdateChecker.hasChecked) {
             UpdateChecker.check();
         }
@@ -45,7 +44,6 @@ public class GuiChangelogScreen extends GuiBaseScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawDefaultBackground();
         updateAnimation();
-
         scrollY += (targetScrollY - scrollY) * 0.2f;
         if (Math.abs(targetScrollY - scrollY) < 0.5f) {
             scrollY = targetScrollY;
@@ -68,30 +66,23 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         int panelY = startY + headerHeight;
         int panelWidth = totalWidth - sidebarWidth;
         int panelHeight = totalHeight - headerHeight - footerHeight;
-
         int badgeX1 = startX + totalWidth - 65;
         int badgeY1 = startY + totalHeight - footerHeight + 6;
         int badgeX2 = startX + totalWidth - 8;
         int badgeY2 = startY + totalHeight - 6;
         boolean badgeHovered = mouseX >= badgeX1 && mouseX <= badgeX2 && mouseY >= badgeY1 && mouseY <= badgeY2;
         boolean hasUpdate = UpdateChecker.updateAvailable;
-
         drawRect(startX - 2, startY - 2, startX + totalWidth + 2, startY + totalHeight + 2, 0x55000000);
         drawRect(startX, startY, startX + totalWidth, startY + totalHeight, 0xFF0B0B0D);
-
         drawRect(startX, startY, startX + totalWidth, startY + headerHeight, 0xFF08080A);
         drawRect(startX, startY + headerHeight - 1, startX + totalWidth, startY + headerHeight, 0xFF222228);
-
         fontRenderer.drawString("Changelog", startX + 8, startY + 7, 0xFFFFFFFF);
         fontRenderer.drawString(HammersUnbound.VERSION, startX + 110, startY + 7, 0xFF707077);
-
         boolean closeHovered = mouseX >= startX + totalWidth - 18 && mouseX <= startX + totalWidth - 6 &&
                               mouseY >= startY + 4 && mouseY <= startY + 16;
         fontRenderer.drawString("x", startX + totalWidth - 14, startY + 5, closeHovered ? 0xFFFF3D00 : 0xFF888892);
-
         drawRect(startX, startY + totalHeight - footerHeight, startX + totalWidth, startY + totalHeight, 0xFF08080A);
         drawRect(startX, startY + totalHeight - footerHeight, startX + totalWidth, startY + totalHeight - footerHeight + 1, 0xFF222228);
-
         int backX1 = startX + 8;
         int backY1 = startY + totalHeight - footerHeight + 4;
         int backX2 = startX + 78;
@@ -100,7 +91,6 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         drawRect(backX1, backY1, backX2, backY2, backHovered ? 0xFF00C853 : 0xFF16161E);
         drawBorder(backX1, backY1, backX2, backY2, backHovered ? 0xFFFFFFFF : 0xFF2C2C36);
         drawCenteredString("Back", backX1 + 35, backY1 + 5, backHovered ? 0xFFFFFFFF : 0xFFE0E0E6);
-
         int refX1 = startX + 85;
         int refY1 = startY + totalHeight - footerHeight + 4;
         int refX2 = startX + 155;
@@ -109,13 +99,11 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         drawRect(refX1, refY1, refX2, refY2, refHovered ? 0xFF1E88E5 : 0xFF16161E);
         drawBorder(refX1, refY1, refX2, refY2, refHovered ? 0xFFFFFFFF : 0xFF2C2C36);
         drawCenteredString("Refresh", refX1 + 35, refY1 + 5, refHovered ? 0xFFFFFFFF : 0xFFE0E0E6);
-
         if (UpdateChecker.isChecking) {
             fontRenderer.drawString(TextFormatting.YELLOW + "Connecting...", startX + 165, startY + totalHeight - footerHeight + 8, 0xFFFFFFFF);
         } else if (!UpdateChecker.checkStatus.isEmpty()) {
             fontRenderer.drawString(UpdateChecker.checkStatus, startX + 165, startY + totalHeight - footerHeight + 8, 0xFFFFFFFF);
         }
-
         int cfgX1 = startX + totalWidth - 78;
         int cfgY1 = startY + totalHeight - footerHeight + 4;
         int cfgX2 = startX + totalWidth - 8;
@@ -124,19 +112,16 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         drawRect(cfgX1, cfgY1, cfgX2, cfgY2, cfgHovered ? 0xFF1565C0 : 0xFF16161E);
         drawBorder(cfgX1, cfgY1, cfgX2, cfgY2, cfgHovered ? 0xFFFFFFFF : 0xFF2C2C36);
         drawCenteredString("Config", cfgX1 + 35, cfgY1 + 5, cfgHovered ? 0xFFFFFFFF : 0xFF90CAF9);
-
         if (hasUpdate) {
             int badgeColor = badgeHovered ? 0xFFFF8F00 : 0xFFFFB300;
             drawRect(badgeX1, badgeY1, badgeX2, badgeY2, badgeColor);
             drawCenteredString("+ " + UpdateChecker.latestVersion, badgeX1 + 28, badgeY1 + 3, 0xFF000000);
         }
-
         int sidebarX = startX;
         int sidebarY1 = startY + headerHeight;
         int sidebarHeight = totalHeight - headerHeight - footerHeight;
         drawRect(sidebarX, sidebarY1, sidebarX + sidebarWidth, sidebarY1 + sidebarHeight, 0xFF0F0F12);
         drawRect(sidebarX + sidebarWidth - 1, sidebarY1, sidebarX + sidebarWidth, sidebarY1 + sidebarHeight, 0xFF222228);
-
         int verY = sidebarY1 + 6;
         synchronized (UpdateChecker.cachedReleases) {
             List<UpdateChecker.CachedRelease> cached = UpdateChecker.cachedReleases;
@@ -166,7 +151,6 @@ public class GuiChangelogScreen extends GuiBaseScreen {
                 }
             }
         }
-
         int langES_X1 = sidebarX + 15;
         int langES_X2 = sidebarX + 50;
         int langEN_X1 = sidebarX + 70;
@@ -189,7 +173,6 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         mc.getTextureManager().bindTexture(FLAG_US);
         GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
         drawModalRectWithCustomSizedTexture(langEN_X1 + flagOffX, langY1 + flagOffY, 0, 0, 29, 14, 32, 22);
-
         int drawY = panelY + 6 - (int)scrollY;
         ScaledResolution sr = new ScaledResolution(mc);
         int scale = sr.getScaleFactor();
@@ -210,7 +193,7 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         if (activeRelease != null) {
             List<String> changelogLines = getChangelogLines(activeRelease, currentLanguage);
             for (String line : changelogLines) {
-                int heightDrawn = drawWrappedMarkdown(line, panelX + 12, drawY, panelWidth - 32, false);
+                int heightDrawn = MarkdownRenderer.drawWrappedMarkdown(fontRenderer, line, panelX + 12, drawY, panelWidth - 32, false);
                 drawY += heightDrawn;
             }
             int totalHeightContent = drawY - (panelY + 6 - (int)scrollY);
@@ -225,7 +208,6 @@ public class GuiChangelogScreen extends GuiBaseScreen {
             }
         }
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
-
         if (maxScrollY > 0) {
             int trackX = panelX + panelWidth - 5;
             int trackY = panelY + 2;
@@ -236,68 +218,13 @@ public class GuiChangelogScreen extends GuiBaseScreen {
             int thumbY = trackY + (int) (scrollRatio * (trackHeight - thumbHeight));
             drawRect(trackX, thumbY, trackX + 2, thumbY + thumbHeight, 0xFF424248);
         }
-
         if (hasUpdate && badgeHovered) {
             drawCustomTooltip(mouseX, mouseY);
         }
         super.drawScreen(mouseX, mouseY, partialTicks);
         GlStateManager.popMatrix();
     }
-    private int drawWrappedMarkdown(String line, int x, int y, int wrapWidth, boolean isBullet) {
-        if (line.trim().isEmpty()) return 6;
-        int startX = x;
-        int currX = x;
-        int currY = y;
-        int lineHeight = 10;
 
-        if (line.startsWith("# ")) {
-            String text = line.substring(2);
-            fontRenderer.drawString(TextFormatting.BOLD + text, currX, currY, 0xFF00E5FF);
-            return 14;
-        } else if (line.startsWith("## ")) {
-            String text = line.substring(3);
-            fontRenderer.drawString(TextFormatting.BOLD + text, currX, currY, 0xFF00E676);
-            return 12;
-        } else if (line.startsWith("### ")) {
-            String text = line.substring(4);
-            fontRenderer.drawString(TextFormatting.BOLD + text, currX, currY, 0xFFFFD600);
-            return 10;
-        }
-        boolean bullet = isBullet || line.startsWith("- ") || line.startsWith("* ");
-        String text = line;
-        if (line.startsWith("- ") || line.startsWith("* ")) {
-            text = line.substring(2);
-        }
-        if (bullet) {
-
-            drawRect(currX, currY + 3, currX + 4, currY + 7, 0xFF00C853);
-            currX += 10;
-            startX += 10;
-        }
-
-        String[] parts = text.split("(?=\\*\\*)|(?<=\\*\\*)");
-        boolean bold = false;
-        for (String part : parts) {
-            if (part.equals("**")) {
-                bold = !bold;
-                continue;
-            }
-
-            String[] tokens = part.split("(?<= )|(?= )");
-            for (String token : tokens) {
-                if (token.isEmpty()) continue;
-                String formattedToken = (bold ? TextFormatting.BOLD : "") + token;
-                int tokenWidth = fontRenderer.getStringWidth(formattedToken);
-                if (currX + tokenWidth > x + wrapWidth && !token.equals(" ")) {
-                    currX = startX;
-                    currY += lineHeight;
-                }
-                fontRenderer.drawString(formattedToken, currX, currY, 0xFFE0E0E6);
-                currX += tokenWidth;
-            }
-        }
-        return (currY - y) + lineHeight + 2;
-    }
     private List<String> getChangelogLines(UpdateChecker.CachedRelease entry, String lang) {
         List<String> lines = new ArrayList<>();
         if (entry == null || entry.body == null) return lines;
@@ -339,7 +266,6 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         int sidebarX = startX;
         int sidebarY1 = startY + headerHeight;
         int sidebarHeight = totalHeight - headerHeight - footerHeight;
-
         int yellowBadgeX1 = startX + totalWidth - 65;
         int yellowBadgeY1 = startY + totalHeight - footerHeight + 6;
         int yellowBadgeX2 = startX + totalWidth - 8;
@@ -357,14 +283,12 @@ public class GuiChangelogScreen extends GuiBaseScreen {
             }).start();
             return;
         }
-
         if (mouseX >= startX + totalWidth - 18 && mouseX <= startX + totalWidth - 6 &&
             mouseY >= startY + 4 && mouseY <= startY + 16) {
             playClickSound();
             closeScreen();
             return;
         }
-
         int backX1 = startX + 8;
         int backY1 = startY + totalHeight - footerHeight + 4;
         int backX2 = startX + 78;
@@ -374,7 +298,6 @@ public class GuiChangelogScreen extends GuiBaseScreen {
             closeScreen();
             return;
         }
-
         int refX1 = startX + 85;
         int refY1 = startY + totalHeight - footerHeight + 4;
         int refX2 = startX + 155;
@@ -385,7 +308,6 @@ public class GuiChangelogScreen extends GuiBaseScreen {
             UpdateChecker.check();
             return;
         }
-
         int cfgX1 = startX + totalWidth - 78;
         int cfgY1 = startY + totalHeight - footerHeight + 4;
         int cfgX2 = startX + totalWidth - 8;
@@ -395,7 +317,6 @@ public class GuiChangelogScreen extends GuiBaseScreen {
             mc.displayGuiScreen(new GuiConfigScreen(this));
             return;
         }
-
         int verY = sidebarY1 + 6;
         synchronized (UpdateChecker.cachedReleases) {
             List<UpdateChecker.CachedRelease> cached = UpdateChecker.cachedReleases;
@@ -411,7 +332,6 @@ public class GuiChangelogScreen extends GuiBaseScreen {
                 verY += 22;
             }
         }
-
         int langES_X1 = sidebarX + 15;
         int langES_X2 = sidebarX + 50;
         int langEN_X1 = sidebarX + 70;
@@ -493,6 +413,5 @@ public class GuiChangelogScreen extends GuiBaseScreen {
     }
     @Override
     protected void drawBackground(int mouseX, int mouseY, float partialTicks) {
-
     }
 }

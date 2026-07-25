@@ -23,7 +23,6 @@ public class ConfigManager {
         serverFile = new File(configDir, SERVER_CFG);
         clientFile = new File(configDir, CLIENT_CFG);
         copyDefaultsIfMissing();
-
         ConfigUpdater.updateConfigs(configDir, com.x4yi.hammersunbound.HammersUnbound.VERSION);
         WarHammerConfig.load();
         SpikeHammerConfig.load();

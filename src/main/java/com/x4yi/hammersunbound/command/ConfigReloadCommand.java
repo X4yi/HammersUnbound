@@ -25,10 +25,8 @@ public class ConfigReloadCommand extends CommandBase {
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
-
             ConfigManager.reload();
             ServerConfig.load();
-
             JsonObject itemsJson = new JsonObject();
             JsonObject whMats = new JsonObject();
             for (java.util.Map.Entry<String, WarHammerConfig.WarHammerMaterialEntry> entry : WarHammerConfig.getAllMaterials().entrySet()) {
@@ -62,7 +60,6 @@ public class ConfigReloadCommand extends CommandBase {
             Gson gson = new Gson();
             String itemsStr = gson.toJson(itemsJson);
             String serverStr = gson.toJson(serverJson);
-
             ModNetworkHandler.INSTANCE.sendToAll(new PacketSyncConfig(itemsStr, serverStr));
             sender.sendMessage(new TextComponentString(TextFormatting.GREEN + "[Hammers Unbound] Configuration reloaded and synchronized with all clients."));
         } else {

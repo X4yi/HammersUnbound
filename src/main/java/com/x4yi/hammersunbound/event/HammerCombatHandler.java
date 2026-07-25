@@ -73,13 +73,13 @@ public class HammerCombatHandler {
             }
         }
         if (entity.world.isRemote) return;
-        if (IBleedingCapability.CAPABILITY != null && entity.hasCapability(IBleedingCapability.CAPABILITY, null)) {
+        if (IBleedingCapability.CAPABILITY != null) {
             IBleedingCapability bleedingCap = entity.getCapability(IBleedingCapability.CAPABILITY, null);
             if (bleedingCap != null && bleedingCap.getBleedingEffect() != null && bleedingCap.getBleedingEffect().isActive()) {
                 bleedingCap.getBleedingEffect().tick(entity);
             }
         }
-        if (IBloodPactCapability.CAPABILITY != null && entity.hasCapability(IBloodPactCapability.CAPABILITY, null)) {
+        if (IBloodPactCapability.CAPABILITY != null) {
             IBloodPactCapability pactCap = entity.getCapability(IBloodPactCapability.CAPABILITY, null);
             if (pactCap != null && pactCap.getBloodPactEffect() != null && pactCap.getBloodPactEffect().isActive()) {
                 if (entity instanceof EntityPlayer) {
@@ -88,50 +88,12 @@ public class HammerCombatHandler {
             }
         }
     }
-    public static void triggerPacketAoEAttack(EntityPlayer player, int targetEntityId, com.x4yi.hammersunbound.effects.BloodPactEffect effect) {
-        if (player.world.isRemote) return;
-
-        // Anti-spam packet protection: 5-tick cooldown (0.25 seconds)
-        long lastTrigger = player.getEntityData().getLong("LastSpikeHammerAoETick");
-        long currentTick = player.world.getTotalWorldTime();
-        if (currentTick - lastTrigger < 5) return;
-        player.getEntityData().setLong("LastSpikeHammerAoETick", currentTick);
-
-        EntityLivingBase target = null;
-        if (targetEntityId != -1) {
-            net.minecraft.entity.Entity e = player.world.getEntityByID(targetEntityId);
-            if (e instanceof EntityLivingBase) {
-                target = (EntityLivingBase) e;
-            }
-        }
-
-        double aoeSize = (double) effect.getAoeAttackSize();
-        net.minecraft.util.math.Vec3d look = player.getLook(1.0F);
-        double offset = 1.5D;
-        double cx = player.posX + look.x * offset;
-        double cy = player.posY + player.getEyeHeight() + look.y * offset;
-        double cz = player.posZ + look.z * offset;
-
-        net.minecraft.util.math.AxisAlignedBB aabb = new net.minecraft.util.math.AxisAlignedBB(
-                cx - aoeSize, cy - aoeSize, cz - aoeSize,
-                cx + aoeSize, cy + aoeSize, cz + aoeSize
-        );
-
-        java.util.List<EntityLivingBase> list = player.world.getEntitiesWithinAABB(EntityLivingBase.class, aabb);
-        float damage = (float) player.getEntityAttribute(net.minecraft.entity.SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue();
-
-        for (EntityLivingBase entity : list) {
-            if (entity != null && entity != player && (target == null || (entity != target && entity.getEntityId() != target.getEntityId())) && !entity.isDead) {
-                entity.attackEntityFrom(net.minecraft.util.DamageSource.causePlayerDamage(player), damage);
-            }
-        }
-    }
 
     @SubscribeEvent
     public void onLivingHurt(LivingHurtEvent event) {
         EntityLivingBase target = event.getEntityLiving();
         if (target == null || target.isDead) return;
-        if (IBleedingCapability.CAPABILITY != null && target.hasCapability(IBleedingCapability.CAPABILITY, null)) {
+        if (IBleedingCapability.CAPABILITY != null) {
             IBleedingCapability cap = target.getCapability(IBleedingCapability.CAPABILITY, null);
             if (cap != null && cap.getBleedingEffect() != null && cap.getBleedingEffect().isActive()) {
                 if (event.getSource().getTrueSource() instanceof EntityPlayerMP) {
@@ -147,43 +109,32 @@ public class HammerCombatHandler {
             net.minecraft.entity.Entity attacker = event.getSource().getTrueSource();
             if (attacker instanceof EntityPlayer) {
                 EntityPlayer playerAttacking = (EntityPlayer) attacker;
-                if (playerAttacking.hasCapability(IBloodPactCapability.CAPABILITY, null)) {
-                    IBloodPactCapability playerCap = playerAttacking.getCapability(IBloodPactCapability.CAPABILITY, null);
-                    if (playerCap != null && playerCap.getBloodPactEffect() != null && playerCap.getBloodPactEffect().isActive()) {
-                        
-                        // AoE is now triggered solely by client-to-server PacketSpikeHammerAoE
-
-                        if (playerCap.getBloodPactEffect().getTargetEntityIds().contains(target.getEntityId())) {
-                            int currMadness = playerCap.getBloodPactEffect().getMadness();
-                            playerCap.getBloodPactEffect().setMadness(Math.min(100, currMadness + 10));
-                            playerCap.getBloodPactEffect().addAccumulatedDamage(event.getAmount());
-                            int currentTimer = playerCap.getBloodPactEffect().getBurstTimer();
-                            playerCap.getBloodPactEffect().setBurstTimer(Math.max(0, currentTimer - 10));
-                            playerCap.getBloodPactEffect().addDurationBonus();
-
-                            // Ping Pong: Phase 2 extra damage and cycle repeat
-                            if (playerCap.getBloodPactEffect().getPingPongTargetId() == target.getEntityId() &&
-                                playerCap.getBloodPactEffect().getPingPongPhase() == 2) {
-                                event.setAmount(event.getAmount() * 1.5F);
-                                playerCap.getBloodPactEffect().startPingPong(target);
-                            }
+                IBloodPactCapability playerCap = playerAttacking.getCapability(IBloodPactCapability.CAPABILITY, null);
+                if (playerCap != null && playerCap.getBloodPactEffect() != null && playerCap.getBloodPactEffect().isActive()) {
+                    if (playerCap.getBloodPactEffect().getTargetEntityIds().contains(target.getEntityId())) {
+                        int currMadness = playerCap.getBloodPactEffect().getMadness();
+                        playerCap.getBloodPactEffect().setMadness(Math.min(100, currMadness + 10));
+                        playerCap.getBloodPactEffect().addAccumulatedDamage(event.getAmount());
+                        int currentTimer = playerCap.getBloodPactEffect().getBurstTimer();
+                        playerCap.getBloodPactEffect().setBurstTimer(Math.max(0, currentTimer - 10));
+                        playerCap.getBloodPactEffect().addDurationBonus();
+                        if (playerCap.getBloodPactEffect().getPingPongTargetId() == target.getEntityId() &&
+                            playerCap.getBloodPactEffect().getPingPongPhase() == 2) {
+                            event.setAmount(event.getAmount() * 1.5F);
+                            playerCap.getBloodPactEffect().startPingPong(target);
                         }
                     }
                 }
             }
             if (target instanceof EntityPlayer) {
                 EntityPlayer playerHurt = (EntityPlayer) target;
-                if (playerHurt.hasCapability(IBloodPactCapability.CAPABILITY, null)) {
-                    IBloodPactCapability playerCap = playerHurt.getCapability(IBloodPactCapability.CAPABILITY, null);
-                    if (playerCap != null && playerCap.getBloodPactEffect() != null && playerCap.getBloodPactEffect().isActive()) {
-                        if (attacker instanceof EntityLivingBase && playerCap.getBloodPactEffect().getTargetEntityIds().contains(attacker.getEntityId())) {
-                            playerCap.getBloodPactEffect().subtractDurationPenalty();
-                            
-                            // Ping Pong: cancel on mob hit
-                            if (playerCap.getBloodPactEffect().getPingPongTargetId() == attacker.getEntityId() &&
-                                playerCap.getBloodPactEffect().getPingPongPhase() > 0) {
-                                playerCap.getBloodPactEffect().cancelPingPong();
-                            }
+                IBloodPactCapability playerCap = playerHurt.getCapability(IBloodPactCapability.CAPABILITY, null);
+                if (playerCap != null && playerCap.getBloodPactEffect() != null && playerCap.getBloodPactEffect().isActive()) {
+                    if (attacker instanceof EntityLivingBase && playerCap.getBloodPactEffect().getTargetEntityIds().contains(attacker.getEntityId())) {
+                        playerCap.getBloodPactEffect().subtractDurationPenalty();
+                        if (playerCap.getBloodPactEffect().getPingPongTargetId() == attacker.getEntityId() &&
+                            playerCap.getBloodPactEffect().getPingPongPhase() > 0) {
+                            playerCap.getBloodPactEffect().cancelPingPong();
                         }
                     }
                 }
@@ -194,7 +145,7 @@ public class HammerCombatHandler {
     public void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         EntityPlayer player = event.player;
         if (player == null) return;
-        if (IBloodPactCapability.CAPABILITY != null && player.hasCapability(IBloodPactCapability.CAPABILITY, null)) {
+        if (IBloodPactCapability.CAPABILITY != null) {
             IBloodPactCapability cap = player.getCapability(IBloodPactCapability.CAPABILITY, null);
             if (cap != null && cap.getBloodPactEffect() != null && cap.getBloodPactEffect().isActive()) {
                 cap.getBloodPactEffect().deactivate();

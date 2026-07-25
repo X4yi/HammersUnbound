@@ -76,15 +76,15 @@ public class WarHammerItem extends ItemHammer {
     }
     private void spawnAOEParticles(EntityPlayer player, EntityLivingBase target, float radius) {
         if (player.world == null || player.world.isRemote) return;
-        player.world.playSound(null, target.posX, target.posY, target.posZ, 
-                net.minecraft.init.SoundEvents.ENTITY_GENERIC_EXPLODE, net.minecraft.util.SoundCategory.PLAYERS, 
+        player.world.playSound(null, target.posX, target.posY, target.posZ,
+                net.minecraft.init.SoundEvents.ENTITY_GENERIC_EXPLODE, net.minecraft.util.SoundCategory.PLAYERS,
                 1.0F, 1.5F + player.world.rand.nextFloat() * 0.2F);
         net.minecraft.util.math.BlockPos pos = new net.minecraft.util.math.BlockPos(target.posX, target.posY - 0.2, target.posZ);
         net.minecraft.block.state.IBlockState state = player.world.getBlockState(pos);
         if (state.getBlock() != net.minecraft.init.Blocks.AIR) {
             net.minecraft.util.SoundEvent breakSound = state.getBlock().getSoundType(state, player.world, pos, null).getBreakSound();
-            player.world.playSound(null, target.posX, target.posY, target.posZ, 
-                    breakSound, net.minecraft.util.SoundCategory.BLOCKS, 
+            player.world.playSound(null, target.posX, target.posY, target.posZ,
+                    breakSound, net.minecraft.util.SoundCategory.BLOCKS,
                     2.0F, 0.8F + player.world.rand.nextFloat() * 0.2F);
         }
         int particleCount = Math.max(48, (int) Math.ceil(radius * 28.0f));

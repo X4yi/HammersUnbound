@@ -52,24 +52,19 @@ public class SpikeHammerItem extends ItemHammer {
         if (entry == null) return new ActionResult<>(EnumActionResult.PASS, stack);
         BloodPactConfig config = entry.bloodPact;
         float adjustedRange = config.range * ServerConfig.spikehammerBloodPactRangeMultiplier;
-
-        // Check if pact is already active for this player
         if (player.hasCapability(IBloodPactCapability.CAPABILITY, null)) {
             IBloodPactCapability cap = player.getCapability(IBloodPactCapability.CAPABILITY, null);
             if (cap != null && cap.getBloodPactEffect() != null && cap.getBloodPactEffect().isActive()) {
                 EntityLivingBase target = findTargetInFront(player, adjustedRange);
                 if (target != null && cap.getBloodPactEffect().getTargetEntityIds().contains(target.getEntityId())) {
-                    // Start Ping Pong
                     cap.getBloodPactEffect().startPingPong(target);
                     return new ActionResult<>(EnumActionResult.SUCCESS, stack);
                 } else {
-                    // Failed to hit/target a pacted mob: 10s cooldown
                     player.getCooldownTracker().setCooldown(this, 200);
                     return new ActionResult<>(EnumActionResult.FAIL, stack);
                 }
             }
         }
-
         EntityLivingBase target = findTargetInFront(player, adjustedRange);
         if (target != null) {
             activateBloodPact(player, target);
@@ -139,6 +134,44 @@ public class SpikeHammerItem extends ItemHammer {
             }
         }
     }
+    public void performAoE(EntityPlayer player, int targetEntityId) {
+        if (player.world.isRemote) return;
+        long lastTrigger = player.getEntityData().getLong("LastSpikeHammerAoETick");
+        long currentTick = player.world.getTotalWorldTime();
+        if (currentTick - lastTrigger < 5) return;
+        player.getEntityData().setLong("LastSpikeHammerAoETick", currentTick);
+
+        SpikeHammerConfig.SpikeHammerMaterialEntry entry = SpikeHammerConfig.getMaterial(materialName);
+        if (entry == null) return;
+        
+        EntityLivingBase target = null;
+        if (targetEntityId != -1) {
+            net.minecraft.entity.Entity e = player.world.getEntityByID(targetEntityId);
+            if (e instanceof EntityLivingBase) {
+                target = (EntityLivingBase) e;
+            }
+        }
+        
+        double aoeSize = (double) entry.bloodPact.aoeAttackSize;
+        net.minecraft.util.math.Vec3d look = player.getLook(1.0F);
+        double offset = 1.5D;
+        double cx = player.posX + look.x * offset;
+        double cy = player.posY + player.getEyeHeight() + look.y * offset;
+        double cz = player.posZ + look.z * offset;
+        net.minecraft.util.math.AxisAlignedBB aabb = new net.minecraft.util.math.AxisAlignedBB(
+                cx - aoeSize, cy - aoeSize, cz - aoeSize,
+                cx + aoeSize, cy + aoeSize, cz + aoeSize
+        );
+        
+        java.util.List<EntityLivingBase> list = player.world.getEntitiesWithinAABB(EntityLivingBase.class, aabb);
+        float damage = (float) player.getEntityAttribute(net.minecraft.entity.SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue();
+        for (EntityLivingBase entity : list) {
+            if (entity != null && entity != player && (target == null || (entity != target && entity.getEntityId() != target.getEntityId())) && !entity.isDead) {
+                entity.attackEntityFrom(net.minecraft.util.DamageSource.causePlayerDamage(player), damage);
+            }
+        }
+    }
+
     @Override
     public String getHammerType() {
         return "spikehammer";

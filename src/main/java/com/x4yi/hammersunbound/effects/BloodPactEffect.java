@@ -1,5 +1,4 @@
 package com.x4yi.hammersunbound.effects;
-
 import com.x4yi.hammersunbound.config.BloodPactConfig;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -11,16 +10,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 public class BloodPactEffect {
     private static final UUID BLOOD_PACT_SPEED_UUID = UUID.fromString("6d7f022b-2a71-46ab-a021-e0e56b4685ff");
     private static final UUID BLOOD_PACT_ATTACK_SPEED_UUID = UUID.fromString("a1b6a7b3-c15c-4d57-b088-348f9fa4ea88");
     private static final UUID BLOOD_PACT_REACH_UUID = UUID.fromString("2d7d8e6a-5a91-4d37-88cc-f5e94b26715f");
-
     private EntityPlayer player;
     private final List<Integer> targetEntityIds = new ArrayList<>();
     private final List<EntityLivingBase> targetEntities = new ArrayList<>();
@@ -29,7 +25,6 @@ public class BloodPactEffect {
     private float range;
     private float drainPercent;
     private float tetherBreakDistance;
-
     private int remainingTicks;
     private int madness;
     private int maxTargets;
@@ -42,12 +37,10 @@ public class BloodPactEffect {
     private int burstTimer;
     private float accumulatedDamage;
     private float aoeAttackSize;
-
     private int pingPongTargetId = -1;
     private int pingPongTimer = 0;
     private int pingPongPhase = 0;
     private Vec3d pingPongDirection = null;
-
     public BloodPactEffect() {
         this.player = null;
         this.active = false;
@@ -72,7 +65,6 @@ public class BloodPactEffect {
         this.pingPongPhase = 0;
         this.pingPongDirection = null;
     }
-
     public void activate(EntityPlayer player, EntityLivingBase target, BloodPactConfig config) {
         this.player = player;
         this.active = true;
@@ -81,7 +73,6 @@ public class BloodPactEffect {
         this.madness = 0;
         this.burstTimer = 200;
         this.accumulatedDamage = 0.0f;
-
         if (config != null) {
             this.range = config.range;
             this.drainPercent = config.drainPercent;
@@ -94,36 +85,26 @@ public class BloodPactEffect {
             this.damagePenaltyTicks = config.damagePenaltyTicks;
             this.aoeAttackSize = config.aoeAttackSize;
         }
-
         this.remainingTicks = this.baseDurationTicks;
         this.ticksSinceLastDrain = 0;
-
         if (target != null) {
             this.targetEntityIds.add(target.getEntityId());
             this.targetEntities.add(target);
-
-            // AoE targeting: find additional targets within 3.0 blocks of the primary target
             if (player != null && !player.world.isRemote && config != null && config.maxTargets > 1) {
                 double aoeRadius = 3.0D;
                 net.minecraft.util.math.AxisAlignedBB aabb = target.getEntityBoundingBox().grow(aoeRadius);
                 java.util.List<EntityLivingBase> nearby = player.world.getEntitiesWithinAABB(EntityLivingBase.class, aabb);
-
-                // Sort nearby targets by distance to player
                 nearby.sort((e1, e2) -> Double.compare(player.getDistanceSq(e1), player.getDistanceSq(e2)));
-
                 for (EntityLivingBase entity : nearby) {
                     if (this.targetEntityIds.size() >= config.maxTargets) break;
                     if (entity == null || entity == player || entity == target || entity.isDead) continue;
-
                     this.targetEntityIds.add(entity.getEntityId());
                     this.targetEntities.add(entity);
                 }
             }
         }
-
         syncToTrackingAndSelf();
     }
-
     public void deactivate() {
         if (active && player != null && !player.world.isRemote) {
             int[] targetsArr = getTargetEntityIdsArray();
@@ -147,11 +128,9 @@ public class BloodPactEffect {
         this.burstTimer = 200;
         this.accumulatedDamage = 0.0f;
     }
-
     public void tick(EntityPlayer targetPlayer) {
         if (!active || targetPlayer == null) return;
         this.player = targetPlayer;
-
         if (targetEntities.isEmpty() && !targetEntityIds.isEmpty() && player.world != null) {
             for (int id : targetEntityIds) {
                 net.minecraft.entity.Entity e = player.world.getEntityByID(id);
@@ -160,36 +139,30 @@ public class BloodPactEffect {
                 }
             }
         }
-
         if (player.isDead) {
             deactivate();
             return;
         }
-
         remainingTicks--;
         if (remainingTicks <= 0) {
             deactivate();
             return;
         }
-
         if (player.ticksExisted % 20 == 0 && !player.world.isRemote) {
             if (madness > 0) {
                 madness = Math.max(0, madness - 5);
             }
         }
-
         if (!player.world.isRemote) {
             targetEntities.removeIf(e -> e.isDead);
             targetEntityIds.clear();
             for (EntityLivingBase e : targetEntities) {
                 targetEntityIds.add(e.getEntityId());
             }
-
             if (targetEntities.isEmpty()) {
                 deactivate();
                 return;
             }
-
             boolean tooFar = false;
             double maxDist = tetherBreakDistance * com.x4yi.hammersunbound.config.ServerConfig.spikehammerBloodPactRangeMultiplier;
             for (EntityLivingBase target : targetEntities) {
@@ -202,118 +175,21 @@ public class BloodPactEffect {
                 deactivate();
                 return;
             }
-
             updateModifiers();
-
             if (burstTimer > 0) {
                 burstTimer--;
             } else {
                 executeBurst();
                 burstTimer = 200;
             }
-
-            // Ping Pong State Machine
-            if (pingPongPhase > 0) {
-                net.minecraft.entity.Entity e = player.world.getEntityByID(pingPongTargetId);
-                if (e instanceof EntityLivingBase && !e.isDead && targetEntities.contains((EntityLivingBase) e)) {
-                    EntityLivingBase mob = (EntityLivingBase) e;
-                    pingPongTimer--;
-
-                    if (pingPongPhase == 1) {
-                        mob.motionX = pingPongDirection.x * 0.95D;
-                        mob.motionY = 0.22D;
-                        mob.motionZ = pingPongDirection.z * 0.95D;
-                        mob.velocityChanged = true;
-
-                        if (pingPongTimer <= 0) {
-                            pingPongPhase = 2;
-                            pingPongTimer = 12;
-                        }
-                    } else if (pingPongPhase == 2) {
-                        Vec3d pull = new Vec3d(player.posX - mob.posX, player.posY - mob.posY, player.posZ - mob.posZ);
-                        double dist = pull.lengthVector();
-                        if (dist > 0.1D) {
-                            pull = pull.normalize();
-                            mob.motionX = pull.x * 1.10D;
-                            mob.motionY = pull.y * 0.50D + 0.1D;
-                            mob.motionZ = pull.z * 1.10D;
-                            mob.velocityChanged = true;
-                        }
-
-                        if (pingPongTimer <= 0) {
-                            cancelPingPong();
-                        }
-                    }
-                } else {
-                    cancelPingPong();
-                }
-            }
-
-            applyRepulsionField();
-            applyAttraction();
-
+            PingPongManager.tickPingPong(this, player);
+            BloodPactPhysicsManager.applyRepulsionField(player, targetEntityIds, fieldRadius, repulsionForce);
+            BloodPactPhysicsManager.applyAttraction(player, targetEntities, attractionForce);
             if (player.ticksExisted % 5 == 0) {
                 syncToTrackingAndSelf();
             }
         }
     }
-
-    private void applyRepulsionField() {
-        if (player == null || player.world == null || player.world.isRemote) return;
-
-        double radius = (double) fieldRadius;
-        net.minecraft.util.math.AxisAlignedBB aabb = player.getEntityBoundingBox().grow(radius);
-        java.util.List<EntityLivingBase> nearby = player.world.getEntitiesWithinAABB(EntityLivingBase.class, aabb);
-
-        for (EntityLivingBase mob : nearby) {
-            if (mob == null || mob == player || mob.isDead) continue;
-            if (targetEntityIds.contains(mob.getEntityId())) continue;
-
-            double dx = mob.posX - player.posX;
-            double dz = mob.posZ - player.posZ;
-            double dist = Math.sqrt(dx * dx + dz * dz);
-
-            if (dist > 0.01D && dist < radius) {
-                double force = ((radius - dist) / radius) * repulsionForce;
-                double pushX = (dx / dist) * force;
-                double pushZ = (dz / dist) * force;
-
-                mob.motionX += pushX;
-                mob.motionY = Math.max(mob.motionY, 0.08D);
-                mob.motionZ += pushZ;
-                mob.velocityChanged = true;
-            }
-        }
-    }
-
-    private void applyAttraction() {
-        if (player == null || player.world == null || player.world.isRemote) return;
-
-        for (EntityLivingBase target : targetEntities) {
-            if (target == null || target.isDead) continue;
-
-            double dx = player.posX - target.posX;
-            double dy = player.posY - target.posY;
-            double dz = player.posZ - target.posZ;
-            double dist = Math.sqrt(dx * dx + dz * dz);
-
-            if (dist > 2.0D) {
-                double force = attractionForce;
-                double pullX = (dx / dist) * force;
-                double pullZ = (dz / dist) * force;
-
-                target.motionX += pullX;
-                target.motionY += 0.01D;
-                target.motionZ += pullZ;
-                target.velocityChanged = true;
-
-                if (target instanceof net.minecraft.entity.EntityLiving) {
-                    ((net.minecraft.entity.EntityLiving) target).getNavigator().tryMoveToEntityLiving(player, 1.25D);
-                }
-            }
-        }
-    }
-
     public void onHitTarget(float damageDealt) {
         if (!active || targetEntities.isEmpty() || player == null) return;
         float healAmount = damageDealt * drainPercent * com.x4yi.hammersunbound.config.ServerConfig.spikehammerBloodPactDrainMultiplier;
@@ -322,25 +198,18 @@ public class BloodPactEffect {
         }
     }
 
-    private void drain() {
-        // No passive damage
-    }
-
     private void executeBurst() {
         if (player == null || targetEntities.isEmpty()) return;
-
         float burstDamage = accumulatedDamage / 3.0F;
         if (burstDamage > 0.1F) {
             for (EntityLivingBase target : targetEntities) {
                 if (target != null && !target.isDead) {
                     target.attackEntityFrom(DamageSource.causePlayerDamage(player), burstDamage);
-                    
-                    target.world.playSound(null, target.posX, target.posY, target.posZ, 
-                            net.minecraft.init.SoundEvents.ENTITY_GENERIC_EXPLODE, 
+                    target.world.playSound(null, target.posX, target.posY, target.posZ,
+                            net.minecraft.init.SoundEvents.ENTITY_GENERIC_EXPLODE,
                             net.minecraft.util.SoundCategory.PLAYERS, 1.0F, 1.2F);
-                    
                     if (!player.world.isRemote) {
-                        com.x4yi.hammersunbound.network.PacketBleedingParticle particlePacket = 
+                        com.x4yi.hammersunbound.network.PacketBleedingParticle particlePacket =
                             new com.x4yi.hammersunbound.network.PacketBleedingParticle(target.getEntityId(), 30);
                         com.x4yi.hammersunbound.network.ModNetworkHandler.INSTANCE.sendToAllTracking(particlePacket, target);
                     }
@@ -350,7 +219,6 @@ public class BloodPactEffect {
         accumulatedDamage = 0.0F;
         syncToTrackingAndSelf();
     }
-
     public void syncClient(boolean active, int[] targetEntityIds, int remainingTicks, int madness, int burstTimer, float accumulatedDamage, int pingPongPhase, int pingPongTargetId) {
         this.active = active;
         this.targetEntityIds.clear();
@@ -366,7 +234,6 @@ public class BloodPactEffect {
         this.pingPongPhase = pingPongPhase;
         this.pingPongTargetId = pingPongTargetId;
     }
-
     public void syncToTrackingAndSelf() {
         if (player != null && !player.world.isRemote) {
             int[] targetsArr = getTargetEntityIdsArray();
@@ -379,14 +246,11 @@ public class BloodPactEffect {
             }
         }
     }
-
     private void updateModifiers() {
         if (player == null || player.world.isRemote) return;
-
         IAttributeInstance speedAttr = player.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
         IAttributeInstance attackSpeedAttr = player.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED);
         IAttributeInstance reachAttr = player.getEntityAttribute(EntityPlayer.REACH_DISTANCE);
-
         if (speedAttr != null) {
             speedAttr.removeModifier(BLOOD_PACT_SPEED_UUID);
             if (active && madness > 0) {
@@ -394,7 +258,6 @@ public class BloodPactEffect {
                 speedAttr.applyModifier(new AttributeModifier(BLOOD_PACT_SPEED_UUID, "Blood Pact Speed Buff", speedBonus, 2));
             }
         }
-
         if (attackSpeedAttr != null) {
             attackSpeedAttr.removeModifier(BLOOD_PACT_ATTACK_SPEED_UUID);
             if (active && madness > 0) {
@@ -402,7 +265,6 @@ public class BloodPactEffect {
                 attackSpeedAttr.applyModifier(new AttributeModifier(BLOOD_PACT_ATTACK_SPEED_UUID, "Blood Pact Attack Speed Buff", attackSpeedBonus, 2));
             }
         }
-
         if (reachAttr != null) {
             reachAttr.removeModifier(BLOOD_PACT_REACH_UUID);
             if (active) {
@@ -410,13 +272,11 @@ public class BloodPactEffect {
             }
         }
     }
-
     private void removeModifiers() {
         if (player == null || player.world.isRemote) return;
         IAttributeInstance speedAttr = player.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
         IAttributeInstance attackSpeedAttr = player.getEntityAttribute(SharedMonsterAttributes.ATTACK_SPEED);
         IAttributeInstance reachAttr = player.getEntityAttribute(EntityPlayer.REACH_DISTANCE);
-
         if (speedAttr != null) {
             speedAttr.removeModifier(BLOOD_PACT_SPEED_UUID);
         }
@@ -427,20 +287,17 @@ public class BloodPactEffect {
             reachAttr.removeModifier(BLOOD_PACT_REACH_UUID);
         }
     }
-
     public void startPingPong(EntityLivingBase target) {
         if (target == null || player == null) return;
         this.pingPongTargetId = target.getEntityId();
         this.pingPongDirection = player.getLook(1.0F).normalize();
         this.pingPongPhase = 1;
         this.pingPongTimer = 8;
-
         if (target instanceof net.minecraft.entity.EntityLiving) {
             ((net.minecraft.entity.EntityLiving) target).getNavigator().clearPath();
         }
         syncToTrackingAndSelf();
     }
-
     public void cancelPingPong() {
         this.pingPongPhase = 0;
         this.pingPongTargetId = -1;
@@ -448,33 +305,26 @@ public class BloodPactEffect {
         this.pingPongDirection = null;
         syncToTrackingAndSelf();
     }
-
     public void addDurationBonus() {
         this.remainingTicks = Math.min(2000000000, this.remainingTicks + this.hitBonusTicks);
         syncToTrackingAndSelf();
     }
-
     public void subtractDurationPenalty() {
         this.remainingTicks = Math.max(0, this.remainingTicks - this.damagePenaltyTicks);
         syncToTrackingAndSelf();
     }
-
     public boolean isActive() {
         return active;
     }
-
     public EntityPlayer getPlayer() {
         return player;
     }
-
     public List<EntityLivingBase> getTargetEntities() {
         return targetEntities;
     }
-
     public List<Integer> getTargetEntityIds() {
         return targetEntityIds;
     }
-
     public int[] getTargetEntityIdsArray() {
         int[] arr = new int[targetEntityIds.size()];
         for (int i = 0; i < targetEntityIds.size(); i++) {
@@ -482,55 +332,54 @@ public class BloodPactEffect {
         }
         return arr;
     }
-
     public int getRemainingTicks() {
         return remainingTicks;
     }
-
     public void setRemainingTicks(int ticks) {
         this.remainingTicks = ticks;
     }
-
     public int getMadness() {
         return madness;
     }
-
     public void setMadness(int madness) {
         this.madness = madness;
     }
-
     public float getAoeAttackSize() {
         return aoeAttackSize;
     }
-
     public int getBurstTimer() {
         return burstTimer;
     }
-
     public void setBurstTimer(int timer) {
         this.burstTimer = timer;
     }
-
     public float getAccumulatedDamage() {
         return accumulatedDamage;
     }
-
     public void setAccumulatedDamage(float damage) {
         this.accumulatedDamage = damage;
     }
-
     public void addAccumulatedDamage(float damage) {
         this.accumulatedDamage += damage;
     }
-
     public int getPingPongPhase() {
         return pingPongPhase;
     }
-
     public int getPingPongTargetId() {
         return pingPongTargetId;
     }
-
+    public int getPingPongTimer() {
+        return pingPongTimer;
+    }
+    public void setPingPongTimer(int timer) {
+        this.pingPongTimer = timer;
+    }
+    public void setPingPongPhase(int phase) {
+        this.pingPongPhase = phase;
+    }
+    public Vec3d getPingPongDirection() {
+        return pingPongDirection;
+    }
     public NBTTagCompound serializeNBT() {
         NBTTagCompound nbt = new NBTTagCompound();
         nbt.setBoolean("active", active);
@@ -560,19 +409,16 @@ public class BloodPactEffect {
         }
         return nbt;
     }
-
     public void deserializeNBT(NBTTagCompound nbt) {
         active = nbt.getBoolean("active");
         remainingTicks = nbt.getInteger("remainingTicks");
         madness = nbt.getInteger("madness");
-
         targetEntityIds.clear();
         if (nbt.hasKey("targetEntityIds")) {
             for (int id : nbt.getIntArray("targetEntityIds")) {
                 targetEntityIds.add(id);
             }
         }
-
         range = nbt.hasKey("range") ? nbt.getFloat("range") : 8.0f;
         drainPercent = nbt.hasKey("drainPercent") ? nbt.getFloat("drainPercent") : 0.15f;
         tetherBreakDistance = nbt.hasKey("tetherBreakDistance") ? nbt.getFloat("tetherBreakDistance") : 12.0f;
@@ -586,7 +432,6 @@ public class BloodPactEffect {
         burstTimer = nbt.hasKey("burstTimer") ? nbt.getInteger("burstTimer") : 200;
         accumulatedDamage = nbt.hasKey("accumulatedDamage") ? nbt.getFloat("accumulatedDamage") : 0.0F;
         aoeAttackSize = nbt.hasKey("aoeAttackSize") ? nbt.getFloat("aoeAttackSize") : 1.5f;
-
         pingPongTargetId = nbt.hasKey("pingPongTargetId") ? nbt.getInteger("pingPongTargetId") : -1;
         pingPongTimer = nbt.hasKey("pingPongTimer") ? nbt.getInteger("pingPongTimer") : 0;
         pingPongPhase = nbt.hasKey("pingPongPhase") ? nbt.getInteger("pingPongPhase") : 0;

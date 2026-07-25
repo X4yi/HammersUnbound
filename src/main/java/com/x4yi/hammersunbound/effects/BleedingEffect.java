@@ -34,9 +34,7 @@ public class BleedingEffect {
         this.damagePerLevel = config.damagePerLevel;
         this.tickInterval = config.tickInterval;
         this.decayTicks = config.decayTicks;
-
         this.ticksUntilDecay = getDurationForLevel(level, baseDuration);
-
         this.ticksUntilDamage = getTickIntervalForLevel(level, tickInterval);
         sync(target);
     }
@@ -52,9 +50,7 @@ public class BleedingEffect {
                 sync(target);
                 return;
             }
-
             this.ticksUntilDecay = getDurationForLevel(level, baseDuration);
-
             this.ticksUntilDamage = getTickIntervalForLevel(level, tickInterval);
             sync(target);
         }
@@ -71,11 +67,9 @@ public class BleedingEffect {
         }
     }
     public float getDamageForLevel(int level, float damagePerLevel) {
-
         return damagePerLevel * (0.5F + 0.25F * (level - 1));
     }
     public int getDurationForLevel(int level, int configBaseDuration) {
-
         double multiplier = 2.0 - (level - 1) * 0.3;
         if (multiplier < 0.4) {
             multiplier = 0.4;
@@ -83,7 +77,6 @@ public class BleedingEffect {
         return (int) (configBaseDuration * multiplier);
     }
     public int getTickIntervalForLevel(int level, int configTickInterval) {
-
         double multiplier;
         if (level == 1) {
             multiplier = 4.0;

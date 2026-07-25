@@ -22,7 +22,6 @@ public class PacketRequestSyncConfig implements IMessage {
             if (ctx.side != Side.SERVER) return null;
             EntityPlayerMP player = ctx.getServerHandler().player;
             if (player == null) return null;
-
             player.getServerWorld().addScheduledTask(() -> {
                 JsonObject itemsJson = new JsonObject();
                 JsonObject whMats = new JsonObject();
@@ -57,7 +56,6 @@ public class PacketRequestSyncConfig implements IMessage {
                 Gson gson = new Gson();
                 String itemsStr = gson.toJson(itemsJson);
                 String serverStr = gson.toJson(serverJson);
-
                 ModNetworkHandler.INSTANCE.sendTo(new PacketSyncConfig(itemsStr, serverStr), player);
             });
             return null;

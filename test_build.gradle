@@ -8,26 +8,20 @@ buildscript {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
 }
-
 apply plugin: 'net.minecraftforge.gradle.forge'
-
-version = '1.0b2'
+version = '1.0b3'
 group = 'com.x4yi.hammersunbound'
 archivesBaseName = 'hammersunbound'
-
 sourceCompatibility = targetCompatibility = '1.8'
-
 minecraft {
     version = '1.12.2-14.23.5.2864'
     runDir = 'run'
     mappings = 'stable_39'
 }
-
 tasks.withType(JavaExec) {
     if (name == 'runClient') {
         environment '_JAVA_AWT_WM_NONREPARENTING', '1'
     }
 }
-
 dependencies {
 }

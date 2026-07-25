@@ -44,7 +44,7 @@ public class ClientProxy extends CommonProxy {
                 field = net.minecraft.client.Minecraft.class.getDeclaredField("field_110449_ao");
             }
             field.setAccessible(true);
-            java.util.List<net.minecraft.client.resources.IResourcePack> packs = 
+            java.util.List<net.minecraft.client.resources.IResourcePack> packs =
                 (java.util.List<net.minecraft.client.resources.IResourcePack>) field.get(net.minecraft.client.Minecraft.getMinecraft());
             packs.add(new com.x4yi.hammersunbound.client.resources.HammerResourcePack());
         } catch (Exception e) {
@@ -63,7 +63,6 @@ public class ClientProxy extends CommonProxy {
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
     }
-
     @SubscribeEvent
     public void registerModels(ModelRegistryEvent event) {
         for (Item item : ModItems.WARHAMMERS.values()) {

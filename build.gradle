@@ -12,63 +12,40 @@ buildscript {
         }
     }
 }
-
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
-
-version = '1.0b2'
+version = '1.0b3'
 group = 'com.x4yi.hammersunbound'
 archivesBaseName = 'hammersunbound'
-
 sourceCompatibility = targetCompatibility = '1.8'
-
 minecraft {
     version = '1.12.2-14.23.5.2864'
     runDir  = 'run'
     mappings = 'snapshot_20171003'
-
 }
-
-// Compatibilidad Wayland (niri) / X11
-// En Wayland puro (niri) no existe DISPLAY; se usa WAYLAND_DISPLAY.
-// XWayland mapea ambos si está activo. El bloque cubre ambos casos.
 tasks.withType(JavaExec) {
     if (name == 'runClient') {
         def wayland = System.getenv('WAYLAND_DISPLAY')
         def x11     = System.getenv('DISPLAY')
-
         if (wayland) {
-            // Wayland disponible (niri + XWayland)
             environment 'WAYLAND_DISPLAY', wayland
             if (x11) {
-                // XWayland presente — LWJGL puede usar X11 via XWayland
                 environment 'DISPLAY', x11
             } else {
-                // Niri puro sin XWayland: forzar display virtual X11
                 environment 'DISPLAY', ':0'
             }
         } else if (x11) {
-            // X11 clásico (no Wayland)
             environment 'DISPLAY', x11
         } else {
-            // Fallback
             environment 'DISPLAY', ':0'
         }
-
-        // Necesario para toolkits AWT en compositors tiling (niri, i3, etc.)
         environment '_JAVA_AWT_WM_NONREPARENTING', '1'
-
-        // JVM args del cliente
         jvmArgs '-Xmx768M'
         jvmArgs '-Dorg.lwjgl.opengl.Display.allowSoftwareOpenGL=true'
         jvmArgs '-Djava.awt.headless=false'
     }
 }
-
-
-
-
 jar {
     manifest {
         attributes([
@@ -82,9 +59,6 @@ jar {
         ])
     }
 }
-
-// reobfJar es automático en ForgeGradle 2.3 — no se necesita finalizedBy explícito
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -97,5 +71,3 @@ publishing {
         }
     }
 }
-
-

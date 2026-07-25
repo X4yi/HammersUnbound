@@ -143,7 +143,6 @@ public class UpdateChecker {
         if (remote.equalsIgnoreCase(local)) return false;
         String rClean = remote.toLowerCase().replaceAll("^r", "").trim();
         String lClean = local.toLowerCase().replaceAll("^r", "").trim();
-
         String rSem = rClean;
         String rSuff = "";
         for (int i = 0; i < rClean.length(); i++) {
@@ -173,7 +172,6 @@ public class UpdateChecker {
             if (rVal > lVal) return true;
             if (rVal < lVal) return false;
         }
-
         boolean rIsBeta = !rSuff.isEmpty();
         boolean lIsBeta = !lSuff.isEmpty();
         if (!rIsBeta && lIsBeta) return true;

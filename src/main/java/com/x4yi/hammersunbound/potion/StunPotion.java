@@ -9,7 +9,6 @@ public class StunPotion extends Potion {
         super(true, 0x808080);
         setPotionName("effect.hammersunbound.stun");
         setRegistryName(new ResourceLocation(HammersUnbound.MODID, "stun"));
-
         this.registerPotionAttributeModifier(SharedMonsterAttributes.MOVEMENT_SPEED, "a9a16f2c-cbbe-4f4c-bc4a-e4559812ea11", -1.0D, 2);
     }
     @Override

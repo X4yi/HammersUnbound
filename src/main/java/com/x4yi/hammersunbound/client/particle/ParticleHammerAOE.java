@@ -46,34 +46,28 @@ public class ParticleHammerAOE extends Particle {
         this.particleAngle = this.rand.nextFloat() * ((float)Math.PI * 2F);
         this.particleTextureJitterX = this.rand.nextFloat() * 3.0F;
         this.particleTextureJitterY = this.rand.nextFloat() * 3.0F;
-
         TextureAtlasSprite sprite = null;
         try {
             sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getTexture(state);
         } catch (Exception e) {
-
         }
         if (sprite == null) {
             try {
                 sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getTexture(net.minecraft.init.Blocks.STONE.getDefaultState());
             } catch (Exception e) {
-
             }
         }
         if (sprite != null) {
             this.setParticleTexture(sprite);
-
             this.uMin = sprite.getInterpolatedU((double)(this.particleTextureJitterX / 4.0F * 16.0F));
             this.uMax = sprite.getInterpolatedU((double)((this.particleTextureJitterX + 1.0F) / 4.0F * 16.0F));
             this.vMin = sprite.getInterpolatedV((double)(this.particleTextureJitterY / 4.0F * 16.0F));
             this.vMax = sprite.getInterpolatedV((double)((this.particleTextureJitterY + 1.0F) / 4.0F * 16.0F));
         }
-
         int colorMultiplier = -1;
         try {
             colorMultiplier = Minecraft.getMinecraft().getBlockColors().colorMultiplier(state, world, new BlockPos(x, y, z), 0);
         } catch (Exception e) {
-
         }
         if (colorMultiplier != -1) {
             this.particleRed = (float)(colorMultiplier >> 16 & 255) / 255.0F;
@@ -84,7 +78,6 @@ public class ParticleHammerAOE extends Particle {
             this.particleGreen = 1.0F;
             this.particleBlue = 1.0F;
         }
-
         this.particleRed *= 0.6F;
         this.particleGreen *= 0.6F;
         this.particleBlue *= 0.6F;
@@ -103,25 +96,21 @@ public class ParticleHammerAOE extends Particle {
             motionZ *= drag;
             motionY *= drag;
             this.particleAngle += this.rotationSpeed;
-
             this.particleAlpha = 0.8F;
             if (onGround) {
                 hasCollided = true;
                 fadeTicks = 0;
             }
-
             if (particleAge++ > 150) {
                 setExpired();
             }
         } else {
-
             motionX *= 0.5;
             motionZ *= 0.5;
             motionY = 0;
             move(motionX, motionY, motionZ);
             fadeTicks++;
             float fadeRatio = (float) fadeTicks / maxFadeTicks;
-
             this.particleScale = this.initialScale * (1.0F - fadeRatio);
             this.particleAlpha = 0.8F;
             if (fadeTicks >= maxFadeTicks) {
@@ -146,7 +135,6 @@ public class ParticleHammerAOE extends Particle {
         float g = this.particleGreen;
         float b = this.particleBlue;
         float alpha = this.particleAlpha;
-
         float f8 = this.prevParticleAngle + (this.particleAngle - this.prevParticleAngle) * partialTicks;
         float cos = (float)Math.cos(f8);
         float sin = (float)Math.sin(f8);
@@ -158,7 +146,6 @@ public class ParticleHammerAOE extends Particle {
         for(int m = 0; m < 4; m++) {
             float rx = cx[m] * cos - cy[m] * sin;
             float ry = cx[m] * sin + cy[m] * cos;
-
             vx[m] = rotationX * rx * f4 + rotationXY * ry * f4;
             vy[m] = rotationZ * ry * f4;
             vz[m] = rotationYZ * rx * f4 + rotationXZ * ry * f4;

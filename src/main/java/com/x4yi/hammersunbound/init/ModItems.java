@@ -15,10 +15,8 @@ import java.util.EnumMap;
 import java.util.Map;
 @Mod.EventBusSubscriber(modid = HammersUnbound.MODID)
 public class ModItems {
-
     public static final Map<HammerMaterialType, WarHammerItem> WARHAMMERS = new EnumMap<>(HammerMaterialType.class);
     public static final Map<HammerMaterialType, SpikeHammerItem> SPIKEHAMMERS = new EnumMap<>(HammerMaterialType.class);
-
     public static WarHammerItem warhammer_wood;
     public static WarHammerItem warhammer_stone;
     public static WarHammerItem warhammer_iron;
@@ -32,7 +30,6 @@ public class ModItems {
     @SubscribeEvent
     public static void onItemRegister(RegistryEvent.Register<Item> event) {
         IForgeRegistry<Item> registry = event.getRegistry();
-
         warhammer_wood = new WarHammerItem("wood", WarHammerConfig.getAllMaterials().get("wood").data);
         warhammer_wood.setRegistryName("warhammer_wood");
         warhammer_wood.setUnlocalizedName(HammersUnbound.MODID + ".warhammer_wood");
@@ -58,7 +55,6 @@ public class ModItems {
         warhammer_diamond.setUnlocalizedName(HammersUnbound.MODID + ".warhammer_diamond");
         registry.register(warhammer_diamond);
         WARHAMMERS.put(HammerMaterialType.DIAMOND, warhammer_diamond);
-
         spikehammer_wood = new SpikeHammerItem("wood", SpikeHammerConfig.getAllMaterials().get("wood").data);
         spikehammer_wood.setRegistryName("spikehammer_wood");
         spikehammer_wood.setUnlocalizedName(HammersUnbound.MODID + ".spikehammer_wood");

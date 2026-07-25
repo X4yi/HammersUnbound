@@ -23,7 +23,6 @@ public class AOEParticleSpawner {
         int adjustedCount = (int) Math.ceil(particleCount * ClientConfig.aoeParticleCountMultiplier * ClientConfig.aoeParticleDensityMultiplier);
         adjustedCount = Math.max(adjustedCount, (int) Math.ceil(radius * 18.0f));
         if (adjustedCount <= 0) return;
-
         BlockPos.MutableBlockPos checkPos = new BlockPos.MutableBlockPos();
         int numRings = Math.max(3, (int) Math.ceil(radius / 0.75));
         double velocityMultiplier = ClientConfig.aoeParticleHeightMultiplier * 1.15;
@@ -72,7 +71,6 @@ public class AOEParticleSpawner {
                 }
                 double x = center.x + Math.cos(angle) * currentRadius;
                 double z = center.z + Math.sin(angle) * currentRadius;
-
             double groundY = center.y;
             IBlockState state = Blocks.AIR.getDefaultState();
             boolean foundGround = false;
@@ -122,7 +120,6 @@ public class AOEParticleSpawner {
     private static boolean isValidGround(IBlockState state, World world, BlockPos pos) {
         if (state.getBlock() == Blocks.AIR) return false;
         if (state.getMaterial().isLiquid()) return false;
-
         if (state.getBlock().isReplaceable(world, pos) && !state.getMaterial().isSolid()) {
             return false;
         }

@@ -18,7 +18,6 @@ public class ParticleBlood extends Particle {
         this.motionX = motionX;
         this.motionY = motionY;
         this.motionZ = motionZ;
-
         this.particleRed = 0.6F + this.rand.nextFloat() * 0.4F;
         this.particleGreen = 0.0F + this.rand.nextFloat() * 0.1F;
         this.particleBlue = 0.0F + this.rand.nextFloat() * 0.1F;

@@ -75,7 +75,7 @@ public class HammerClientHandler {
                     double mx = (mc.world.rand.nextDouble() - 0.5D) * 0.01D;
                     double my = 0.01D + mc.world.rand.nextDouble() * 0.01D;
                     double mz = (mc.world.rand.nextDouble() - 0.5D) * 0.01D;
-                    com.x4yi.hammersunbound.client.particle.ParticleBlood bloodParticle = 
+                    com.x4yi.hammersunbound.client.particle.ParticleBlood bloodParticle =
                         new com.x4yi.hammersunbound.client.particle.ParticleBlood(mc.world, px, py, pz, mx, my, mz);
                     mc.effectRenderer.addEffect(bloodParticle);
                 }
@@ -242,28 +242,24 @@ public class HammerClientHandler {
             event.getButtonList().add(changelogBtn);
         }
     }
-
     @SubscribeEvent
     public void onLeftClickAir(net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickEmpty event) {
         if (event.getEntityPlayer() == Minecraft.getMinecraft().player) {
             handleClientLeftClick(null);
         }
     }
-
     @SubscribeEvent
     public void onLeftClickBlock(net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickBlock event) {
         if (event.getEntityPlayer() == Minecraft.getMinecraft().player && event.getWorld().isRemote) {
             handleClientLeftClick(null);
         }
     }
-
     @SubscribeEvent
     public void onAttackEntity(net.minecraftforge.event.entity.player.AttackEntityEvent event) {
         if (event.getEntityPlayer() == Minecraft.getMinecraft().player && event.getEntityPlayer().world.isRemote) {
             handleClientLeftClick(event.getTarget());
         }
     }
-
     private void handleClientLeftClick(Entity target) {
         net.minecraft.entity.player.EntityPlayer player = Minecraft.getMinecraft().player;
         if (player == null) return;

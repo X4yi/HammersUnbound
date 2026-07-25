@@ -12,7 +12,6 @@ public class BloodPactConfig {
     public int hitBonusTicks;
     public int damagePenaltyTicks;
     public float aoeAttackSize;
-
     public BloodPactConfig(float range, float drainPercent, float tetherBreakDistance,
                            int maxTargets, float fieldRadius, float repulsionForce, float attractionForce,
                            int baseDurationTicks, int hitBonusTicks, int damagePenaltyTicks, float aoeAttackSize) {
@@ -28,7 +27,6 @@ public class BloodPactConfig {
         this.damagePenaltyTicks = damagePenaltyTicks;
         this.aoeAttackSize = aoeAttackSize;
     }
-
     public JsonObject toJson() {
         JsonObject json = new JsonObject();
         json.addProperty("range", range);
@@ -44,7 +42,6 @@ public class BloodPactConfig {
         json.addProperty("aoeAttackSize", aoeAttackSize);
         return json;
     }
-
     public static BloodPactConfig fromJson(JsonObject json) {
         float range = json.has("range") ? json.get("range").getAsFloat() : 8.0f;
         float drainPercent = json.has("drainPercent") ? json.get("drainPercent").getAsFloat() : 0.15f;

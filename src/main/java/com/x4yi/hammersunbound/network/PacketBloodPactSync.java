@@ -1,5 +1,4 @@
 package com.x4yi.hammersunbound.network;
-
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -7,7 +6,6 @@ import com.x4yi.hammersunbound.capability.IBloodPactCapability;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-
 public class PacketBloodPactSync implements IMessage {
     private boolean active;
     private int[] targetEntityIds;
@@ -17,13 +15,10 @@ public class PacketBloodPactSync implements IMessage {
     private float accumulatedDamage;
     private int pingPongPhase;
     private int pingPongTargetId;
-
     public PacketBloodPactSync() {}
-
     public PacketBloodPactSync(boolean active, int[] targetEntityIds, int remainingTicks, int madness, int burstTimer, float accumulatedDamage) {
         this(active, targetEntityIds, remainingTicks, madness, burstTimer, accumulatedDamage, 0, -1);
     }
-
     public PacketBloodPactSync(boolean active, int[] targetEntityIds, int remainingTicks, int madness, int burstTimer, float accumulatedDamage, int pingPongPhase, int pingPongTargetId) {
         this.active = active;
         this.targetEntityIds = targetEntityIds;
@@ -34,7 +29,6 @@ public class PacketBloodPactSync implements IMessage {
         this.pingPongPhase = pingPongPhase;
         this.pingPongTargetId = pingPongTargetId;
     }
-
     @Override
     public void fromBytes(ByteBuf buf) {
         active = buf.readBoolean();
@@ -50,7 +44,6 @@ public class PacketBloodPactSync implements IMessage {
         pingPongPhase = buf.readInt();
         pingPongTargetId = buf.readInt();
     }
-
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeBoolean(active);
@@ -69,7 +62,6 @@ public class PacketBloodPactSync implements IMessage {
         buf.writeInt(pingPongPhase);
         buf.writeInt(pingPongTargetId);
     }
-
     public static class Handler implements IMessageHandler<PacketBloodPactSync, IMessage> {
         @Override
         public IMessage onMessage(PacketBloodPactSync message, MessageContext ctx) {

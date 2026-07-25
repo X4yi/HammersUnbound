@@ -7,18 +7,15 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-
 public class ConfigUpdater {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final JsonParser PARSER = new JsonParser();
-
     public static void updateConfigs(File configDir, String currentVersion) {
         if (configDir == null || !configDir.isDirectory()) return;
         updateServerConfig(new File(configDir, "server.json"), currentVersion);
         updateClientConfig(new File(configDir, "client.json"), currentVersion);
         updateItemsConfig(new File(configDir, "items.json"), currentVersion);
     }
-
     private static void updateServerConfig(File file, String currentVersion) {
         if (!file.exists()) return;
         JsonObject root = readJson(file);
@@ -27,7 +24,6 @@ public class ConfigUpdater {
         if (configVersion.equals(currentVersion)) return;
         if (!backupFile(file)) return;
         try {
-
             if (root.has("warhammer")) {
                 JsonObject warhammer = root.getAsJsonObject("warhammer");
                 if (warhammer != null) {
@@ -46,7 +42,6 @@ public class ConfigUpdater {
             restoreBackup(file);
         }
     }
-
     private static void updateClientConfig(File file, String currentVersion) {
         if (!file.exists()) return;
         JsonObject root = readJson(file);
@@ -58,7 +53,6 @@ public class ConfigUpdater {
             if (root.has("particles")) {
                 JsonObject particles = root.getAsJsonObject("particles");
                 if (particles != null) {
-
                     if (!particles.has("aoeParticleCountMultiplier")) {
                         if (particles.has("aoeParticleCount")) {
                             float multiplier = clamp(particles.get("aoeParticleCount").getAsFloat() / 15.0f, 0.1f, 5.0f);
@@ -68,7 +62,6 @@ public class ConfigUpdater {
                             particles.addProperty("aoeParticleCountMultiplier", 1.0f);
                         }
                     }
-
                     if (!particles.has("aoeParticleDensityMultiplier")) {
                         if (particles.has("aoeParticleDensity")) {
                             float multiplier = clamp(particles.get("aoeParticleDensity").getAsFloat(), 0.1f, 5.0f);
@@ -78,7 +71,6 @@ public class ConfigUpdater {
                             particles.addProperty("aoeParticleDensityMultiplier", 1.0f);
                         }
                     }
-
                     if (!particles.has("aoeParticleHeightMultiplier")) {
                         if (particles.has("aoeMaxHeight")) {
                             float multiplier = clamp(particles.get("aoeMaxHeight").getAsFloat() / 3.0f, 0.1f, 5.0f);
@@ -92,7 +84,6 @@ public class ConfigUpdater {
                             particles.addProperty("aoeParticleHeightMultiplier", 1.0f);
                         }
                     }
-
                     particles.remove("aoeParticleCount");
                     particles.remove("aoeParticleDensity");
                     particles.remove("aoeMaxHeight");
@@ -110,7 +101,6 @@ public class ConfigUpdater {
             restoreBackup(file);
         }
     }
-
     private static void updateItemsConfig(File file, String currentVersion) {
         if (!file.exists()) return;
         JsonObject root = readJson(file);
@@ -119,7 +109,6 @@ public class ConfigUpdater {
         if (configVersion.equals(currentVersion)) return;
         if (!backupFile(file)) return;
         try {
-
             root.addProperty("configVersion", currentVersion);
             if (writeJson(file, root)) {
                 System.out.println("[Hammers Unbound] Successfully migrated items.json to " + currentVersion);
@@ -131,7 +120,6 @@ public class ConfigUpdater {
             restoreBackup(file);
         }
     }
-
     private static JsonObject readJson(File file) {
         try (InputStreamReader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
             return PARSER.parse(reader).getAsJsonObject();

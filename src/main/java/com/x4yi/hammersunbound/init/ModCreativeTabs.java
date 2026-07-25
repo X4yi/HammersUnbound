@@ -19,13 +19,11 @@ public class ModCreativeTabs {
         @Override
         @SideOnly(Side.CLIENT)
         public void displayAllRelevantItems(NonNullList<ItemStack> items) {
-
             addIfNotNull(items, "warhammer_wood");
             addIfNotNull(items, "warhammer_stone");
             addIfNotNull(items, "warhammer_iron");
             addIfNotNull(items, "warhammer_gold");
             addIfNotNull(items, "warhammer_diamond");
-
             addIfNotNull(items, "spikehammer_wood");
             addIfNotNull(items, "spikehammer_stone");
             addIfNotNull(items, "spikehammer_iron");

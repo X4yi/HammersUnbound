@@ -8,7 +8,6 @@ public class ClientConfig {
     public static boolean bloodPactEnabled = true;
     public static int bloodPactParticleCount = 5;
     public static boolean bleedingParticleEnabled = true;
-
     public static int uiOverlayPosition = 0;
     public static boolean showDevWarning = true;
     public static boolean showChangelogButton = true;
