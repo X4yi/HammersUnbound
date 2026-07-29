@@ -45,7 +45,7 @@ public class ClientProxy extends CommonProxy {
             }
             field.setAccessible(true);
             java.util.List<net.minecraft.client.resources.IResourcePack> packs =
-                (java.util.List<net.minecraft.client.resources.IResourcePack>) field.get(net.minecraft.client.Minecraft.getMinecraft());
+                (java.util.List<net.minecraft.client.resources.IResourcePack>) field.get(Minecraft.getMinecraft());
             packs.add(new com.x4yi.hammersunbound.client.resources.HammerResourcePack());
         } catch (Exception e) {
             e.printStackTrace();
