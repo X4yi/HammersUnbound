@@ -27,8 +27,12 @@ public class PingPongManager {
             mob.motionZ = dir.z * 1.5D;
             mob.velocityChanged = true;
 
-            // Check impact
-            if (mob.collidedHorizontally || mob.collidedVertically) {
+            // Check impact using RayTrace
+            Vec3d startPos = new Vec3d(mob.posX, mob.posY + mob.height / 2.0, mob.posZ);
+            Vec3d endPos = startPos.addVector(mob.motionX, mob.motionY, mob.motionZ);
+            net.minecraft.util.math.RayTraceResult result = mob.world.rayTraceBlocks(startPos, endPos, false, true, false);
+
+            if (result != null && result.typeOfHit == net.minecraft.util.math.RayTraceResult.Type.BLOCK) {
                 float impactDamage = (float) player.getEntityAttribute(net.minecraft.entity.SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue() * 0.8f;
                 mob.attackEntityFrom(DamageSource.causePlayerDamage(player), impactDamage);
                 mob.world.playSound(null, mob.posX, mob.posY, mob.posZ,

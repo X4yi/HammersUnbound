@@ -19,7 +19,7 @@ public class BloodPactNetworkManager {
                     new com.x4yi.hammersunbound.network.PacketBloodPactSync(
                         effect.isActive(), targetsArr, effect.getRemainingTicks(), 
                         effect.getMadness(), effect.getBurstTimer(), effect.getAccumulatedDamage(), 
-                        effect.getPingPongPhase(), effect.getPingPongTargetId()
+                        effect.getPingPongPhase(), effect.getPingPongTargetId(), effect.getBurstImpactTimer()
                     );
                 com.x4yi.hammersunbound.network.ModNetworkHandler.INSTANCE.sendTo(packetSync, (EntityPlayerMP) player);
             }
@@ -36,7 +36,7 @@ public class BloodPactNetworkManager {
                 com.x4yi.hammersunbound.network.ModNetworkHandler.INSTANCE.sendTo(packet, (EntityPlayerMP) player);
                 com.x4yi.hammersunbound.network.PacketBloodPactSync packetSync = 
                     new com.x4yi.hammersunbound.network.PacketBloodPactSync(
-                        false, new int[0], 0, 0, 200, 0.0f, 0, -1
+                        false, new int[0], 0, 0, 200, 0.0f, 0, -1, 0
                     );
                 com.x4yi.hammersunbound.network.ModNetworkHandler.INSTANCE.sendTo(packetSync, (EntityPlayerMP) player);
             }

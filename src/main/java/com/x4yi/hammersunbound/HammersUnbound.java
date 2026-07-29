@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 @Mod(modid = HammersUnbound.MODID, name = "Hammers Unbound", version = HammersUnbound.VERSION, guiFactory = "com.x4yi.hammersunbound.client.gui.GuiFactory")
 public class HammersUnbound {
     public static final String MODID = "hammersunbound";
-    public static final String VERSION = "r1.0b3";
+    public static final String VERSION = "r1.0b4";
     @SidedProxy(clientSide = "com.x4yi.hammersunbound.proxy.ClientProxy", serverSide = "com.x4yi.hammersunbound.proxy.CommonProxy")
     public static CommonProxy proxy;
     @Mod.EventHandler

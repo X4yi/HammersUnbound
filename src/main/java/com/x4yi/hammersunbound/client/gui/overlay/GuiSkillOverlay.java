@@ -13,35 +13,65 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 public class GuiSkillOverlay extends Gui {
     private static final net.minecraft.util.ResourceLocation VIGNETTE_TEX = new net.minecraft.util.ResourceLocation("textures/misc/vignette.png");
+    private static final net.minecraft.util.ResourceLocation BLOOD_OVERLAY_TEX = new net.minecraft.util.ResourceLocation("hammersunbound:textures/misc/blood_overlay.png");
+    
+    private float currentFade = 0.0f;
+    private long lastTime = -1;
+
     @SubscribeEvent
     public void onRenderOverlayPre(RenderGameOverlayEvent.Pre event) {
         if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.player == null) return;
+        boolean isActive = false;
+        int remainingTicks = 0;
+
         if (mc.player.hasCapability(IBloodPactCapability.CAPABILITY, null)) {
             IBloodPactCapability cap = mc.player.getCapability(IBloodPactCapability.CAPABILITY, null);
-            if (cap != null && cap.getBloodPactEffect() != null && cap.getBloodPactEffect().isActive()) {
-                int remainingTicks = cap.getBloodPactEffect().getRemainingTicks();
-                if (remainingTicks > 0) {
-                    renderBloodVignette(event.getResolution(), remainingTicks);
-                }
+            if (cap != null && cap.getBloodPactEffect() != null) {
+                isActive = cap.getBloodPactEffect().isActive();
+                remainingTicks = cap.getBloodPactEffect().getRemainingTicks();
             }
         }
+
+        long now = System.currentTimeMillis();
+        if (lastTime == -1) lastTime = now;
+        float dt = (now - lastTime) / 1000.0f;
+        lastTime = now;
+
+        if (isActive) {
+            if (remainingTicks < 20) {
+                currentFade -= dt;
+            } else {
+                currentFade += dt;
+            }
+        } else {
+            currentFade -= dt * 2.0f;
+        }
+
+        currentFade = Math.max(0.0f, Math.min(1.0f, currentFade));
+
+        if (currentFade > 0) {
+            renderBloodVignette(event.getResolution(), currentFade);
+        }
     }
-    private void renderBloodVignette(ScaledResolution sr, int remainingTicks) {
+    private void renderBloodVignette(ScaledResolution sr, float fade) {
+        Minecraft mc = Minecraft.getMinecraft();
         int width = sr.getScaledWidth();
         int height = sr.getScaledHeight();
         GlStateManager.disableDepth();
         GlStateManager.depthMask(false);
         GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        float alpha = Math.min(0.5F, (float) remainingTicks / 100.0F);
-        if (remainingTicks < 40) {
-            float pulse = (float) Math.sin((double) System.currentTimeMillis() / 150.0D) * 0.15F + 0.35F;
-            alpha = Math.min(alpha, pulse);
-        }
-        GlStateManager.color(alpha, 0.0F, 0.0F, alpha);
-        Minecraft.getMinecraft().getTextureManager().bindTexture(VIGNETTE_TEX);
+        
+        // standard alpha blending to avoid green subtractive colors
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        
+        float baseAlpha = 0.2F; // Base transparency, much more transparent now
+        float alpha = baseAlpha * fade;
+        
+        // Draw solid red overlay for BloodPact domain interior
+        GlStateManager.color(1.0F, 1.0F, 1.0F, alpha * 0.3F); // Even more transparent interior
+        Minecraft.getMinecraft().getTextureManager().bindTexture(BLOOD_OVERLAY_TEX);
         net.minecraft.client.renderer.Tessellator tessellator = net.minecraft.client.renderer.Tessellator.getInstance();
         net.minecraft.client.renderer.BufferBuilder bufferbuilder = tessellator.getBuffer();
         bufferbuilder.begin(7, net.minecraft.client.renderer.vertex.DefaultVertexFormats.POSITION_TEX);
@@ -50,6 +80,17 @@ public class GuiSkillOverlay extends Gui {
         bufferbuilder.pos((double)width, 0.0D, -90.0D).tex(1.0D, 0.0D).endVertex();
         bufferbuilder.pos(0.0D, 0.0D, -90.0D).tex(0.0D, 0.0D).endVertex();
         tessellator.draw();
+
+        // Draw vignette
+        GlStateManager.color(1.0F, 0.2F, 0.2F, alpha * 1.5F); // Reddish vignette with slight boost
+        Minecraft.getMinecraft().getTextureManager().bindTexture(VIGNETTE_TEX);
+        bufferbuilder.begin(7, net.minecraft.client.renderer.vertex.DefaultVertexFormats.POSITION_TEX);
+        bufferbuilder.pos(0.0D, (double)height, -90.0D).tex(0.0D, 1.0D).endVertex();
+        bufferbuilder.pos((double)width, (double)height, -90.0D).tex(1.0D, 1.0D).endVertex();
+        bufferbuilder.pos((double)width, 0.0D, -90.0D).tex(1.0D, 0.0D).endVertex();
+        bufferbuilder.pos(0.0D, 0.0D, -90.0D).tex(0.0D, 0.0D).endVertex();
+        tessellator.draw();
+        
         GlStateManager.depthMask(true);
         GlStateManager.enableDepth();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);

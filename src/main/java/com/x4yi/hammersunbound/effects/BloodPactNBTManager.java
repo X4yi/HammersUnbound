@@ -22,7 +22,9 @@ public class BloodPactNBTManager {
         nbt.setInteger("hitBonusTicks", effect.getHitBonusTicks());
         nbt.setInteger("damagePenaltyTicks", effect.getDamagePenaltyTicks());
         nbt.setInteger("burstTimer", effect.getBurstTimer());
+        nbt.setInteger("burstImpactTimer", effect.getBurstImpactTimer());
         nbt.setFloat("accumulatedDamage", effect.getAccumulatedDamage());
+        nbt.setFloat("storedBurstDamage", effect.getStoredBurstDamage());
         nbt.setFloat("aoeAttackSize", effect.getAoeAttackSize());
         nbt.setInteger("pingPongTargetId", effect.getPingPongTargetId());
         nbt.setInteger("pingPongTimer", effect.getPingPongTimer());
@@ -58,9 +60,11 @@ public class BloodPactNBTManager {
         effect.setAttractionForce(nbt.hasKey("attractionForce") ? nbt.getFloat("attractionForce") : 0.03f);
         effect.setBaseDurationTicks(nbt.hasKey("baseDurationTicks") ? nbt.getInteger("baseDurationTicks") : 100);
         effect.setHitBonusTicks(nbt.hasKey("hitBonusTicks") ? nbt.getInteger("hitBonusTicks") : 40);
-        effect.setDamagePenaltyTicks(nbt.hasKey("damagePenaltyTicks") ? nbt.getInteger("damagePenaltyTicks") : 40);
+        effect.setDamagePenaltyTicks(nbt.hasKey("damagePenaltyTicks") ? nbt.getInteger("damagePenaltyTicks") : 15);
         effect.setBurstTimer(nbt.hasKey("burstTimer") ? nbt.getInteger("burstTimer") : 200);
-        effect.setAccumulatedDamage(nbt.hasKey("accumulatedDamage") ? nbt.getFloat("accumulatedDamage") : 0.0F);
+        effect.setBurstImpactTimer(nbt.hasKey("burstImpactTimer") ? nbt.getInteger("burstImpactTimer") : 0);
+        effect.setAccumulatedDamage(nbt.hasKey("accumulatedDamage") ? nbt.getFloat("accumulatedDamage") : 0.0f);
+        effect.setStoredBurstDamage(nbt.hasKey("storedBurstDamage") ? nbt.getFloat("storedBurstDamage") : 0.0f);
         effect.setAoeAttackSize(nbt.hasKey("aoeAttackSize") ? nbt.getFloat("aoeAttackSize") : 1.5f);
         effect.setPingPongTargetId(nbt.hasKey("pingPongTargetId") ? nbt.getInteger("pingPongTargetId") : -1);
         effect.setPingPongTimer(nbt.hasKey("pingPongTimer") ? nbt.getInteger("pingPongTimer") : 0);

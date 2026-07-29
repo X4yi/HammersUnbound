@@ -15,7 +15,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
-version = '1.0b3'
+version = '1.0b4'
 group = 'com.x4yi.hammersunbound'
 archivesBaseName = 'hammersunbound'
 sourceCompatibility = targetCompatibility = '1.8'

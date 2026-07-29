@@ -35,6 +35,8 @@ public class BloodPactEffect {
     private int hitBonusTicks;
     private int damagePenaltyTicks;
     private int burstTimer;
+    private int burstImpactTimer;
+    private float storedBurstDamage;
     private float accumulatedDamage;
     private float aoeAttackSize;
     private int pingPongTargetId = -1;
@@ -58,6 +60,8 @@ public class BloodPactEffect {
         this.madness = 0;
         this.maxTargets = 3;
         this.burstTimer = 200;
+        this.burstImpactTimer = 0;
+        this.storedBurstDamage = 0.0f;
         this.accumulatedDamage = 0.0f;
         this.aoeAttackSize = 1.5f;
         this.pingPongTargetId = -1;
@@ -72,6 +76,8 @@ public class BloodPactEffect {
         this.targetEntities.clear();
         this.madness = 0;
         this.burstTimer = 200;
+        this.burstImpactTimer = 0;
+        this.storedBurstDamage = 0.0f;
         this.accumulatedDamage = 0.0f;
         if (config != null) {
             this.range = config.range;
@@ -106,7 +112,8 @@ public class BloodPactEffect {
         syncToTrackingAndSelf();
     }
     public void deactivate() {
-        if (active && player != null && !player.world.isRemote) {
+        this.active = false; // Set to false FIRST to prevent other methods from syncing active=true
+        if (player != null && !player.world.isRemote) {
             BloodPactNetworkManager.sendDeactivation(player);
         }
         removeModifiers();
@@ -114,11 +121,12 @@ public class BloodPactEffect {
         this.player = null;
         this.targetEntities.clear();
         this.targetEntityIds.clear();
-        this.active = false;
         this.remainingTicks = 0;
         this.madness = 0;
         this.ticksSinceLastDrain = 0;
         this.burstTimer = 200;
+        this.burstImpactTimer = 0;
+        this.storedBurstDamage = 0.0f;
         this.accumulatedDamage = 0.0f;
     }
     public void tick(EntityPlayer targetPlayer) {
@@ -141,39 +149,58 @@ public class BloodPactEffect {
             deactivate();
             return;
         }
-        if (player.ticksExisted % 20 == 0 && !player.world.isRemote) {
+        if (player.ticksExisted % 40 == 0 && !player.world.isRemote) {
+            player.heal(1.0F);
             if (madness > 0) {
                 madness = Math.max(0, madness - 5);
             }
         }
         if (!player.world.isRemote) {
-            targetEntities.removeIf(e -> e.isDead);
-            targetEntityIds.clear();
-            for (EntityLivingBase e : targetEntities) {
-                targetEntityIds.add(e.getEntityId());
-            }
-            if (targetEntities.isEmpty()) {
-                deactivate();
-                return;
-            }
-            boolean tooFar = false;
+            boolean removed = targetEntities.removeIf(e -> e.isDead || e.getHealth() <= 0.0f || player.world.getEntityByID(e.getEntityId()) == null);
+            
             double maxDist = tetherBreakDistance * com.x4yi.hammersunbound.config.ServerConfig.spikehammerBloodPactRangeMultiplier;
-            for (EntityLivingBase target : targetEntities) {
-                if (player.getDistance(target) > maxDist) {
-                    tooFar = true;
-                    break;
+            removed |= targetEntities.removeIf(e -> player.getDistance(e) > maxDist);
+
+            if (targetEntities.isEmpty()) {
+                if (accumulatedDamage > 0.0F || burstImpactTimer > 0) {
+                    if (accumulatedDamage > 0.0F) {
+                        storedBurstDamage = accumulatedDamage;
+                        accumulatedDamage = 0.0F;
+                        burstImpactTimer = 20;
+                        syncToTrackingAndSelf();
+                    }
+                } else {
+                    deactivate();
+                    return;
                 }
             }
-            if (tooFar) {
-                deactivate();
-                return;
+
+            if (removed) {
+                targetEntityIds.clear();
+                for (EntityLivingBase e : targetEntities) {
+                    targetEntityIds.add(e.getEntityId());
+                }
+                syncToTrackingAndSelf();
             }
             updateModifiers();
+            if (burstImpactTimer > 0) {
+                burstImpactTimer--;
+                if (burstImpactTimer <= 0) {
+                    executeBurstImpact();
+                    if (!active) return;
+                }
+            }
+
             if (burstTimer > 0) {
                 burstTimer--;
             } else {
-                executeBurst();
-                burstTimer = 200;
+                if (burstImpactTimer <= 0) {
+                    storedBurstDamage = accumulatedDamage;
+                    accumulatedDamage = 0.0F;
+                    burstImpactTimer = 20; 
+                    burstTimer = 200;
+                    syncToTrackingAndSelf();
+                }
             }
             PingPongManager.tickPingPong(this, player);
             BloodPactPhysicsManager.applyRepulsionField(player, targetEntityIds, fieldRadius, repulsionForce);
@@ -191,13 +218,26 @@ public class BloodPactEffect {
         }
     }
 
-    private void executeBurst() {
-        if (player == null || targetEntities.isEmpty()) return;
-        float burstDamage = accumulatedDamage / 3.0F;
+    private void executeBurstImpact() {
+        if (player == null) return;
+        
+        if (targetEntities.isEmpty()) {
+            // Premature death of targets, heal player with all stored damage
+            if (storedBurstDamage > 0.1F) {
+                player.heal(storedBurstDamage);
+            }
+            storedBurstDamage = 0.0F;
+            deactivate();
+            return;
+        }
+
+        float burstDamage = storedBurstDamage / 3.0F;
+        float totalDealt = 0.0F;
         if (burstDamage > 0.1F) {
             for (EntityLivingBase target : targetEntities) {
                 if (target != null && !target.isDead) {
                     target.attackEntityFrom(DamageSource.causePlayerDamage(player), burstDamage);
+                    totalDealt += burstDamage;
                     target.world.playSound(null, target.posX, target.posY, target.posZ,
                             net.minecraft.init.SoundEvents.ENTITY_GENERIC_EXPLODE,
                             net.minecraft.util.SoundCategory.PLAYERS, 1.0F, 1.2F);
@@ -208,11 +248,14 @@ public class BloodPactEffect {
                     }
                 }
             }
+            if (totalDealt > 0) {
+                player.heal(totalDealt / 3.0F);
+            }
         }
-        accumulatedDamage = 0.0F;
+        storedBurstDamage = 0.0F;
         syncToTrackingAndSelf();
     }
-    public void syncClient(boolean active, int[] targetEntityIds, int remainingTicks, int madness, int burstTimer, float accumulatedDamage, int pingPongPhase, int pingPongTargetId) {
+    public void syncClient(boolean active, int[] targetEntityIds, int remainingTicks, int madness, int burstTimer, float accumulatedDamage, int pingPongPhase, int pingPongTargetId, int burstImpactTimer) {
         this.active = active;
         this.targetEntityIds.clear();
         if (targetEntityIds != null) {
@@ -226,6 +269,7 @@ public class BloodPactEffect {
         this.accumulatedDamage = accumulatedDamage;
         this.pingPongPhase = pingPongPhase;
         this.pingPongTargetId = pingPongTargetId;
+        this.burstImpactTimer = burstImpactTimer;
     }
     public void syncToTrackingAndSelf() {
         BloodPactNetworkManager.syncToTrackingAndSelf(this, player);
@@ -337,11 +381,23 @@ public class BloodPactEffect {
     public void setBurstTimer(int timer) {
         this.burstTimer = timer;
     }
+    public int getBurstImpactTimer() {
+        return burstImpactTimer;
+    }
+    public void setBurstImpactTimer(int timer) {
+        this.burstImpactTimer = timer;
+    }
     public float getAccumulatedDamage() {
         return accumulatedDamage;
     }
     public void setAccumulatedDamage(float damage) {
         this.accumulatedDamage = damage;
+    }
+    public float getStoredBurstDamage() {
+        return storedBurstDamage;
+    }
+    public void setStoredBurstDamage(float damage) {
+        this.storedBurstDamage = damage;
     }
     public void addAccumulatedDamage(float damage) {
         this.accumulatedDamage += damage;

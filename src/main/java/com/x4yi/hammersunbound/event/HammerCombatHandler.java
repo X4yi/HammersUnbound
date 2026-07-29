@@ -153,6 +153,17 @@ public class HammerCombatHandler {
         }
     }
     @SubscribeEvent
+    public void onPlayerClone(net.minecraftforge.event.entity.player.PlayerEvent.Clone event) {
+        EntityPlayer oldPlayer = event.getOriginal();
+        if (oldPlayer == null) return;
+        if (IBloodPactCapability.CAPABILITY != null) {
+            IBloodPactCapability cap = oldPlayer.getCapability(IBloodPactCapability.CAPABILITY, null);
+            if (cap != null && cap.getBloodPactEffect() != null && cap.getBloodPactEffect().isActive()) {
+                cap.getBloodPactEffect().deactivate();
+            }
+        }
+    }
+    @SubscribeEvent
     public void onCriticalHit(net.minecraftforge.event.entity.player.CriticalHitEvent event) {
         EntityPlayer player = event.getEntityPlayer();
         net.minecraft.entity.Entity target = event.getTarget();

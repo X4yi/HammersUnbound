@@ -15,11 +15,12 @@ public class PacketBloodPactSync implements IMessage {
     private float accumulatedDamage;
     private int pingPongPhase;
     private int pingPongTargetId;
+    private int burstImpactTimer;
     public PacketBloodPactSync() {}
     public PacketBloodPactSync(boolean active, int[] targetEntityIds, int remainingTicks, int madness, int burstTimer, float accumulatedDamage) {
-        this(active, targetEntityIds, remainingTicks, madness, burstTimer, accumulatedDamage, 0, -1);
+        this(active, targetEntityIds, remainingTicks, madness, burstTimer, accumulatedDamage, 0, -1, 0);
     }
-    public PacketBloodPactSync(boolean active, int[] targetEntityIds, int remainingTicks, int madness, int burstTimer, float accumulatedDamage, int pingPongPhase, int pingPongTargetId) {
+    public PacketBloodPactSync(boolean active, int[] targetEntityIds, int remainingTicks, int madness, int burstTimer, float accumulatedDamage, int pingPongPhase, int pingPongTargetId, int burstImpactTimer) {
         this.active = active;
         this.targetEntityIds = targetEntityIds;
         this.remainingTicks = remainingTicks;
@@ -28,6 +29,7 @@ public class PacketBloodPactSync implements IMessage {
         this.accumulatedDamage = accumulatedDamage;
         this.pingPongPhase = pingPongPhase;
         this.pingPongTargetId = pingPongTargetId;
+        this.burstImpactTimer = burstImpactTimer;
     }
     @Override
     public void fromBytes(ByteBuf buf) {
@@ -43,6 +45,7 @@ public class PacketBloodPactSync implements IMessage {
         accumulatedDamage = buf.readFloat();
         pingPongPhase = buf.readInt();
         pingPongTargetId = buf.readInt();
+        burstImpactTimer = buf.readInt();
     }
     @Override
     public void toBytes(ByteBuf buf) {
@@ -61,6 +64,7 @@ public class PacketBloodPactSync implements IMessage {
         buf.writeFloat(accumulatedDamage);
         buf.writeInt(pingPongPhase);
         buf.writeInt(pingPongTargetId);
+        buf.writeInt(burstImpactTimer);
     }
     public static class Handler implements IMessageHandler<PacketBloodPactSync, IMessage> {
         @Override
@@ -79,7 +83,8 @@ public class PacketBloodPactSync implements IMessage {
                                     message.burstTimer,
                                     message.accumulatedDamage,
                                     message.pingPongPhase,
-                                    message.pingPongTargetId
+                                    message.pingPongTargetId,
+                                    message.burstImpactTimer
                             );
                         }
                     }
