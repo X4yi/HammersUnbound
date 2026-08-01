@@ -1,7 +1,7 @@
 package com.x4yi.hammersunbound.client.gui;
 
 import com.x4yi.x4ui.client.gui.base.GuiBaseScreen;
-import com.x4yi.hammersunbound.client.gui.util.MarkdownRenderer;
+import com.x4yi.x4ui.client.gui.component.GuiMarkdown;
 import com.x4yi.hammersunbound.config.ClientConfig;
 import com.x4yi.hammersunbound.config.ConfigManager;
 import net.minecraft.client.gui.GuiScreen;
@@ -16,9 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class GuiGuideScreen extends GuiBaseScreen {
@@ -42,7 +40,8 @@ public class GuiGuideScreen extends GuiBaseScreen {
     private float langPillProgress = 0f;
 
     private GuideSection currentSection = GuideSection.WARHAMMER;
-    private final Map<GuideSection, List<String>> cachedLines = new HashMap<>();
+    private final Map<GuideSection, String> cachedMarkdown = new HashMap<>();
+    private GuiMarkdown markdownPanel;
     
     private float scrollY = 0;
     private float targetScrollY = 0;
@@ -64,9 +63,10 @@ public class GuiGuideScreen extends GuiBaseScreen {
     }
 
     private void loadSection(GuideSection section) {
-        if (cachedLines.containsKey(section)) return;
-        
-        List<String> lines = new ArrayList<>();
+        if (cachedMarkdown.containsKey(section)) {
+            markdownPanel = new GuiMarkdown(0, 0, 480 - 120 - 30, cachedMarkdown.get(section));
+            return;
+        }
         String lang = ClientConfig.language.toUpperCase();
         String path = "assets/hammersunbound/guide/" + section.fileId + ".md";
         
@@ -99,19 +99,20 @@ public class GuiGuideScreen extends GuiBaseScreen {
                      }
                 }
                 
-                String[] split = body.split("\r?\n");
-                for (String s : split) {
-                    lines.add(s);
-                }
+                
+                cachedMarkdown.put(section, body);
+                markdownPanel = new GuiMarkdown(0, 0, 480 - 120 - 30, body);
             } else {
-                lines.add("Error: Could not find guide file for " + section.displayName);
+                String err = "Error: Could not find guide file for " + section.displayName;
+                cachedMarkdown.put(section, err);
+                markdownPanel = new GuiMarkdown(0, 0, 480 - 120 - 30, err);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            lines.add("Error loading guide: " + e.getMessage());
+            String err = "Error loading guide: " + e.getMessage();
+            cachedMarkdown.put(section, err);
+            markdownPanel = new GuiMarkdown(0, 0, 480 - 120 - 30, err);
         }
-        
-        cachedLines.put(section, lines);
     }
 
     @Override
@@ -253,18 +254,14 @@ public class GuiGuideScreen extends GuiBaseScreen {
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         GL11.glScissor(scissorX, scissorY, scissorW, scissorH);
 
-        List<String> lines = cachedLines.get(currentSection);
-        if (lines != null && !lines.isEmpty()) {
+        if (markdownPanel != null) {
             int drawY = panelY + 10 - (int) scrollY;
             int drawX = panelX + 15;
-            int wrapWidth = panelWidth - 30;
-
-            for (String line : lines) {
-                int heightDrawn = MarkdownRenderer.drawWrappedMarkdown(fontRenderer, line, drawX, drawY, wrapWidth, 0xFFE0E0E6);
-                drawY += heightDrawn;
-            }
-            int totalHeightContent = drawY - (panelY + 10 - (int) scrollY);
-            maxScrollY = Math.max(0, totalHeightContent - panelHeight + 12);
+            markdownPanel.setX(drawX);
+            markdownPanel.setY(drawY);
+            markdownPanel.drawComponent(mouseX, mouseY, partialTicks);
+            
+            maxScrollY = Math.max(0, markdownPanel.getHeight() - panelHeight + 12);
         } else {
             fontRenderer.drawString("Loading...", panelX + 20, panelY + 20, 0xFF888892);
         }
@@ -327,7 +324,7 @@ public class GuiGuideScreen extends GuiBaseScreen {
             playClickSound();
             ClientConfig.language = ClientConfig.language.equals("es") ? "en" : "es";
             try { ConfigManager.save(); } catch (Exception ignored) {}
-            cachedLines.clear();
+            cachedMarkdown.clear();
             loadSection(currentSection);
             return;
         }

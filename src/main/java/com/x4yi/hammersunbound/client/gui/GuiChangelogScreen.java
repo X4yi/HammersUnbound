@@ -2,7 +2,7 @@ package com.x4yi.hammersunbound.client.gui;
 import com.x4yi.hammersunbound.HammersUnbound;
 import com.x4yi.x4ui.client.gui.base.GuiBaseScreen;
 import com.x4yi.x4ui.client.gui.component.GuiButton;
-import com.x4yi.hammersunbound.client.gui.util.MarkdownRenderer;
+import com.x4yi.x4ui.client.gui.component.GuiMarkdown;
 import com.x4yi.hammersunbound.util.UpdateChecker;
 import com.x4yi.hammersunbound.config.ClientConfig;
 import com.x4yi.hammersunbound.config.ConfigManager;
@@ -24,6 +24,7 @@ public class GuiChangelogScreen extends GuiBaseScreen {
     private float scrollY = 0;
     private float targetScrollY = 0;
     private int maxScrollY = 0;
+    private GuiMarkdown markdownPanel;
     public GuiChangelogScreen(GuiScreen parent) {
         super(parent, "Hammers Unbound - Changelog");
         currentLanguage = ClientConfig.language;
@@ -204,14 +205,18 @@ public class GuiChangelogScreen extends GuiBaseScreen {
             }
         }
         if (activeRelease != null) {
-            List<String> changelogLines = getChangelogLines(activeRelease, currentLanguage);
-            for (String line : changelogLines) {
-                int heightDrawn = MarkdownRenderer.drawWrappedMarkdown(fontRenderer, line, panelX + 12, drawY, panelWidth - 32, 0xFFE0E0E6);
-                drawY += heightDrawn;
+            String changelogText = getChangelogText(activeRelease, currentLanguage);
+            if (markdownPanel == null || !changelogText.equals(markdownPanel.getRawText())) {
+                markdownPanel = new GuiMarkdown(0, 0, panelWidth - 32, changelogText);
             }
-            int totalHeightContent = drawY - (panelY + 6 - (int)scrollY);
-            maxScrollY = Math.max(0, totalHeightContent - panelHeight + 12);
+            
+            markdownPanel.setX(panelX + 12);
+            markdownPanel.setY(drawY);
+            markdownPanel.drawComponent(mouseX, mouseY, partialTicks);
+            
+            maxScrollY = Math.max(0, markdownPanel.getHeight() - panelHeight + 12);
         } else {
+            markdownPanel = null;
             if (UpdateChecker.isChecking) {
                 fontRenderer.drawString("Fetching from GitHub...", panelX + 20, panelY + 20, 0xFFFFFFFF);
             } else if (!UpdateChecker.checkStatus.contains("Synced")) {
@@ -237,9 +242,8 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         super.drawScreen(mouseX, mouseY, partialTicks);
         GlStateManager.popMatrix();
     }
-    private List<String> getChangelogLines(UpdateChecker.CachedRelease entry, String lang) {
-        List<String> lines = new ArrayList<>();
-        if (entry == null || entry.body == null) return lines;
+    private String getChangelogText(UpdateChecker.CachedRelease entry, String lang) {
+        if (entry == null || entry.body == null) return "";
         String body = entry.body;
         String startTag = "[" + lang.toUpperCase() + "]";
         String endTag = "[/" + lang.toUpperCase() + "]";
@@ -250,11 +254,7 @@ public class GuiChangelogScreen extends GuiBaseScreen {
                 body = body.substring(startIdx, endIdx);
             }
         }
-        String[] split = body.split("\r?\n");
-        for (String s : split) {
-            lines.add(s);
-        }
-        return lines;
+        return body;
     }
     private void drawCenteredString(String text, int x, int y, int color) {
         fontRenderer.drawString(text, x - fontRenderer.getStringWidth(text) / 2, y, color);
