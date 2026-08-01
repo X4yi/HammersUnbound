@@ -12,7 +12,45 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
+import net.minecraftforge.event.entity.living.LivingKnockBackEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 public class HammerCombatHandler {
+    @SubscribeEvent
+    public void onLivingKnockBack(LivingKnockBackEvent event) {
+        if (event.getEntityLiving() instanceof EntityPlayer) {
+            EntityPlayer player = (EntityPlayer) event.getEntityLiving();
+            if (player.getEntityData().getBoolean("SkybreakerImmunity")) {
+                event.setCanceled(true);
+            }
+        }
+    }
+    @SubscribeEvent
+    public void onLivingJump(LivingEvent.LivingJumpEvent event) {
+        if (event.getEntityLiving() instanceof EntityPlayer) {
+            EntityPlayer player = (EntityPlayer) event.getEntityLiving();
+            if (player.getEntityData().getBoolean("SkybreakerJumpBuff")) {
+                net.minecraft.util.math.Vec3d look = player.getLookVec();
+                player.motionX = look.x * 1.5;
+                player.motionY = 2.0;
+                player.motionZ = look.z * 1.5;
+                player.isAirBorne = true;
+                player.getEntityData().removeTag("SkybreakerJumpBuff");
+            }
+        }
+    }
+    @SubscribeEvent
+    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END && event.player.getEntityData().getBoolean("SkybreakerJumpBuff")) {
+            int ticks = event.player.getEntityData().getInteger("SkybreakerJumpTicks");
+            if (ticks > 10) {
+                event.player.getEntityData().removeTag("SkybreakerJumpBuff");
+                event.player.getEntityData().removeTag("SkybreakerJumpTicks");
+            } else {
+                event.player.getEntityData().setInteger("SkybreakerJumpTicks", ticks + 1);
+            }
+        }
+    }
     @SubscribeEvent
     public void onLivingUpdate(LivingEvent.LivingUpdateEvent event) {
         EntityLivingBase entity = event.getEntityLiving();
@@ -88,7 +126,6 @@ public class HammerCombatHandler {
             }
         }
     }
-
     @SubscribeEvent
     public void onLivingHurt(LivingHurtEvent event) {
         EntityLivingBase target = event.getEntityLiving();
@@ -186,6 +223,22 @@ public class HammerCombatHandler {
             if (hammer instanceof com.x4yi.hammersunbound.item.spikehammer.SpikeHammerItem) {
                 if (com.x4yi.hammersunbound.config.ServerConfig.spikehammerEnableBleeding) {
                     ((com.x4yi.hammersunbound.item.spikehammer.SpikeHammerItem) hammer).applyBleeding((EntityLivingBase) target);
+                }
+            }
+        }
+    }
+    @SubscribeEvent
+    public void onLivingFall(LivingFallEvent event) {
+        if (event.getEntityLiving() instanceof EntityPlayer) {
+            EntityPlayer player = (EntityPlayer) event.getEntityLiving();
+            if (player.getEntityData().getBoolean("SkybreakerImmunity")) {
+                event.setCanceled(true);
+                player.getEntityData().removeTag("SkybreakerImmunity");
+                if (player.isSneaking()) {
+                    net.minecraft.item.ItemStack stack = player.getHeldItemMainhand();
+                    if (!stack.isEmpty() && stack.getItem() instanceof com.x4yi.hammersunbound.item.warhammer.WarHammerItem) {
+                        ((com.x4yi.hammersunbound.item.warhammer.WarHammerItem) stack.getItem()).performGroundSlam(player, event.getDistance());
+                    }
                 }
             }
         }

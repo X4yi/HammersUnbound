@@ -12,17 +12,36 @@ buildscript {
         }
     }
 }
+repositories {
+    flatDir {
+        dirs '../X4UI/build/libs'
+    }
+    mavenLocal()
+    maven {
+        name = "Progwml6 maven"
+        url = "https://dvs1.progwml6.com/files/maven/"
+    }
+    maven {
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
+}
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
-version = '1.0b4'
-group = 'com.x4yi.hammersunbound'
-archivesBaseName = 'hammersunbound'
+version = "1.0b5"
+group = "com.x4yi.hammersunbound"
+archivesBaseName = "hammersunbound"
 sourceCompatibility = targetCompatibility = '1.8'
 minecraft {
     version = '1.12.2-14.23.5.2864'
     runDir  = 'run'
     mappings = 'snapshot_20171003'
+}
+dependencies {
+    provided "mezz.jei:jei_1.12.2:4.16.1.302:api"
+    runtime "mezz.jei:jei_1.12.2:4.16.1.302"
+    compile "com.x4yi.x4ui:x4ui:1.0.0"
 }
 tasks.withType(JavaExec) {
     if (name == 'runClient') {

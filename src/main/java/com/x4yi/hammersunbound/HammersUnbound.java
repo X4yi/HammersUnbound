@@ -12,8 +12,11 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 @Mod(modid = HammersUnbound.MODID, name = "Hammers Unbound", version = HammersUnbound.VERSION, guiFactory = "com.x4yi.hammersunbound.client.gui.GuiFactory")
 public class HammersUnbound {
+    @Mod.Instance(HammersUnbound.MODID)
+    public static HammersUnbound instance;
     public static final String MODID = "hammersunbound";
-    public static final String VERSION = "r1.0b4";
+    public static final String NAME = "Hammers Unbound";
+    public static final String VERSION = "r1.0b5";
     @SidedProxy(clientSide = "com.x4yi.hammersunbound.proxy.ClientProxy", serverSide = "com.x4yi.hammersunbound.proxy.CommonProxy")
     public static CommonProxy proxy;
     @Mod.EventHandler
@@ -22,6 +25,7 @@ public class HammersUnbound {
         ConfigManager.init(event);
         ServerConfig.load();
         ModNetworkHandler.init();
+        net.minecraftforge.fml.common.network.NetworkRegistry.INSTANCE.registerGuiHandler(this, new com.x4yi.hammersunbound.network.ModGuiHandler());
         proxy.preInit(event);
         if (event.getSide() == net.minecraftforge.fml.relauncher.Side.CLIENT) {
             com.x4yi.hammersunbound.util.UpdateChecker.check();

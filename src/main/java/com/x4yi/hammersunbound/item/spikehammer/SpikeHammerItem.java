@@ -140,10 +140,8 @@ public class SpikeHammerItem extends ItemHammer {
         long currentTick = player.world.getTotalWorldTime();
         if (currentTick - lastTrigger < 5) return;
         player.getEntityData().setLong("LastSpikeHammerAoETick", currentTick);
-
         SpikeHammerConfig.SpikeHammerMaterialEntry entry = SpikeHammerConfig.getMaterial(materialName);
         if (entry == null) return;
-        
         EntityLivingBase target = null;
         if (targetEntityId != -1) {
             net.minecraft.entity.Entity e = player.world.getEntityByID(targetEntityId);
@@ -151,7 +149,6 @@ public class SpikeHammerItem extends ItemHammer {
                 target = (EntityLivingBase) e;
             }
         }
-        
         double aoeSize = (double) entry.bloodPact.aoeAttackSize;
         net.minecraft.util.math.Vec3d look = player.getLook(1.0F);
         double offset = 1.5D;
@@ -162,7 +159,6 @@ public class SpikeHammerItem extends ItemHammer {
                 cx - aoeSize, cy - aoeSize, cz - aoeSize,
                 cx + aoeSize, cy + aoeSize, cz + aoeSize
         );
-        
         java.util.List<EntityLivingBase> list = player.world.getEntitiesWithinAABB(EntityLivingBase.class, aabb);
         float damage = (float) player.getEntityAttribute(net.minecraft.entity.SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue();
         for (EntityLivingBase entity : list) {
@@ -171,7 +167,6 @@ public class SpikeHammerItem extends ItemHammer {
             }
         }
     }
-
     @Override
     public String getHammerType() {
         return "spikehammer";

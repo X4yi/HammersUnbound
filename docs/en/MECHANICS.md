@@ -4,7 +4,7 @@ Comprehensive formulas, attribute modifiers, physics calculations, and packet sp
 
 ---
 
-## 🩸 Bleeding Mechanics
+##  Bleeding Mechanics
 
 Processed on entities via `IBleedingCapability`. The bleed stack level ($L$) dictates three values: tick damage, duration, and tick interval.
 
@@ -31,7 +31,7 @@ Where the multiplier is determined by:
 
 ---
 
-## 🌀 Stun Mechanics
+##  Stun Mechanics
 
 Applied via the `hammersunbound:stun` potion effect. Implemented server-side and client-side:
 
@@ -49,7 +49,35 @@ Applied via the `hammersunbound:stun` potion effect. Implemented server-side and
 
 ---
 
-## 🩸 BloodPact Mechanics
+##  Skybreaker Mechanics (WarHammer)
+
+Triggered via `PacketSkybreaker` (client → server). Processed by `WarHammerItem.performSkybreaker()`.
+
+### 1. Leap Physics
+
+$$motionY = 2.0, \quad motionX = look_x \times 1.5, \quad motionZ = look_z \times 1.5$$
+
+The flag `SkybreakerImmunity` is set on the entity's data, which:
+*   **Cancels `LivingFallEvent`** to prevent fall damage.
+*   **Cancels `LivingKnockBackEvent`** to prevent mid-air knockback.
+
+### 2. Ground Slam on Landing
+Triggered by `LivingFallEvent` when `SkybreakerImmunity` is active and the player is sneaking:
+
+$$slamRadius = baseRadius \times 0.5 + fallDistance \times 0.25$$
+$$slamDamage = baseDamage \times 0.5 + fallDistance \times 0.5$$
+$$slamStun = (int)(baseStunDuration \times 0.5 + fallDistance \times 5.0)$$
+
+### 3. Critical Hit Bonus
+If the player was falling (`fallDistance > 0`) at the time of a critical hit:
+
+$$extraRadius = fallDistance \times 0.5$$
+$$extraDamage = fallDistance \times 1.0$$
+$$extraStun = (int)(fallDistance \times 10)$$
+
+---
+
+##  BloodPact Mechanics
 
 Tracked on the player using `IBloodPactCapability`.
 
@@ -85,15 +113,24 @@ Every 200 ticks (10s), detonations deal magic damage:
 $$\text{Burst Damage} = \frac{\text{accumulatedDamage}}{3.0}$$
 
 ### 4. Ping-Pong Skill
-*   **Fase 1 (Ping):** Target velocity set to $\vec{look}_{\text{player}} \times 0.95D$ and $v_y = 0.22D$ for 8 ticks.
-*   **Fase 2 (Pong):** Target velocity set to:
-    
-    $$\vec{pull} = \text{Normalize}(\vec{pos}_{\text{player}} - \vec{pos}_{\text{mob}})$$
-    $$v_x = \text{pull}_x \times 1.10D, \quad v_z = \text{pull}_z \times 1.10D, \quad v_y = \text{pull}_y \times 0.50D + 0.1D \quad \text{for 12 ticks.}$$
+
+#### Phase 1 — Ping (timer: 8 ticks)
+*   **Velocity:** $mob.motion = direction \times 1.5D$ (where $direction$ is the player's normalized look vector at cast time)
+*   **Block Collision:** A raycast is performed each tick from the mob's center to its projected position. On a `BLOCK` hit:
+    *   $impactDamage = attackDamage \times 0.8$
+    *   Immediately transitions to Phase 2.
+
+#### Phase 2 — Pong (timer: 20 ticks)
+*   **Pull vector:** $\vec{pull} = \text{Normalize}(\vec{pos}_{\text{player\_eye}} - \vec{pos}_{\text{mob\_eye}})$
+*   **Velocity:** $mob.motion = \vec{pull} \times 1.8D$
+*   **Arrival condition:** If $dist(mob, player) < 1.5D$:
+    *   $finalDamage = attackDamage \times 1.2$
+    *   `cancelPingPong()`
+*   **Hit during Pong (`LivingHurtEvent`):** Damage multiplied by $\times 1.5$; `startPingPong()` is called again.
 
 ---
 
-## ⚔️ Frontal Sweep Check (AABB Collision)
+##  Frontal Sweep Check (AABB Collision)
 
 Triggers front-swept damage calculations:
 1.  **AABB Center ($\vec{C}$):** Positioned $1.5D$ blocks in front of the player's eye coordinates:

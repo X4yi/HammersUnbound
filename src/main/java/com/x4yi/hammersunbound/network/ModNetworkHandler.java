@@ -12,5 +12,7 @@ public class ModNetworkHandler {
         INSTANCE.registerMessage(PacketBleedingParticle.Handler.class, PacketBleedingParticle.class, 5, Side.CLIENT);
         INSTANCE.registerMessage(PacketBloodPactSync.Handler.class, PacketBloodPactSync.class, 6, Side.CLIENT);
         INSTANCE.registerMessage(PacketSpikeHammerAoE.Handler.class, PacketSpikeHammerAoE.class, 7, Side.SERVER);
+        INSTANCE.registerMessage(PacketForgeHammer.Handler.class, PacketForgeHammer.class, 8, Side.SERVER);
+        INSTANCE.registerMessage(PacketSkybreaker.Handler.class, PacketSkybreaker.class, 9, Side.SERVER);
     }
 }

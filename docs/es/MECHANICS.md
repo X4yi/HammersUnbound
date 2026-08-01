@@ -4,7 +4,7 @@ Detalle de ecuaciones, modificadores de atributos, físicas de impacto y estruct
 
 ---
 
-## 🩸 Mecánica de Sangrado (Bleeding)
+##  Mecánica de Sangrado (Bleeding)
 
 Se calcula en las entidades usando la Capability `IBleedingCapability`. El nivel del stack de sangrado ($L$) altera tres variables: daño por tic, duración y el intervalo entre tics.
 
@@ -31,7 +31,7 @@ Donde el multiplicador depende de:
 
 ---
 
-## 🌀 Mecánica de Aturdimiento (Stun)
+##  Mecánica de Aturdimiento (Stun)
 
 Aplicado bajo la poción `hammersunbound:stun`. Se ejecuta en el lado del servidor y del cliente:
 
@@ -49,7 +49,7 @@ Aplicado bajo la poción `hammersunbound:stun`. Se ejecuta en el lado del servid
 
 ---
 
-## 🩸 Mecánica de Pacto de Sangre (BloodPact)
+##  Mecánica de Pacto de Sangre (BloodPact)
 
 Registrado en el jugador bajo la Capability `IBloodPactCapability`.
 
@@ -93,7 +93,7 @@ $$\text{Daño Burst} = \frac{\text{accumulatedDamage}}{3.0}$$
 
 ---
 
-## ⚔️ Barrido Frontal (AABB Collision)
+##  Barrido Frontal (AABB Collision)
 
 Cálculo de barrido de daño AoE del SpikeHammer:
 1.  **Centro de la Caja ($\vec{C}$):** Posicionado a una distancia de $1.5D$ bloques al frente de los ojos del jugador:

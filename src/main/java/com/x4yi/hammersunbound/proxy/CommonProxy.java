@@ -12,6 +12,7 @@ public class CommonProxy {
         MinecraftForge.EVENT_BUS.register(new HammerCombatHandler());
     }
     public void postInit(FMLPostInitializationEvent event) {
+        com.x4yi.hammersunbound.crafting.HammerRecipeManager.loadRecipes();
     }
     public void serverStarting(FMLServerStartingEvent event) {
         net.minecraft.command.ServerCommandManager manager = (net.minecraft.command.ServerCommandManager) event.getServer().getCommandManager();

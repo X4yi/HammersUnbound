@@ -1,10 +1,7 @@
 package com.x4yi.hammersunbound.effects;
-
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.Vec3d;
-
 public class BloodPactNBTManager {
-
     public static NBTTagCompound serializeNBT(BloodPactEffect effect) {
         NBTTagCompound nbt = new NBTTagCompound();
         nbt.setBoolean("active", effect.isActive());
@@ -29,7 +26,6 @@ public class BloodPactNBTManager {
         nbt.setInteger("pingPongTargetId", effect.getPingPongTargetId());
         nbt.setInteger("pingPongTimer", effect.getPingPongTimer());
         nbt.setInteger("pingPongPhase", effect.getPingPongPhase());
-        
         Vec3d dir = effect.getPingPongDirection();
         if (dir != null) {
             nbt.setDouble("ppDirX", dir.x);
@@ -38,19 +34,16 @@ public class BloodPactNBTManager {
         }
         return nbt;
     }
-
     public static void deserializeNBT(BloodPactEffect effect, NBTTagCompound nbt) {
         effect.setActive(nbt.getBoolean("active"));
         effect.setRemainingTicks(nbt.getInteger("remainingTicks"));
         effect.setMadness(nbt.getInteger("madness"));
-        
         effect.getTargetEntityIds().clear();
         if (nbt.hasKey("targetEntityIds")) {
             for (int id : nbt.getIntArray("targetEntityIds")) {
                 effect.getTargetEntityIds().add(id);
             }
         }
-        
         effect.setRange(nbt.hasKey("range") ? nbt.getFloat("range") : 8.0f);
         effect.setDrainPercent(nbt.hasKey("drainPercent") ? nbt.getFloat("drainPercent") : 0.15f);
         effect.setTetherBreakDistance(nbt.hasKey("tetherBreakDistance") ? nbt.getFloat("tetherBreakDistance") : 12.0f);
@@ -69,7 +62,6 @@ public class BloodPactNBTManager {
         effect.setPingPongTargetId(nbt.hasKey("pingPongTargetId") ? nbt.getInteger("pingPongTargetId") : -1);
         effect.setPingPongTimer(nbt.hasKey("pingPongTimer") ? nbt.getInteger("pingPongTimer") : 0);
         effect.setPingPongPhase(nbt.hasKey("pingPongPhase") ? nbt.getInteger("pingPongPhase") : 0);
-        
         if (nbt.hasKey("ppDirX")) {
             effect.setPingPongDirection(new Vec3d(nbt.getDouble("ppDirX"), nbt.getDouble("ppDirY"), nbt.getDouble("ppDirZ")));
         } else {

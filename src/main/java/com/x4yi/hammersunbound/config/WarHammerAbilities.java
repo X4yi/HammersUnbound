@@ -7,13 +7,15 @@ public class WarHammerAbilities {
     public float aoeDamage;
     public int aoeStunDuration;
     public int aoeStunAmplifier;
-    public WarHammerAbilities(int stunDuration, int stunAmplifier, float aoeRadius, float aoeDamage, int aoeStunDuration, int aoeStunAmplifier) {
+    public int skybreakerCooldown;
+    public WarHammerAbilities(int stunDuration, int stunAmplifier, float aoeRadius, float aoeDamage, int aoeStunDuration, int aoeStunAmplifier, int skybreakerCooldown) {
         this.stunDuration = stunDuration;
         this.stunAmplifier = stunAmplifier;
         this.aoeRadius = aoeRadius;
         this.aoeDamage = aoeDamage;
         this.aoeStunDuration = aoeStunDuration;
         this.aoeStunAmplifier = aoeStunAmplifier;
+        this.skybreakerCooldown = skybreakerCooldown;
     }
     public static WarHammerAbilities fromJson(JsonObject json) {
         int stunDuration = json.has("stunDurationSeconds")
@@ -26,6 +28,9 @@ public class WarHammerAbilities {
                 ? HammerMaterialData.secondsToTicks(json.get("aoeStunDurationSeconds").getAsFloat())
                 : (json.has("aoeStunDuration") ? json.get("aoeStunDuration").getAsInt() : 40);
         int aoeStunAmplifier = json.has("aoeStunAmplifier") ? json.get("aoeStunAmplifier").getAsInt() : 1;
-        return new WarHammerAbilities(stunDuration, stunAmplifier, aoeRadius, aoeDamage, aoeStunDuration, aoeStunAmplifier);
+        int skybreakerCooldown = json.has("skybreakerCooldownSeconds")
+                ? HammerMaterialData.secondsToTicks(json.get("skybreakerCooldownSeconds").getAsFloat())
+                : (json.has("skybreakerCooldown") ? json.get("skybreakerCooldown").getAsInt() : 600);
+        return new WarHammerAbilities(stunDuration, stunAmplifier, aoeRadius, aoeDamage, aoeStunDuration, aoeStunAmplifier, skybreakerCooldown);
     }
 }

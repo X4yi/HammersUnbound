@@ -112,7 +112,7 @@ public class BloodPactEffect {
         syncToTrackingAndSelf();
     }
     public void deactivate() {
-        this.active = false; // Set to false FIRST to prevent other methods from syncing active=true
+        this.active = false;
         if (player != null && !player.world.isRemote) {
             BloodPactNetworkManager.sendDeactivation(player);
         }
@@ -157,10 +157,8 @@ public class BloodPactEffect {
         }
         if (!player.world.isRemote) {
             boolean removed = targetEntities.removeIf(e -> e.isDead || e.getHealth() <= 0.0f || player.world.getEntityByID(e.getEntityId()) == null);
-            
             double maxDist = tetherBreakDistance * com.x4yi.hammersunbound.config.ServerConfig.spikehammerBloodPactRangeMultiplier;
             removed |= targetEntities.removeIf(e -> player.getDistance(e) > maxDist);
-
             if (targetEntities.isEmpty()) {
                 if (accumulatedDamage > 0.0F || burstImpactTimer > 0) {
                     if (accumulatedDamage > 0.0F) {
@@ -174,7 +172,6 @@ public class BloodPactEffect {
                     return;
                 }
             }
-
             if (removed) {
                 targetEntityIds.clear();
                 for (EntityLivingBase e : targetEntities) {
@@ -190,14 +187,13 @@ public class BloodPactEffect {
                     if (!active) return;
                 }
             }
-
             if (burstTimer > 0) {
                 burstTimer--;
             } else {
                 if (burstImpactTimer <= 0) {
                     storedBurstDamage = accumulatedDamage;
                     accumulatedDamage = 0.0F;
-                    burstImpactTimer = 20; 
+                    burstImpactTimer = 20;
                     burstTimer = 200;
                     syncToTrackingAndSelf();
                 }
@@ -217,12 +213,9 @@ public class BloodPactEffect {
             player.heal(healAmount);
         }
     }
-
     private void executeBurstImpact() {
         if (player == null) return;
-        
         if (targetEntities.isEmpty()) {
-            // Premature death of targets, heal player with all stored damage
             if (storedBurstDamage > 0.1F) {
                 player.heal(storedBurstDamage);
             }
@@ -230,7 +223,6 @@ public class BloodPactEffect {
             deactivate();
             return;
         }
-
         float burstDamage = storedBurstDamage / 3.0F;
         float totalDealt = 0.0F;
         if (burstDamage > 0.1F) {
@@ -426,8 +418,6 @@ public class BloodPactEffect {
     public void deserializeNBT(NBTTagCompound nbt) {
         BloodPactNBTManager.deserializeNBT(this, nbt);
     }
-    
-    // Getters and setters for NBT
     public void setActive(boolean active) { this.active = active; }
     public float getRange() { return range; }
     public void setRange(float range) { this.range = range; }

@@ -45,7 +45,7 @@ public class ClientProxy extends CommonProxy {
             }
             field.setAccessible(true);
             java.util.List<net.minecraft.client.resources.IResourcePack> packs =
-                (java.util.List<net.minecraft.client.resources.IResourcePack>) field.get(Minecraft.getMinecraft());
+                (java.util.List<net.minecraft.client.resources.IResourcePack>) field.get(net.minecraftforge.fml.client.FMLClientHandler.instance().getClient());
             packs.add(new com.x4yi.hammersunbound.client.resources.HammerResourcePack());
         } catch (Exception e) {
             e.printStackTrace();
@@ -83,14 +83,14 @@ public class ClientProxy extends CommonProxy {
         }
     }
     private void registerParticles() {
-        Minecraft.getMinecraft().effectRenderer.registerParticle(
+        net.minecraftforge.fml.client.FMLClientHandler.instance().getClient().effectRenderer.registerParticle(
                 100, new HammerParticleFactory());
     }
     @Override
     public void handleBleedingSync(int entityId, int level) {
-        Minecraft.getMinecraft().addScheduledTask(() -> {
-            if (Minecraft.getMinecraft().world == null) return;
-            Entity entity = Minecraft.getMinecraft().world.getEntityByID(entityId);
+        net.minecraftforge.fml.client.FMLClientHandler.instance().getClient().addScheduledTask(() -> {
+            if (net.minecraftforge.fml.client.FMLClientHandler.instance().getClient().world == null) return;
+            Entity entity = net.minecraftforge.fml.client.FMLClientHandler.instance().getClient().world.getEntityByID(entityId);
             if (entity != null && entity.hasCapability(IBleedingCapability.CAPABILITY, null)) {
                 IBleedingCapability cap = entity.getCapability(IBleedingCapability.CAPABILITY, null);
                 if (cap != null) {
@@ -101,7 +101,7 @@ public class ClientProxy extends CommonProxy {
     }
     @Override
     public void handleBloodPactVisual(int playerEntityId, int[] targetEntityIds, boolean active) {
-        Minecraft.getMinecraft().addScheduledTask(() -> {
+        net.minecraftforge.fml.client.FMLClientHandler.instance().getClient().addScheduledTask(() -> {
             if (active) {
                 PacketBloodPactVisual.addVisual(playerEntityId, targetEntityIds);
             } else {
@@ -111,15 +111,15 @@ public class ClientProxy extends CommonProxy {
     }
     @Override
     public void handleAOEParticleSpawn(double posX, double posY, double posZ, float radius, int particleCount) {
-        Minecraft.getMinecraft().addScheduledTask(() -> {
-            if (Minecraft.getMinecraft().world == null) return;
+        net.minecraftforge.fml.client.FMLClientHandler.instance().getClient().addScheduledTask(() -> {
+            if (net.minecraftforge.fml.client.FMLClientHandler.instance().getClient().world == null) return;
             Vec3d center = new Vec3d(posX, posY, posZ);
-            AOEParticleSpawner.spawnAOEParticles(Minecraft.getMinecraft().world, center, radius, particleCount);
+            AOEParticleSpawner.spawnAOEParticles(net.minecraftforge.fml.client.FMLClientHandler.instance().getClient().world, center, radius, particleCount);
         });
     }
     @Override
     public void handleConfigSync(String itemsJson, String serverJson) {
-        Minecraft.getMinecraft().addScheduledTask(() -> {
+        net.minecraftforge.fml.client.FMLClientHandler.instance().getClient().addScheduledTask(() -> {
             try {
                 JsonObject itemsObj = new JsonParser().parse(itemsJson).getAsJsonObject();
                 JsonObject serverObj = new JsonParser().parse(serverJson).getAsJsonObject();

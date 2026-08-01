@@ -1,10 +1,11 @@
 package com.x4yi.hammersunbound.client.gui;
 import com.x4yi.hammersunbound.HammersUnbound;
-import com.x4yi.hammersunbound.client.gui.base.GuiBaseScreen;
+import com.x4yi.x4ui.client.gui.base.GuiBaseScreen;
+import com.x4yi.x4ui.client.gui.component.GuiButton;
+import com.x4yi.hammersunbound.client.gui.util.MarkdownRenderer;
+import com.x4yi.hammersunbound.util.UpdateChecker;
 import com.x4yi.hammersunbound.config.ClientConfig;
 import com.x4yi.hammersunbound.config.ConfigManager;
-import com.x4yi.hammersunbound.util.UpdateChecker;
-import com.x4yi.hammersunbound.client.gui.util.MarkdownRenderer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
@@ -19,6 +20,7 @@ public class GuiChangelogScreen extends GuiBaseScreen {
     private static final ResourceLocation FLAG_ES = new ResourceLocation("hammersunbound", "textures/gui/flag_es.png");
     private int selectedReleaseIndex = 0;
     private String currentLanguage;
+    private float langPillProgress = 0f;
     private float scrollY = 0;
     private float targetScrollY = 0;
     private int maxScrollY = 0;
@@ -72,6 +74,30 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         int badgeY2 = startY + totalHeight - 6;
         boolean badgeHovered = mouseX >= badgeX1 && mouseX <= badgeX2 && mouseY >= badgeY1 && mouseY <= badgeY2;
         boolean hasUpdate = UpdateChecker.updateAvailable;
+
+        int pillWidth = 35;
+        int pillHeight = 22;
+        int maxExtrusion = pillWidth;
+        int minExtrusion = 8;
+        int currentExtrusion = minExtrusion + (int)(langPillProgress * (maxExtrusion - minExtrusion));
+        int pillX = startX + totalWidth + currentExtrusion - pillWidth;
+        int pillY = startY + 20;
+
+        boolean langHovered = mouseX >= startX + totalWidth && mouseX <= startX + totalWidth + currentExtrusion &&
+                              mouseY >= pillY && mouseY <= pillY + pillHeight;
+
+        langPillProgress += (langHovered ? 0.15f : -0.15f);
+        if (langPillProgress > 1f) langPillProgress = 1f;
+        if (langPillProgress < 0f) langPillProgress = 0f;
+
+        drawRect(pillX, pillY, pillX + pillWidth, pillY + pillHeight, langHovered ? 0xFF2C2C36 : 0xFF1E1E24);
+        drawBorder(pillX, pillY, pillX + pillWidth, pillY + pillHeight, 0xFF2C2C36);
+
+        boolean isES = currentLanguage.equals("es");
+        mc.getTextureManager().bindTexture(isES ? FLAG_ES : FLAG_US);
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+        drawModalRectWithCustomSizedTexture(pillX + 3, pillY + 4, 0, 0, 29, 14, 32, 22);
+
         drawRect(startX - 2, startY - 2, startX + totalWidth + 2, startY + totalHeight + 2, 0x55000000);
         drawRect(startX, startY, startX + totalWidth, startY + totalHeight, 0xFF0B0B0D);
         drawRect(startX, startY, startX + totalWidth, startY + headerHeight, 0xFF08080A);
@@ -112,6 +138,15 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         drawRect(cfgX1, cfgY1, cfgX2, cfgY2, cfgHovered ? 0xFF1565C0 : 0xFF16161E);
         drawBorder(cfgX1, cfgY1, cfgX2, cfgY2, cfgHovered ? 0xFFFFFFFF : 0xFF2C2C36);
         drawCenteredString("Config", cfgX1 + 35, cfgY1 + 5, cfgHovered ? 0xFFFFFFFF : 0xFF90CAF9);
+
+        int guideX1 = cfgX1 - 77;
+        int guideY1 = startY + totalHeight - footerHeight + 4;
+        int guideX2 = cfgX1 - 7;
+        int guideY2 = startY + totalHeight - 4;
+        boolean guideHovered = mouseX >= guideX1 && mouseX <= guideX2 && mouseY >= guideY1 && mouseY <= guideY2;
+        drawRect(guideX1, guideY1, guideX2, guideY2, guideHovered ? 0xFF00796B : 0xFF16161E);
+        drawBorder(guideX1, guideY1, guideX2, guideY2, guideHovered ? 0xFFFFFFFF : 0xFF2C2C36);
+        drawCenteredString("Guide", guideX1 + 35, guideY1 + 5, guideHovered ? 0xFFFFFFFF : 0xFF4DB6AC);
         if (hasUpdate) {
             int badgeColor = badgeHovered ? 0xFFFF8F00 : 0xFFFFB300;
             drawRect(badgeX1, badgeY1, badgeX2, badgeY2, badgeColor);
@@ -151,28 +186,6 @@ public class GuiChangelogScreen extends GuiBaseScreen {
                 }
             }
         }
-        int langES_X1 = sidebarX + 15;
-        int langES_X2 = sidebarX + 50;
-        int langEN_X1 = sidebarX + 70;
-        int langEN_X2 = sidebarX + 105;
-        int langY1 = sidebarY1 + sidebarHeight - 24;
-        int langY2 = sidebarY1 + sidebarHeight - 8;
-        boolean langESHovered = mouseX >= langES_X1 && mouseX <= langES_X2 && mouseY >= langY1 && mouseY <= langY2;
-        boolean langENHovered = mouseX >= langEN_X1 && mouseX <= langEN_X2 && mouseY >= langY1 && mouseY <= langY2;
-        boolean isES = currentLanguage.equals("es");
-        drawRect(langES_X1, langY1, langES_X2, langY2, isES ? 0xFF00C853 : (langESHovered ? 0xFF2C2C36 : 0xFF1E1E24));
-        drawBorder(langES_X1, langY1, langES_X2, langY2, isES ? 0xFFFFFFFF : 0xFF2C2C36);
-        mc.getTextureManager().bindTexture(FLAG_ES);
-        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
-        int flagOffX = 3;
-        int flagOffY = 1;
-        drawModalRectWithCustomSizedTexture(langES_X1 + flagOffX, langY1 + flagOffY, 0, 0, 29, 14, 32, 22);
-        boolean isEN = currentLanguage.equals("en");
-        drawRect(langEN_X1, langY1, langEN_X2, langY2, isEN ? 0xFF00C853 : (langENHovered ? 0xFF2C2C36 : 0xFF1E1E24));
-        drawBorder(langEN_X1, langY1, langEN_X2, langY2, isEN ? 0xFFFFFFFF : 0xFF2C2C36);
-        mc.getTextureManager().bindTexture(FLAG_US);
-        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
-        drawModalRectWithCustomSizedTexture(langEN_X1 + flagOffX, langY1 + flagOffY, 0, 0, 29, 14, 32, 22);
         int drawY = panelY + 6 - (int)scrollY;
         ScaledResolution sr = new ScaledResolution(mc);
         int scale = sr.getScaleFactor();
@@ -193,7 +206,7 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         if (activeRelease != null) {
             List<String> changelogLines = getChangelogLines(activeRelease, currentLanguage);
             for (String line : changelogLines) {
-                int heightDrawn = MarkdownRenderer.drawWrappedMarkdown(fontRenderer, line, panelX + 12, drawY, panelWidth - 32, false);
+                int heightDrawn = MarkdownRenderer.drawWrappedMarkdown(fontRenderer, line, panelX + 12, drawY, panelWidth - 32, 0xFFE0E0E6);
                 drawY += heightDrawn;
             }
             int totalHeightContent = drawY - (panelY + 6 - (int)scrollY);
@@ -224,7 +237,6 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         super.drawScreen(mouseX, mouseY, partialTicks);
         GlStateManager.popMatrix();
     }
-
     private List<String> getChangelogLines(UpdateChecker.CachedRelease entry, String lang) {
         List<String> lines = new ArrayList<>();
         if (entry == null || entry.body == null) return lines;
@@ -314,7 +326,17 @@ public class GuiChangelogScreen extends GuiBaseScreen {
         int cfgY2 = startY + totalHeight - 4;
         if (mouseX >= cfgX1 && mouseX <= cfgX2 && mouseY >= cfgY1 && mouseY <= cfgY2) {
             playClickSound();
-            mc.displayGuiScreen(new GuiConfigScreen(this));
+            mc.displayGuiScreen(new GuiConfigScreen(parentScreen));
+            return;
+        }
+
+        int guideX1 = cfgX1 - 77;
+        int guideY1 = startY + totalHeight - footerHeight + 4;
+        int guideX2 = cfgX1 - 7;
+        int guideY2 = startY + totalHeight - 4;
+        if (mouseX >= guideX1 && mouseX <= guideX2 && mouseY >= guideY1 && mouseY <= guideY2) {
+            playClickSound();
+            mc.displayGuiScreen(new GuiGuideScreen(parentScreen));
             return;
         }
         int verY = sidebarY1 + 6;
@@ -332,32 +354,20 @@ public class GuiChangelogScreen extends GuiBaseScreen {
                 verY += 22;
             }
         }
-        int langES_X1 = sidebarX + 15;
-        int langES_X2 = sidebarX + 50;
-        int langEN_X1 = sidebarX + 70;
-        int langEN_X2 = sidebarX + 105;
-        int langY1 = sidebarY1 + sidebarHeight - 24;
-        int langY2 = sidebarY1 + sidebarHeight - 8;
-        if (mouseX >= langES_X1 && mouseX <= langES_X2 && mouseY >= langY1 && mouseY <= langY2) {
-            if (!currentLanguage.equals("es")) {
-                playClickSound();
-                currentLanguage = "es";
-                ClientConfig.language = "es";
-                ConfigManager.save();
-                targetScrollY = 0;
-                scrollY = 0;
-            }
-            return;
-        }
-        if (mouseX >= langEN_X1 && mouseX <= langEN_X2 && mouseY >= langY1 && mouseY <= langY2) {
-            if (!currentLanguage.equals("en")) {
-                playClickSound();
-                currentLanguage = "en";
-                ClientConfig.language = "en";
-                ConfigManager.save();
-                targetScrollY = 0;
-                scrollY = 0;
-            }
+        int pillWidth = 35;
+        int pillHeight = 22;
+        int minExtrusion = 8;
+        int currentExtrusion = minExtrusion + (int)(langPillProgress * (pillWidth - minExtrusion));
+        int pillY = startY + 20;
+
+        if (mouseX >= startX + totalWidth && mouseX <= startX + totalWidth + currentExtrusion &&
+            mouseY >= pillY && mouseY <= pillY + pillHeight) {
+            playClickSound();
+            currentLanguage = currentLanguage.equals("es") ? "en" : "es";
+            ClientConfig.language = currentLanguage;
+            try { com.x4yi.hammersunbound.config.ConfigManager.save(); } catch (Exception ignored) {}
+            targetScrollY = 0;
+            scrollY = 0;
             return;
         }
     }

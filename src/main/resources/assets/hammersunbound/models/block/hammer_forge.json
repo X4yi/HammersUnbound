@@ -1,0 +1,12 @@
+{
+    "parent": "block/cube",
+    "textures": {
+        "particle": "hammersunbound:blocks/hammer_forge_front",
+        "down": "blocks/obsidian",
+        "up": "hammersunbound:blocks/hammer_forge_top",
+        "north": "hammersunbound:blocks/hammer_forge_front",
+        "east": "hammersunbound:blocks/hammer_forge_side",
+        "south": "hammersunbound:blocks/hammer_forge_side",
+        "west": "hammersunbound:blocks/hammer_forge_front"
+    }
+}

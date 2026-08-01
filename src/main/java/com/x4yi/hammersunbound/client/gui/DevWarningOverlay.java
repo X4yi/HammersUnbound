@@ -1,6 +1,6 @@
 package com.x4yi.hammersunbound.client.gui;
-import com.x4yi.hammersunbound.client.gui.base.GuiBaseScreen;
-import com.x4yi.hammersunbound.client.gui.component.GuiButton;
+import com.x4yi.x4ui.client.gui.base.GuiBaseScreen;
+import com.x4yi.x4ui.client.gui.component.GuiButton;
 import com.x4yi.hammersunbound.config.ClientConfig;
 import com.x4yi.hammersunbound.config.ConfigManager;
 import net.minecraft.client.gui.GuiScreen;

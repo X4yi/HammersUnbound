@@ -1,0 +1,232 @@
+[
+  {
+    "id": "hammersunbound:warhammer_wood",
+    "ingredients": [
+      {
+        "item": "minecraft:log",
+        "count": 2
+      },
+      {
+        "item": "minecraft:planks",
+        "count": 3
+      },
+      {
+        "type": "forge:ore_dict",
+        "ore": "stickWood",
+        "count": 2
+      }
+    ],
+    "result": {
+      "item": "hammersunbound:warhammer_wood"
+    }
+  },
+  {
+    "id": "hammersunbound:warhammer_stone",
+    "ingredients": [
+      {
+        "item": "minecraft:stone",
+        "count": 2
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "count": 3
+      },
+      {
+        "type": "forge:ore_dict",
+        "ore": "stickWood",
+        "count": 2
+      }
+    ],
+    "result": {
+      "item": "hammersunbound:warhammer_stone"
+    }
+  },
+  {
+    "id": "hammersunbound:warhammer_iron",
+    "ingredients": [
+      {
+        "item": "minecraft:iron_block",
+        "count": 2
+      },
+      {
+        "item": "minecraft:iron_ingot",
+        "count": 3
+      },
+      {
+        "type": "forge:ore_dict",
+        "ore": "stickWood",
+        "count": 2
+      }
+    ],
+    "result": {
+      "item": "hammersunbound:warhammer_iron"
+    }
+  },
+  {
+    "id": "hammersunbound:warhammer_gold",
+    "ingredients": [
+      {
+        "item": "minecraft:gold_block",
+        "count": 2
+      },
+      {
+        "item": "minecraft:gold_ingot",
+        "count": 3
+      },
+      {
+        "type": "forge:ore_dict",
+        "ore": "stickWood",
+        "count": 2
+      }
+    ],
+    "result": {
+      "item": "hammersunbound:warhammer_gold"
+    }
+  },
+  {
+    "id": "hammersunbound:warhammer_diamond",
+    "ingredients": [
+      {
+        "item": "minecraft:diamond_block",
+        "count": 2
+      },
+      {
+        "item": "minecraft:diamond",
+        "count": 3
+      },
+      {
+        "type": "forge:ore_dict",
+        "ore": "stickWood",
+        "count": 2
+      }
+    ],
+    "result": {
+      "item": "hammersunbound:warhammer_diamond"
+    }
+  },
+  {
+    "id": "hammersunbound:spikehammer_wood",
+    "ingredients": [
+      {
+        "item": "minecraft:log",
+        "count": 2
+      },
+      {
+        "item": "minecraft:planks",
+        "count": 3
+      },
+      {
+        "type": "forge:ore_dict",
+        "ore": "stickWood",
+        "count": 2
+      },
+      {
+        "item": "minecraft:flint",
+        "count": 4
+      }
+    ],
+    "result": {
+      "item": "hammersunbound:spikehammer_wood"
+    }
+  },
+  {
+    "id": "hammersunbound:spikehammer_stone",
+    "ingredients": [
+      {
+        "item": "minecraft:stone",
+        "count": 2
+      },
+      {
+        "item": "minecraft:cobblestone",
+        "count": 3
+      },
+      {
+        "type": "forge:ore_dict",
+        "ore": "stickWood",
+        "count": 2
+      },
+      {
+        "item": "minecraft:flint",
+        "count": 4
+      }
+    ],
+    "result": {
+      "item": "hammersunbound:spikehammer_stone"
+    }
+  },
+  {
+    "id": "hammersunbound:spikehammer_iron",
+    "ingredients": [
+      {
+        "item": "minecraft:iron_block",
+        "count": 2
+      },
+      {
+        "item": "minecraft:iron_ingot",
+        "count": 3
+      },
+      {
+        "type": "forge:ore_dict",
+        "ore": "stickWood",
+        "count": 2
+      },
+      {
+        "item": "minecraft:flint",
+        "count": 4
+      }
+    ],
+    "result": {
+      "item": "hammersunbound:spikehammer_iron"
+    }
+  },
+  {
+    "id": "hammersunbound:spikehammer_gold",
+    "ingredients": [
+      {
+        "item": "minecraft:gold_block",
+        "count": 2
+      },
+      {
+        "item": "minecraft:gold_ingot",
+        "count": 3
+      },
+      {
+        "type": "forge:ore_dict",
+        "ore": "stickWood",
+        "count": 2
+      },
+      {
+        "item": "minecraft:flint",
+        "count": 4
+      }
+    ],
+    "result": {
+      "item": "hammersunbound:spikehammer_gold"
+    }
+  },
+  {
+    "id": "hammersunbound:spikehammer_diamond",
+    "ingredients": [
+      {
+        "item": "minecraft:diamond_block",
+        "count": 2
+      },
+      {
+        "item": "minecraft:diamond",
+        "count": 3
+      },
+      {
+        "type": "forge:ore_dict",
+        "ore": "stickWood",
+        "count": 2
+      },
+      {
+        "item": "minecraft:flint",
+        "count": 4
+      }
+    ],
+    "result": {
+      "item": "hammersunbound:spikehammer_diamond"
+    }
+  }
+]

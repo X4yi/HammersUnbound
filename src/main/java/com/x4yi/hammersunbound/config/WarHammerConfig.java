@@ -69,6 +69,7 @@ public class WarHammerConfig {
             ab.addProperty("aoeDamage", abilities.aoeDamage);
             ab.addProperty("aoeStunDurationSeconds", HammerMaterialData.ticksToSeconds(abilities.aoeStunDuration));
             ab.addProperty("aoeStunAmplifier", abilities.aoeStunAmplifier);
+            ab.addProperty("skybreakerCooldownSeconds", HammerMaterialData.ticksToSeconds(abilities.skybreakerCooldown));
             json.add("abilities", ab);
             return json;
         }

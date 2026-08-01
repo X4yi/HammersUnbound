@@ -30,7 +30,6 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import org.lwjgl.opengl.GL11;
-
 public class HammerClientHandler {
     private boolean devWarningShownThisSession = false;
     private static final List<com.x4yi.hammersunbound.client.particle.ParticleBloodPact> bloodParticles = new ArrayList<>();
@@ -58,121 +57,94 @@ public class HammerClientHandler {
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.world == null) return;
         if (bloodParticles.isEmpty()) return;
-
         float partialTicks = event.getPartialTicks();
         Entity renderView = mc.getRenderViewEntity();
         if (renderView == null) return;
-
         double rx = renderView.lastTickPosX + (renderView.posX - renderView.lastTickPosX) * partialTicks;
         double ry = renderView.lastTickPosY + (renderView.posY - renderView.lastTickPosY) * partialTicks;
         double rz = renderView.lastTickPosZ + (renderView.posZ - renderView.lastTickPosZ) * partialTicks;
-
         float pitch = renderView.prevRotationPitch + (renderView.rotationPitch - renderView.prevRotationPitch) * partialTicks;
         float yaw = renderView.prevRotationYaw + (renderView.rotationYaw - renderView.prevRotationYaw) * partialTicks;
         if (mc.gameSettings.thirdPersonView == 2) {
             yaw += 180.0F;
             pitch = -pitch;
         }
-
         float rotationX = net.minecraft.util.math.MathHelper.cos(yaw * 0.017453292F);
         float rotationZ = net.minecraft.util.math.MathHelper.sin(yaw * 0.017453292F);
         float rotationYZ = -rotationZ * net.minecraft.util.math.MathHelper.sin(pitch * 0.017453292F);
         float rotationXY = rotationX * net.minecraft.util.math.MathHelper.sin(pitch * 0.017453292F);
         float rotationXZ = net.minecraft.util.math.MathHelper.cos(pitch * 0.017453292F);
-
         com.x4yi.hammersunbound.client.particle.ParticleBloodPact.interpPosX = rx;
         com.x4yi.hammersunbound.client.particle.ParticleBloodPact.interpPosY = ry;
         com.x4yi.hammersunbound.client.particle.ParticleBloodPact.interpPosZ = rz;
-
         mc.getTextureManager().bindTexture(new net.minecraft.util.ResourceLocation("hammersunbound:textures/particle/blood.png"));
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GlStateManager.depthMask(false);
         GlStateManager.disableLighting();
-
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuffer();
         bufferbuilder.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
-
         float fCos = net.minecraft.util.math.MathHelper.cos(-pitch * 0.017453292F);
         float fSin = net.minecraft.util.math.MathHelper.sin(-pitch * 0.017453292F);
         float cosYaw = net.minecraft.util.math.MathHelper.cos(yaw * 0.017453292F);
         float sinYaw = net.minecraft.util.math.MathHelper.sin(yaw * 0.017453292F);
-        
         float camX = -sinYaw * fCos;
         float camY = fSin;
         float camZ = cosYaw * fCos;
-
         for (com.x4yi.hammersunbound.client.particle.ParticleBloodPact p : bloodParticles) {
             if (p.trailPositions.size() < 2) continue;
-
             int j = p.getBrightnessForRender(partialTicks);
             int lmapX = j >> 16 & 65535;
             int lmapY = j & 65535;
-            
             float baseWidth = 0.3f * p.getScale();
             float totalPoints = (float) com.x4yi.hammersunbound.client.particle.ParticleBloodPact.MAX_TRAIL_LENGTH;
-            
             for (int i = 0; i < p.trailPositions.size() - 1; i++) {
                 net.minecraft.util.math.Vec3d p1 = p.trailPositions.get(i);
                 net.minecraft.util.math.Vec3d p2 = p.trailPositions.get(i+1);
-                
                 float fade1 = 1.0f - (i / totalPoints);
                 float fade2 = 1.0f - ((i+1) / totalPoints);
-                
                 float w1 = baseWidth * fade1;
                 float w2 = baseWidth * fade2;
-                
                 float x1 = (float)(p1.x - com.x4yi.hammersunbound.client.particle.ParticleBloodPact.interpPosX);
                 float y1 = (float)(p1.y - com.x4yi.hammersunbound.client.particle.ParticleBloodPact.interpPosY);
                 float z1 = (float)(p1.z - com.x4yi.hammersunbound.client.particle.ParticleBloodPact.interpPosZ);
-                
                 float x2 = (float)(p2.x - com.x4yi.hammersunbound.client.particle.ParticleBloodPact.interpPosX);
                 float y2 = (float)(p2.y - com.x4yi.hammersunbound.client.particle.ParticleBloodPact.interpPosY);
                 float z2 = (float)(p2.z - com.x4yi.hammersunbound.client.particle.ParticleBloodPact.interpPosZ);
-
                 float camDistFade1 = 1.0f;
                 float camDistFade2 = 1.0f;
                 if (mc.gameSettings.thirdPersonView == 0) {
                     float dist1 = (float)Math.sqrt(x1*x1 + y1*y1 + z1*z1);
                     float dist2 = (float)Math.sqrt(x2*x2 + y2*y2 + z2*z2);
-                    
                     if (dist1 < 2.5f) camDistFade1 = Math.max(0.0f, (dist1 - 1.0f) / 1.5f);
                     if (dist2 < 2.5f) camDistFade2 = Math.max(0.0f, (dist2 - 1.0f) / 1.5f);
                 }
-                
                 float a1 = p.getAlpha() * fade1 * camDistFade1;
                 float a2 = p.getAlpha() * fade2 * camDistFade2;
-                
                 float dirX = x2 - x1;
                 float dirY = y2 - y1;
                 float dirZ = z2 - z1;
-                
                 float crossX = camY * dirZ - camZ * dirY;
                 float crossY = camZ * dirX - camX * dirZ;
                 float crossZ = camX * dirY - camY * dirX;
-                
                 float length = (float)Math.sqrt(crossX*crossX + crossY*crossY + crossZ*crossZ);
                 if (length > 0.0001f) {
                     crossX /= length; crossY /= length; crossZ /= length;
                 } else {
                     crossX = -cosYaw; crossY = 0; crossZ = -sinYaw;
                 }
-                
                 bufferbuilder.pos(x1 - crossX * w1, y1 - crossY * w1, z1 - crossZ * w1).tex(0, 0).color(p.getRed(), p.getGreen(), p.getBlue(), a1).lightmap(lmapX, lmapY).endVertex();
                 bufferbuilder.pos(x1 + crossX * w1, y1 + crossY * w1, z1 + crossZ * w1).tex(1, 0).color(p.getRed(), p.getGreen(), p.getBlue(), a1).lightmap(lmapX, lmapY).endVertex();
                 bufferbuilder.pos(x2 + crossX * w2, y2 + crossY * w2, z2 + crossZ * w2).tex(1, 1).color(p.getRed(), p.getGreen(), p.getBlue(), a2).lightmap(lmapX, lmapY).endVertex();
                 bufferbuilder.pos(x2 - crossX * w2, y2 - crossY * w2, z2 - crossZ * w2).tex(0, 1).color(p.getRed(), p.getGreen(), p.getBlue(), a2).lightmap(lmapX, lmapY).endVertex();
             }
         }
-
         tessellator.draw();
-        
         for (Map.Entry<Integer, com.x4yi.hammersunbound.client.render.TetherRenderer> entry : tethers.entrySet()) {
             float maxDist = 12.0f * (float)com.x4yi.hammersunbound.config.ServerConfig.spikehammerBloodPactRangeMultiplier;
             entry.getValue().render(renderView, partialTicks, maxDist, com.x4yi.hammersunbound.client.particle.ParticleBloodPact.interpPosX, com.x4yi.hammersunbound.client.particle.ParticleBloodPact.interpPosY, com.x4yi.hammersunbound.client.particle.ParticleBloodPact.interpPosZ);
         }
-
         GlStateManager.enableLighting();
         GlStateManager.depthMask(true);
         GlStateManager.disableBlend();
@@ -211,7 +183,6 @@ public class HammerClientHandler {
             }
         }
     }
-
     @SubscribeEvent
     public void onClientDisconnect(net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
         PacketBloodPactVisual.getActiveVisuals(null).clear();
@@ -256,13 +227,11 @@ public class HammerClientHandler {
             }
         }
     }
-
     @SubscribeEvent
     public void onClientTick(net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent event) {
         if (event.phase != net.minecraftforge.fml.common.gameevent.TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.world == null || mc.isGamePaused()) return;
-        
         List<PacketBloodPactVisual.BloodPactVisual> visuals = PacketBloodPactVisual.getActiveVisuals(mc.world);
         for (PacketBloodPactVisual.BloodPactVisual visual : visuals) {
             Entity player = mc.world.getEntityByID(visual.playerEntityId);
@@ -273,7 +242,6 @@ public class HammerClientHandler {
                 int burstImpactTimer = 0;
                 float accumulatedDamage = 0;
                 boolean pingPong = false;
-                
                 if (player.hasCapability(com.x4yi.hammersunbound.capability.IBloodPactCapability.CAPABILITY, null)) {
                     com.x4yi.hammersunbound.capability.IBloodPactCapability cap = player.getCapability(com.x4yi.hammersunbound.capability.IBloodPactCapability.CAPABILITY, null);
                     if (cap != null && cap.getBloodPactEffect() != null) {
@@ -285,14 +253,13 @@ public class HammerClientHandler {
                         pingPong = cap.getBloodPactEffect().getPingPongPhase() > 0;
                     }
                 }
-                
                 int maxParticles = (int)(accumulatedDamage / 2.0f);
                 int activeForPlayer = 0;
                 int burstIndex = 0;
                 for (com.x4yi.hammersunbound.client.particle.ParticleBloodPact p : bloodParticles) {
                     if (p.isAlive() && p.getTargetPlayer() == player) {
                         activeForPlayer++;
-                        p.setBurstTimer(burstImpactTimer); // Redirect particle flight based on burstImpactTimer
+                        p.setBurstTimer(burstImpactTimer);
                         if (burstImpactTimer > 0 && visual.targetEntityIds != null && visual.targetEntityIds.length > 0) {
                             int targetId = visual.targetEntityIds[burstIndex % visual.targetEntityIds.length];
                             p.setTargetEnemy(mc.world.getEntityByID(targetId));
@@ -300,7 +267,6 @@ public class HammerClientHandler {
                         }
                     }
                 }
-
                 if (activeForPlayer < maxParticles) {
                     for (int i = 0; i < 2; i++) {
                         Entity targetEnemy = null;
@@ -308,14 +274,12 @@ public class HammerClientHandler {
                             int targetId = visual.targetEntityIds[mc.world.rand.nextInt(visual.targetEntityIds.length)];
                             targetEnemy = mc.world.getEntityByID(targetId);
                         }
-
                         com.x4yi.hammersunbound.client.particle.ParticleBloodPact particle = new com.x4yi.hammersunbound.client.particle.ParticleBloodPact(
                                 mc.world, player, targetEnemy, radius, madness, burstImpactTimer, pingPong
                         );
                         bloodParticles.add(particle);
                     }
                 }
-                
                 float maxDist = 12.0f;
                 if (player.hasCapability(com.x4yi.hammersunbound.capability.IBloodPactCapability.CAPABILITY, null)) {
                     com.x4yi.hammersunbound.capability.IBloodPactCapability cap = player.getCapability(com.x4yi.hammersunbound.capability.IBloodPactCapability.CAPABILITY, null);
@@ -323,7 +287,6 @@ public class HammerClientHandler {
                         maxDist = cap.getBloodPactEffect().getTetherBreakDistance() * (float)com.x4yi.hammersunbound.config.ServerConfig.spikehammerBloodPactRangeMultiplier;
                     }
                 }
-
                 if (visual.targetEntityIds != null) {
                     for (int targetId : visual.targetEntityIds) {
                         Entity targetEnemy = mc.world.getEntityByID(targetId);
@@ -335,7 +298,6 @@ public class HammerClientHandler {
                 }
             }
         }
-        
         Set<Integer> activeTargetIds = new HashSet<>();
         for (PacketBloodPactVisual.BloodPactVisual visual : visuals) {
              if (visual.targetEntityIds != null) {
@@ -343,7 +305,6 @@ public class HammerClientHandler {
              }
         }
         tethers.keySet().retainAll(activeTargetIds);
-        
         Iterator<com.x4yi.hammersunbound.client.particle.ParticleBloodPact> it = bloodParticles.iterator();
         while (it.hasNext()) {
             com.x4yi.hammersunbound.client.particle.ParticleBloodPact p = it.next();
@@ -409,7 +370,6 @@ public class HammerClientHandler {
             } catch (NoSuchFieldException ex) {}
         }
     }
-
     @SubscribeEvent
     public void onCameraSetup(net.minecraftforge.client.event.EntityViewRenderEvent.CameraSetup event) {
         if (ClientConfig.bloodPactEnabled) {

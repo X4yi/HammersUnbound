@@ -1,6 +1,7 @@
 package com.x4yi.hammersunbound.client.gui;
-import com.x4yi.hammersunbound.client.gui.base.GuiBaseScreen;
-import com.x4yi.hammersunbound.client.gui.component.GuiButton;
+
+import com.x4yi.x4ui.client.gui.base.GuiBaseScreen;
+import com.x4yi.x4ui.client.gui.component.GuiButton;
 import com.x4yi.hammersunbound.config.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -20,6 +21,9 @@ public class GuiConfigScreen extends GuiBaseScreen {
     private final List<String> expandedSubSections = new ArrayList<>();
     private ConfigSection.ConfigField activeDraggingField = null;
     private ConfigSection.SubSection activeDraggingSubSection = null;
+    private ConfigSection.ConfigField activeTextField = null;
+    private String textFieldContent = "";
+    private int cursorCounter = 0;
     public GuiConfigScreen(GuiScreen parent) {
         super(parent, "Hammers Unbound - Configuration");
         ConfigSection.buildSections();
@@ -45,6 +49,7 @@ public class GuiConfigScreen extends GuiBaseScreen {
         if (Math.abs(targetScrollY - scrollY) < 0.5f) {
             scrollY = targetScrollY;
         }
+        cursorCounter++;
         GlStateManager.pushMatrix();
         if (animationProgress < 1.0f) {
             float scale = 0.9f + (0.1f * animationProgress);
@@ -129,6 +134,16 @@ public class GuiConfigScreen extends GuiBaseScreen {
             }
             tabY += 24;
         }
+        int guideX1 = sidebarX + 8;
+        int guideY1 = sidebarY1 + sidebarHeight - 46;
+        int guideX2 = sidebarX + sidebarWidth - 8;
+        int guideY2 = sidebarY1 + sidebarHeight - 28;
+        boolean guideHovered = mouseX >= guideX1 && mouseX <= guideX2 &&
+                               mouseY >= guideY1 && mouseY <= guideY2;
+        drawRect(guideX1, guideY1, guideX2, guideY2, guideHovered ? 0xFF00796B : 0xFF16161E);
+        drawBorder(guideX1, guideY1, guideX2, guideY2, guideHovered ? 0xFFFFFFFF : 0xFF2C2C36);
+        drawCenteredString("Guide", guideX1 + (guideX2 - guideX1) / 2, guideY1 + 4, guideHovered ? 0xFFFFFFFF : 0xFF4DB6AC);
+
         int changelogX1 = sidebarX + 8;
         int changelogY1 = sidebarY1 + sidebarHeight - 24;
         int changelogX2 = sidebarX + sidebarWidth - 8;
@@ -156,6 +171,11 @@ public class GuiConfigScreen extends GuiBaseScreen {
             drawBorder(panelX + 4, drawY, panelX + panelWidth - 8, drawY + 20, 0xFF222228);
             fontRenderer.drawString(expanded ? "v" : ">", panelX + 12, drawY + 6, 0xFFE0E0E6);
             fontRenderer.drawString(sub.getDisplayName(), panelX + 24, drawY + 6, 0xFFE0E0E6);
+            int subResetX = panelX + panelWidth - 25;
+            int subResetY = drawY + 5;
+            boolean subResetHovered = mouseX >= subResetX && mouseX <= subResetX + 12 && mouseY >= subResetY && mouseY <= subResetY + 10;
+            drawRect(subResetX, subResetY, subResetX + 12, subResetY + 10, subResetHovered ? 0xFFFF3D00 : 0xFF2A2A35);
+            fontRenderer.drawString("R", subResetX + 3, subResetY + 1, 0xFFFFFFFF);
             int headerYMid = drawY + 20;
             drawY += 22;
             if (expanded) {
@@ -166,12 +186,17 @@ public class GuiConfigScreen extends GuiBaseScreen {
                     boolean fieldHovered = mouseX >= panelX + 24 && mouseX <= panelX + panelWidth - 12 &&
                                            mouseY >= drawY && mouseY <= drawY + 18;
                     int labelColor = fieldHovered ? 0xFFFFFFFF : 0xFFB0B0BB;
+                    int btnResetX = panelX + panelWidth - 15;
+                    int btnResetY = drawY + 4;
+                    boolean resetHovered = mouseX >= btnResetX && mouseX <= btnResetX + 10 && mouseY >= btnResetY && mouseY <= btnResetY + 10;
+                    drawRect(btnResetX, btnResetY, btnResetX + 10, btnResetY + 10, resetHovered ? 0xFFFF3D00 : 0xFF202027);
+                    fontRenderer.drawString("R", btnResetX + 2, btnResetY + 1, 0xFFFFFFFF);
                     if (field.getType() == ConfigSection.ConfigField.Type.BOOLEAN) {
                         fontRenderer.drawString(field.getLabel(), panelX + 24, drawY + 5, labelColor);
                         boolean val = field.getBoolValue();
-                        int tBadgeX1 = panelX + panelWidth - 36;
+                        int tBadgeX1 = panelX + panelWidth - 52;
                         int tBadgeY1 = drawY + 3;
-                        int tBadgeX2 = panelX + panelWidth - 12;
+                        int tBadgeX2 = panelX + panelWidth - 28;
                         int tBadgeY2 = drawY + 15;
                         if (val) {
                             drawRect(tBadgeX1, tBadgeY1, tBadgeX2, tBadgeY2, 0xFF00C853);
@@ -183,16 +208,20 @@ public class GuiConfigScreen extends GuiBaseScreen {
                     } else {
                         float val = field.getFloatValue();
                         String formatStr = field.getType() == ConfigSection.ConfigField.Type.INT ? "%.0f" : "%.1f";
-                        String displayStr = field.getLabel() + ": " + String.format(formatStr, val);
-                        if (field.getLabel().contains("Multiplier")) {
-                            displayStr += "x";
-                        } else if (field.getLabel().contains("(s)")) {
-                            displayStr += "s";
-                        }
-                        fontRenderer.drawString(displayStr, panelX + 24, drawY + 5, labelColor);
-                        int sliderX1 = panelX + panelWidth - 85;
+                        fontRenderer.drawString(field.getLabel() + ":", panelX + 24, drawY + 5, labelColor);
+                        int labelWidth = fontRenderer.getStringWidth(field.getLabel() + ": ");
+                        int boxX = panelX + 24 + labelWidth;
+                        int boxY = drawY + 3;
+                        int boxW = 35;
+                        int boxH = 12;
+                        boolean isTextFieldActive = (activeTextField == field);
+                        drawRect(boxX, boxY, boxX + boxW, boxY + boxH, isTextFieldActive ? 0xFF222228 : 0xFF121217);
+                        drawBorder(boxX, boxY, boxX + boxW, boxY + boxH, isTextFieldActive ? 0xFF00C853 : 0xFF222228);
+                        String valStr = isTextFieldActive ? textFieldContent + ((cursorCounter / 10) % 2 == 0 ? "_" : "") : String.format(formatStr, val).replace(",", ".");
+                        fontRenderer.drawString(valStr, boxX + 3, boxY + 2, isTextFieldActive ? 0xFFFFFFFF : 0xFFE0E0E6);
+                        int sliderX1 = panelX + panelWidth - 100;
                         int sliderY1 = drawY + 7;
-                        int sliderX2 = panelX + panelWidth - 15;
+                        int sliderX2 = panelX + panelWidth - 30;
                         int sliderY2 = drawY + 10;
                         drawRect(sliderX1, sliderY1, sliderX2, sliderY2, 0xFF25252B);
                         float ratio = (val - field.getMinValue()) / (field.getMaxValue() - field.getMinValue());
@@ -236,6 +265,7 @@ public class GuiConfigScreen extends GuiBaseScreen {
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseButton);
         if (mouseButton != 0) return;
+        boolean clickedOnText = false;
         int startX = width / 2 - 230;
         int startY = height / 2 - 120;
         int totalWidth = 460;
@@ -251,6 +281,7 @@ public class GuiConfigScreen extends GuiBaseScreen {
         for (ConfigSection.Section section : ConfigSection.Section.values()) {
             if (mouseX >= startX && mouseX <= startX + sidebarWidth &&
                 mouseY >= tabY && mouseY <= tabY + 22) {
+                tryApplyTextField();
                 currentSection = section;
                 targetScrollY = 0;
                 scrollY = 0;
@@ -263,6 +294,16 @@ public class GuiConfigScreen extends GuiBaseScreen {
         }
         int sidebarX = startX;
         int sidebarHeight = totalHeight - headerHeight - footerHeight;
+        int guideX1 = sidebarX + 8;
+        int guideY1 = startY + headerHeight + sidebarHeight - 46;
+        int guideX2 = sidebarX + sidebarWidth - 8;
+        int guideY2 = startY + headerHeight + sidebarHeight - 28;
+        if (mouseX >= guideX1 && mouseX <= guideX2 && mouseY >= guideY1 && mouseY <= guideY2) {
+            playClickSound();
+            mc.displayGuiScreen(new GuiGuideScreen(parentScreen));
+            return;
+        }
+
         int changelogX1 = sidebarX + 8;
         int changelogY1 = startY + headerHeight + sidebarHeight - 24;
         int changelogX2 = sidebarX + sidebarWidth - 8;
@@ -270,7 +311,7 @@ public class GuiConfigScreen extends GuiBaseScreen {
         if (mouseX >= changelogX1 && mouseX <= changelogX2 &&
             mouseY >= changelogY1 && mouseY <= changelogY2) {
             playClickSound();
-            mc.displayGuiScreen(new GuiChangelogScreen(this));
+            mc.displayGuiScreen(new GuiChangelogScreen(parentScreen));
             return;
         }
         if (mouseX >= startX + totalWidth - 18 && mouseX <= startX + totalWidth - 6 &&
@@ -303,6 +344,15 @@ public class GuiConfigScreen extends GuiBaseScreen {
             for (ConfigSection.SubSection sub : ConfigSection.getSubSections(currentSection)) {
                 if (mouseX >= panelX + 4 && mouseX <= panelX + panelWidth - 8 &&
                     mouseY >= drawY && mouseY <= drawY + 20) {
+                    int subResetX = panelX + panelWidth - 25;
+                    int subResetY = drawY + 5;
+                    if (mouseX >= subResetX && mouseX <= subResetX + 12 && mouseY >= subResetY && mouseY <= subResetY + 10) {
+                        playClickSound();
+                        for (ConfigSection.ConfigField field : sub.getFields()) {
+                            field.resetToDefault();
+                        }
+                        return;
+                    }
                     playClickSound();
                     String id = sub.getId();
                     if (expandedSubSections.contains(id)) {
@@ -316,10 +366,17 @@ public class GuiConfigScreen extends GuiBaseScreen {
                 drawY += 22;
                 if (expanded) {
                     for (ConfigSection.ConfigField field : sub.getFields()) {
+                        int btnResetX = panelX + panelWidth - 15;
+                        int btnResetY = drawY + 4;
+                        if (mouseX >= btnResetX && mouseX <= btnResetX + 10 && mouseY >= btnResetY && mouseY <= btnResetY + 10) {
+                            playClickSound();
+                            field.resetToDefault();
+                            return;
+                        }
                         if (field.getType() == ConfigSection.ConfigField.Type.BOOLEAN) {
-                            int badgeX1 = panelX + panelWidth - 36;
+                            int badgeX1 = panelX + panelWidth - 52;
                             int badgeY1 = drawY + 3;
-                            int badgeX2 = panelX + panelWidth - 12;
+                            int badgeX2 = panelX + panelWidth - 28;
                             int badgeY2 = drawY + 15;
                             if (mouseX >= badgeX1 && mouseX <= badgeX2 &&
                                 mouseY >= badgeY1 && mouseY <= badgeY2) {
@@ -329,15 +386,30 @@ public class GuiConfigScreen extends GuiBaseScreen {
                                 return;
                             }
                         } else {
-                            int sliderX1 = panelX + panelWidth - 85;
+                            int sliderX1 = panelX + panelWidth - 100;
                             int sliderY1 = drawY + 2;
-                            int sliderX2 = panelX + panelWidth - 15;
+                            int sliderX2 = panelX + panelWidth - 30;
                             int sliderY2 = drawY + 16;
+                            int labelWidth = fontRenderer.getStringWidth(field.getLabel() + ": ");
+                            int boxX = panelX + 24 + labelWidth;
+                            int boxY = drawY + 3;
+                            int boxW = 35;
+                            int boxH = 12;
+                            if (mouseX >= boxX && mouseX <= boxX + boxW && mouseY >= boxY && mouseY <= boxY + boxH) {
+                                playClickSound();
+                                tryApplyTextField();
+                                activeTextField = field;
+                                String formatStr = field.getType() == ConfigSection.ConfigField.Type.INT ? "%.0f" : "%.1f";
+                                textFieldContent = String.format(formatStr, field.getFloatValue()).replace(",", ".");
+                                clickedOnText = true;
+                                return;
+                            }
                             if (mouseX >= sliderX1 && mouseX <= sliderX2 &&
                                 mouseY >= sliderY1 && mouseY <= sliderY2) {
+                                tryApplyTextField();
                                 activeDraggingField = field;
                                 activeDraggingSubSection = sub;
-                                float ratio = (float)(mouseX - (panelX + panelWidth - 85)) / 70f;
+                                float ratio = (float)(mouseX - (panelX + panelWidth - 100)) / 70f;
                                 ratio = Math.max(0.0f, Math.min(1.0f, ratio));
                                 float val = field.getMinValue() + ratio * (field.getMaxValue() - field.getMinValue());
                                 if (field.getType() == ConfigSection.ConfigField.Type.INT) {
@@ -354,14 +426,18 @@ public class GuiConfigScreen extends GuiBaseScreen {
                 }
             }
         }
+        if (!clickedOnText) {
+            tryApplyTextField();
+        }
     }
     @Override
     protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
         super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
         if (clickedMouseButton == 0 && activeDraggingField != null && activeDraggingSubSection != null) {
+            tryApplyTextField();
             int startX = width / 2 - 230;
             int totalWidth = 460;
-            int sliderX = startX + 110 + (totalWidth - 110) - 85;
+            int sliderX = startX + 110 + (totalWidth - 110) - 100;
             float ratio = (float) (mouseX - sliderX) / 70f;
             ratio = Math.max(0.0f, Math.min(1.0f, ratio));
             float val = activeDraggingField.getMinValue() + ratio * (activeDraggingField.getMaxValue() - activeDraggingField.getMinValue());
@@ -391,6 +467,37 @@ public class GuiConfigScreen extends GuiBaseScreen {
             if (targetScrollY < 0) targetScrollY = 0;
             if (targetScrollY > maxScrollY) targetScrollY = maxScrollY;
         }
+    }
+    private void tryApplyTextField() {
+        if (activeTextField != null && !textFieldContent.isEmpty()) {
+            try {
+                float val = Float.parseFloat(textFieldContent);
+                val = Math.max(activeTextField.getMinValue(), Math.min(activeTextField.getMaxValue(), val));
+                activeTextField.setFloatValue(val);
+            } catch (NumberFormatException ignored) {}
+        }
+        activeTextField = null;
+    }
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        if (activeTextField != null) {
+            if (keyCode == 1) {
+                activeTextField = null;
+                return;
+            } else if (keyCode == 28 || keyCode == 156) {
+                tryApplyTextField();
+                return;
+            } else if (keyCode == 14) {
+                if (textFieldContent.length() > 0) {
+                    textFieldContent = textFieldContent.substring(0, textFieldContent.length() - 1);
+                }
+                return;
+            } else if (Character.isDigit(typedChar) || typedChar == '.' || typedChar == '-') {
+                textFieldContent += typedChar;
+                return;
+            }
+        }
+        super.keyTyped(typedChar, keyCode);
     }
     private void playClickSound() {
         mc.getSoundHandler().playSound(
