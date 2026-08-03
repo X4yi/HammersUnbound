@@ -5,7 +5,9 @@ import com.x4yi.hammersunbound.crafting.HammerRecipeManager;
 import com.x4yi.hammersunbound.network.ModNetworkHandler;
 import com.x4yi.hammersunbound.network.PacketForgeHammer;
 import com.x4yi.hammersunbound.init.ModItems;
-import net.minecraft.client.gui.inventory.GuiContainer;
+import com.x4yi.x4ui.client.gui.base.GuiBaseContainer;
+import com.x4yi.x4ui.client.gui.component.GuiButton;
+import com.x4yi.x4ui.client.gui.component.GuiPanel;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.EntityPlayer;
@@ -14,17 +16,16 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.client.resources.I18n;
-import java.io.IOException;
 import java.util.List;
-public class GuiHammerForge extends GuiContainer {
+public class GuiHammerForge extends GuiBaseContainer {
     private final EntityPlayer player;
     private List<HammerForgeRecipe> recipes;
     private String currentType = "warhammer";
     private String currentMaterial = "iron";
     private final String[] TYPES = {"warhammer", "spikehammer"};
     private final String[] MATERIALS = {"diamond", "gold", "iron", "stone", "wood"};
-    private float animationProgress = 0.0f;
-    private long lastTime = 0;
+    private String hoveredTooltip = null;
+    private ItemStack hoveredIngredient = null;
     public GuiHammerForge(EntityPlayer player) {
         super(new ContainerHammerForge(player.inventory));
         this.player = player;
@@ -32,21 +33,6 @@ public class GuiHammerForge extends GuiContainer {
         this.xSize = 210;
         this.ySize = 220;
         autoSelectBestMaterial(this.currentType);
-    }
-    @Override
-    public void initGui() {
-        super.initGui();
-        this.lastTime = System.currentTimeMillis();
-        this.animationProgress = 0.0f;
-    }
-    private void updateAnimation() {
-        long current = System.currentTimeMillis();
-        float delta = (current - lastTime) / 1000.0f;
-        lastTime = current;
-        if (animationProgress < 1.0f) {
-            animationProgress += delta * 5.0f;
-            if (animationProgress > 1.0f) animationProgress = 1.0f;
-        }
     }
     private void autoSelectBestMaterial(String type) {
         for (String mat : MATERIALS) {
@@ -84,12 +70,6 @@ public class GuiHammerForge extends GuiContainer {
         }
         return true;
     }
-    @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        this.drawDefaultBackground();
-        super.drawScreen(mouseX, mouseY, partialTicks);
-        this.renderHoveredToolTip(mouseX, mouseY);
-    }
     private ItemStack getMaterialDisplayItem(String mat) {
         switch(mat) {
             case "diamond": return new ItemStack(Items.DIAMOND);
@@ -107,233 +87,6 @@ public class GuiHammerForge extends GuiContainer {
             default: return new ItemStack(Blocks.BARRIER);
         }
     }
-    @Override
-    protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
-        updateAnimation();
-        GlStateManager.pushMatrix();
-        if (animationProgress < 1.0f) {
-            float scale = 0.9f + (0.1f * animationProgress);
-            GlStateManager.translate(width / 2.0f, height / 2.0f, 0);
-            GlStateManager.scale(scale, scale, 1.0f);
-            GlStateManager.translate(-width / 2.0f, -height / 2.0f, 0);
-        }
-        int startX = (width - xSize) / 2;
-        int startY = (height - ySize) / 2;
-        int tabY = startY + 20;
-        for (String type : TYPES) {
-            boolean active = type.equals(currentType);
-            int tabX = startX - 25;
-            boolean tabHovered = mouseX >= tabX && mouseX <= startX && mouseY >= tabY && mouseY <= tabY + 28;
-            drawRect(tabX, tabY, startX, tabY + 28, active ? 0xFF18181F : (tabHovered ? 0xFF121217 : 0xFF0B0B0D));
-            drawBorder(tabX, tabY, startX, tabY + 28, active ? 0xFF00C853 : 0xFF222228);
-            GlStateManager.pushMatrix();
-            RenderHelper.enableGUIStandardItemLighting();
-            mc.getRenderItem().renderItemAndEffectIntoGUI(getTypeDisplayItem(type), tabX + 4, tabY + 6);
-            RenderHelper.disableStandardItemLighting();
-            GlStateManager.popMatrix();
-            tabY += 32;
-        }
-        drawRect(startX - 2, startY - 2, startX + xSize + 2, startY + ySize + 2, 0x55000000);
-        drawRect(startX, startY, startX + xSize, startY + ySize, 0xFF0B0B0D);
-        drawBorder(startX, startY, startX + xSize, startY + ySize, 0xFF222228);
-        drawRect(startX, startY, startX + xSize, startY + 16, 0xFF08080A);
-        drawRect(startX, startY + 15, startX + xSize, startY + 16, 0xFF222228);
-        fontRenderer.drawString("Hammer Forge", startX + 8, startY + 4, 0xFFFFFFFF);
-        HammerForgeRecipe currentRecipe = getCurrentRecipe();
-        boolean craftable = canCraft(currentRecipe);
-        int matW = 20;
-        int matX = startX + (xSize / 2) - ((MATERIALS.length * matW) / 2);
-        int matY = startY + 20;
-        for (String mat : MATERIALS) {
-            boolean active = mat.equals(currentMaterial);
-            boolean matHovered = mouseX >= matX && mouseX <= matX + matW && mouseY >= matY && mouseY <= matY + matW;
-            drawRect(matX, matY, matX + matW, matY + matW, active ? 0xFF18181F : (matHovered ? 0xFF121217 : 0xFF0F0F12));
-            drawBorder(matX, matY, matX + matW, matY + matW, active ? 0xFF00C853 : 0xFF222228);
-            GlStateManager.pushMatrix();
-            RenderHelper.enableGUIStandardItemLighting();
-            mc.getRenderItem().renderItemAndEffectIntoGUI(getMaterialDisplayItem(mat), matX + 2, matY + 2);
-            RenderHelper.disableStandardItemLighting();
-            GlStateManager.popMatrix();
-            matX += matW;
-        }
-        if (currentRecipe == null) {
-            drawCenteredString("Receta no encontrada", startX + xSize / 2, startY + 50, 0xFF5555);
-        } else {
-            GlStateManager.pushMatrix();
-            RenderHelper.enableGUIStandardItemLighting();
-            mc.getRenderItem().renderItemAndEffectIntoGUI(currentRecipe.getResult(), startX + (xSize/2) - 8, startY + 45);
-            mc.getRenderItem().renderItemOverlayIntoGUI(fontRenderer, currentRecipe.getResult(), startX + (xSize/2) - 8, startY + 45, null);
-            RenderHelper.disableStandardItemLighting();
-            GlStateManager.popMatrix();
-            drawCenteredString(currentRecipe.getResult().getDisplayName(), startX + (xSize/2), startY + 65, 0xFFD700);
-            int ingStartX = startX + 15;
-            int ingX = ingStartX;
-            int ingY = startY + 75;
-            int maxRowWidth = startX + xSize - 15;
-            for (HammerForgeRecipe.IngredientCount ic : currentRecipe.getIngredients()) {
-                ItemStack[] matchingStacks = ic.getIngredient().getMatchingStacks();
-                if (matchingStacks.length == 0) continue;
-                ItemStack displayStack = matchingStacks[0];
-                int found = 0;
-                for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
-                    ItemStack stack = player.inventory.getStackInSlot(i);
-                    if (ic.getIngredient().apply(stack)) {
-                        found += stack.getCount();
-                    }
-                }
-                String text = ic.getCount() + " (" + found + ")";
-                int textWidth = fontRenderer.getStringWidth(text);
-                int elementWidth = 16 + 2 + textWidth + 15;
-                if (ingX + elementWidth > maxRowWidth && ingX != ingStartX) {
-                    ingX = ingStartX;
-                    ingY += 16;
-                }
-                int color = found >= ic.getCount() ? 0x55FF55 : 0xFF5555;
-                RenderHelper.enableGUIStandardItemLighting();
-                mc.getRenderItem().renderItemAndEffectIntoGUI(displayStack, ingX, ingY);
-                RenderHelper.disableStandardItemLighting();
-                fontRenderer.drawString(text, ingX + 18, ingY + 4, color);
-                ingX += elementWidth;
-            }
-            int btnWidth = 100;
-            int saveX1 = startX + (xSize / 2) - (btnWidth / 2);
-            int saveY1 = startY + 105;
-            int saveX2 = saveX1 + btnWidth;
-            int saveY2 = saveY1 + 18;
-            boolean saveHovered = mouseX >= saveX1 && mouseX <= saveX2 && mouseY >= saveY1 && mouseY <= saveY2;
-            if (!craftable) saveHovered = false;
-            drawRect(saveX1, saveY1, saveX2, saveY2, craftable ? (saveHovered ? 0xFF00C853 : 0xFF16161E) : 0xFF16161E);
-            drawBorder(saveX1, saveY1, saveX2, saveY2, craftable ? (saveHovered ? 0xFFFFFFFF : 0xFF2C2C36) : 0xFF352020);
-            String btnText = craftable ? "Forjar" : "Faltan Materiales";
-            drawCenteredString(btnText, saveX1 + (btnWidth/2), saveY1 + 5, craftable ? (saveHovered ? 0xFFFFFFFF : 0xFF00C853) : 0xFFFF5555);
-        }
-        int invStartX = startX + 24;
-        int invStartY = startY + 138;
-        fontRenderer.drawString(I18n.format("container.inventory"), invStartX, invStartY - 10, 0xFF888892);
-        for (int i = 0; i < 3; ++i) {
-            for (int j = 0; j < 9; ++j) {
-                int slotX = invStartX + j * 18 - 1;
-                int slotY = invStartY + i * 18 - 1;
-                drawRect(slotX, slotY, slotX + 18, slotY + 18, 0xFF121217);
-                drawBorder(slotX, slotY, slotX + 18, slotY + 18, 0xFF222228);
-            }
-        }
-        for (int j = 0; j < 9; ++j) {
-            int slotX = invStartX + j * 18 - 1;
-            int slotY = startY + 196 - 1;
-            drawRect(slotX, slotY, slotX + 18, slotY + 18, 0xFF121217);
-            drawBorder(slotX, slotY, slotX + 18, slotY + 18, 0xFF222228);
-        }
-        GlStateManager.popMatrix();
-    }
-    @Override
-    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        int startX = (width - xSize) / 2;
-        int startY = (height - ySize) / 2;
-        int tabY = startY + 20;
-        for (String type : TYPES) {
-            int tabX = startX - 25;
-            if (mouseX >= tabX && mouseX <= startX && mouseY >= tabY && mouseY <= tabY + 28) {
-                drawHoveringText(type.substring(0, 1).toUpperCase() + type.substring(1), mouseX - startX, mouseY - startY);
-            }
-            tabY += 32;
-        }
-        int matW = 20;
-        int matX = startX + (xSize / 2) - ((MATERIALS.length * matW) / 2);
-        int matY = startY + 20;
-        for (String mat : MATERIALS) {
-            if (mouseX >= matX && mouseX <= matX + matW && mouseY >= matY && mouseY <= matY + matW) {
-                drawHoveringText(mat.substring(0, 1).toUpperCase() + mat.substring(1), mouseX - startX, mouseY - startY);
-            }
-            matX += matW;
-        }
-        HammerForgeRecipe currentRecipe = getCurrentRecipe();
-        if (currentRecipe != null) {
-            int ingStartX = startX + 15;
-            int ingX = ingStartX;
-            int ingY = startY + 75;
-            int maxRowWidth = startX + xSize - 15;
-            for (HammerForgeRecipe.IngredientCount ic : currentRecipe.getIngredients()) {
-                ItemStack[] matchingStacks = ic.getIngredient().getMatchingStacks();
-                if (matchingStacks.length > 0) {
-                    int found = 0;
-                    for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
-                        ItemStack stack = player.inventory.getStackInSlot(i);
-                        if (ic.getIngredient().apply(stack)) {
-                            found += stack.getCount();
-                        }
-                    }
-                    String text = ic.getCount() + " (" + found + ")";
-                    int textWidth = fontRenderer.getStringWidth(text);
-                    int elementWidth = 16 + 2 + textWidth + 15;
-                    if (ingX + elementWidth > maxRowWidth && ingX != ingStartX) {
-                        ingX = ingStartX;
-                        ingY += 16;
-                    }
-                    if (mouseX >= ingX && mouseX < ingX + 16 && mouseY >= ingY && mouseY < ingY + 16) {
-                        renderToolTip(matchingStacks[0], mouseX - startX, mouseY - startY);
-                    }
-                    ingX += elementWidth;
-                }
-            }
-        }
-    }
-    private void drawCenteredString(String text, int x, int y, int color) {
-        fontRenderer.drawString(text, x - fontRenderer.getStringWidth(text) / 2, y, color);
-    }
-    private void drawBorder(int left, int top, int right, int bottom, int color) {
-        drawRect(left, top, right, top + 1, color);
-        drawRect(left, bottom - 1, right, bottom, color);
-        drawRect(left, top + 1, left + 1, bottom - 1, color);
-        drawRect(right - 1, top + 1, right, bottom - 1, color);
-    }
-    @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        super.mouseClicked(mouseX, mouseY, mouseButton);
-        if (mouseButton != 0) return;
-        int startX = (width - xSize) / 2;
-        int startY = (height - ySize) / 2;
-        int tabY = startY + 20;
-        for (String type : TYPES) {
-            int tabX = startX - 25;
-            if (mouseX >= tabX && mouseX <= startX && mouseY >= tabY && mouseY <= tabY + 28) {
-                if (!currentType.equals(type)) {
-                    currentType = type;
-                    autoSelectBestMaterial(currentType);
-                    playClickSound();
-                }
-                return;
-            }
-            tabY += 32;
-        }
-        int matW = 20;
-        int matX = startX + (xSize / 2) - ((MATERIALS.length * matW) / 2);
-        int matY = startY + 20;
-        for (String mat : MATERIALS) {
-            if (mouseX >= matX && mouseX <= matX + matW && mouseY >= matY && mouseY <= matY + matW) {
-                if (!currentMaterial.equals(mat)) {
-                    currentMaterial = mat;
-                    playClickSound();
-                }
-                return;
-            }
-            matX += matW;
-        }
-        HammerForgeRecipe currentRecipe = getCurrentRecipe();
-        if (canCraft(currentRecipe)) {
-            int btnWidth = 100;
-            int saveX1 = startX + (xSize / 2) - (btnWidth / 2);
-            int saveY1 = startY + 105;
-            int saveX2 = saveX1 + btnWidth;
-            int saveY2 = saveY1 + 18;
-            if (mouseX >= saveX1 && mouseX <= saveX2 && mouseY >= saveY1 && mouseY <= saveY2) {
-                playClickSound();
-                mc.player.playSound(net.minecraft.init.SoundEvents.BLOCK_ANVIL_USE, 1.0f, 1.0f);
-                ModNetworkHandler.INSTANCE.sendToServer(new PacketForgeHammer(currentRecipe.getId()));
-                return;
-            }
-        }
-    }
     private void playClickSound() {
         mc.getSoundHandler().playSound(
             net.minecraft.client.audio.PositionedSoundRecord.getMasterRecord(
@@ -342,7 +95,210 @@ public class GuiHammerForge extends GuiContainer {
         );
     }
     @Override
+    protected void initComponents() {
+        int startX = (width - xSize) / 2;
+        int startY = (height - ySize) / 2;
+        GuiPanel windowPanel = new GuiPanel(startX, startY, xSize, ySize) {
+            @Override
+            protected void drawSelf(int mouseX, int mouseY, float partialTicks) {
+                int absX = getAbsoluteX();
+                int absY = getAbsoluteY();
+                drawRect(absX - 2, absY - 2, absX + width + 2, absY + height + 2, 0x55000000);
+                drawRect(absX, absY, absX + width, absY + height, 0xFF0B0B0D);
+                drawBorder(absX, absY, absX + width, absY + height, 0xFF222228);
+                drawRect(absX, absY, absX + width, absY + 16, 0xFF08080A);
+                drawRect(absX, absY + 15, absX + width, absY + 16, 0xFF222228);
+                mc.fontRenderer.drawString("Hammer Forge", absX + 8, absY + 4, 0xFFFFFFFF);
+                HammerForgeRecipe currentRecipe = getCurrentRecipe();
+                if (currentRecipe == null) {
+                    drawCenteredString("Receta no encontrada", absX + width / 2, absY + 50, 0xFF5555);
+                } else {
+                    GlStateManager.pushMatrix();
+                    RenderHelper.enableGUIStandardItemLighting();
+                    mc.getRenderItem().renderItemAndEffectIntoGUI(currentRecipe.getResult(), absX + (width/2) - 8, absY + 45);
+                    mc.getRenderItem().renderItemOverlayIntoGUI(mc.fontRenderer, currentRecipe.getResult(), absX + (width/2) - 8, absY + 45, null);
+                    RenderHelper.disableStandardItemLighting();
+                    GlStateManager.popMatrix();
+                    drawCenteredString(currentRecipe.getResult().getDisplayName(), absX + (width/2), absY + 65, 0xFFD700);
+                    int ingStartX = absX + 15;
+                    int ingX = ingStartX;
+                    int ingY = absY + 75;
+                    int maxRowWidth = absX + width - 15;
+                    for (HammerForgeRecipe.IngredientCount ic : currentRecipe.getIngredients()) {
+                        ItemStack[] matchingStacks = ic.getIngredient().getMatchingStacks();
+                        if (matchingStacks.length == 0) continue;
+                        ItemStack displayStack = matchingStacks[0];
+                        int found = 0;
+                        for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
+                            ItemStack stack = player.inventory.getStackInSlot(i);
+                            if (ic.getIngredient().apply(stack)) {
+                                found += stack.getCount();
+                            }
+                        }
+                        String text = ic.getCount() + " (" + found + ")";
+                        int textWidth = mc.fontRenderer.getStringWidth(text);
+                        int elementWidth = 16 + 2 + textWidth + 15;
+                        if (ingX + elementWidth > maxRowWidth && ingX != ingStartX) {
+                            ingX = ingStartX;
+                            ingY += 16;
+                        }
+                        int color = found >= ic.getCount() ? 0x55FF55 : 0xFF5555;
+                        RenderHelper.enableGUIStandardItemLighting();
+                        mc.getRenderItem().renderItemAndEffectIntoGUI(displayStack, ingX, ingY);
+                        RenderHelper.disableStandardItemLighting();
+                        mc.fontRenderer.drawString(text, ingX + 18, ingY + 4, color);
+                        if (isMouseOver(mouseX, mouseY) && mouseX >= ingX && mouseX < ingX + 16 && mouseY >= ingY && mouseY < ingY + 16) {
+                            hoveredIngredient = displayStack;
+                        }
+                        ingX += elementWidth;
+                    }
+                }
+                int invStartX = absX + 24;
+                int invStartY = absY + 138;
+                mc.fontRenderer.drawString(I18n.format("container.inventory"), invStartX, invStartY - 10, 0xFF888892);
+                for (int i = 0; i < 3; ++i) {
+                    for (int j = 0; j < 9; ++j) {
+                        int slotX = invStartX + j * 18 - 1;
+                        int slotY = invStartY + i * 18 - 1;
+                        drawRect(slotX, slotY, slotX + 18, slotY + 18, 0xFF121217);
+                        drawBorder(slotX, slotY, slotX + 18, slotY + 18, 0xFF222228);
+                    }
+                }
+                for (int j = 0; j < 9; ++j) {
+                    int slotX = invStartX + j * 18 - 1;
+                    int slotY = absY + 196 - 1;
+                    drawRect(slotX, slotY, slotX + 18, slotY + 18, 0xFF121217);
+                    drawBorder(slotX, slotY, slotX + 18, slotY + 18, 0xFF222228);
+                }
+            }
+            protected void drawCenteredString(String text, int x, int y, int color) {
+                mc.fontRenderer.drawString(text, x - mc.fontRenderer.getStringWidth(text) / 2, y, color);
+            }
+            protected void drawBorder(int left, int top, int right, int bottom, int color) {
+                drawRect(left, top, right, top + 1, color);
+                drawRect(left, bottom - 1, right, bottom, color);
+                drawRect(left, top + 1, left + 1, bottom - 1, color);
+                drawRect(right - 1, top + 1, right, bottom - 1, color);
+            }
+        };
+        int tabY = startY + 20;
+        for (String type : TYPES) {
+            String finalType = type;
+            GuiButton tabBtn = new GuiButton(startX - 25, tabY, 25, 28, "", () -> {
+                if (!currentType.equals(finalType)) {
+                    currentType = finalType;
+                    autoSelectBestMaterial(currentType);
+                    playClickSound();
+                    initComponents();
+                }
+            }) {
+                @Override
+                protected void drawSelf(int mouseX, int mouseY, float partialTicks) {
+                    boolean active = finalType.equals(currentType);
+                    boolean hovered = isMouseOver(mouseX, mouseY);
+                    int absX = getAbsoluteX();
+                    int absY = getAbsoluteY();
+                    drawRect(absX, absY, absX + width, absY + height, active ? 0xFF18181F : (hovered ? 0xFF121217 : 0xFF0B0B0D));
+                    drawRect(absX, absY, absX + width, absY + 1, active ? 0xFF00C853 : 0xFF222228);
+                    drawRect(absX, absY + height - 1, absX + width, absY + height, active ? 0xFF00C853 : 0xFF222228);
+                    drawRect(absX, absY + 1, absX + 1, absY + height - 1, active ? 0xFF00C853 : 0xFF222228);
+                    GlStateManager.pushMatrix();
+                    RenderHelper.enableGUIStandardItemLighting();
+                    mc.getRenderItem().renderItemAndEffectIntoGUI(getTypeDisplayItem(finalType), absX + 4, absY + 6);
+                    RenderHelper.disableStandardItemLighting();
+                    GlStateManager.popMatrix();
+                    if (hovered && !active) {
+                        hoveredTooltip = finalType.substring(0, 1).toUpperCase() + finalType.substring(1);
+                    }
+                }
+            };
+            rootPanel.addChild(tabBtn);
+            tabY += 32;
+        }
+        int matW = 20;
+        int matX = (xSize / 2) - ((MATERIALS.length * matW) / 2);
+        int matY = 20;
+        for (String mat : MATERIALS) {
+            String finalMat = mat;
+            GuiButton matBtn = new GuiButton(matX, matY, matW, matW, "", () -> {
+                if (!currentMaterial.equals(finalMat)) {
+                    currentMaterial = finalMat;
+                    playClickSound();
+                    initComponents();
+                }
+            }) {
+                @Override
+                protected void drawSelf(int mouseX, int mouseY, float partialTicks) {
+                    boolean active = finalMat.equals(currentMaterial);
+                    boolean hovered = isMouseOver(mouseX, mouseY);
+                    int absX = getAbsoluteX();
+                    int absY = getAbsoluteY();
+                    drawRect(absX, absY, absX + width, absY + height, active ? 0xFF18181F : (hovered ? 0xFF121217 : 0xFF0F0F12));
+                    drawRect(absX, absY, absX + width, absY + 1, active ? 0xFF00C853 : 0xFF222228);
+                    drawRect(absX, absY + height - 1, absX + width, absY + height, active ? 0xFF00C853 : 0xFF222228);
+                    drawRect(absX, absY + 1, absX + 1, absY + height - 1, active ? 0xFF00C853 : 0xFF222228);
+                    drawRect(absX + width - 1, absY + 1, absX + width, absY + height - 1, active ? 0xFF00C853 : 0xFF222228);
+                    GlStateManager.pushMatrix();
+                    RenderHelper.enableGUIStandardItemLighting();
+                    mc.getRenderItem().renderItemAndEffectIntoGUI(getMaterialDisplayItem(finalMat), absX + 2, absY + 2);
+                    RenderHelper.disableStandardItemLighting();
+                    GlStateManager.popMatrix();
+                    if (hovered && !active) {
+                        hoveredTooltip = finalMat.substring(0, 1).toUpperCase() + finalMat.substring(1);
+                    }
+                }
+            };
+            windowPanel.addChild(matBtn);
+            matX += matW;
+        }
+        int btnWidth = 100;
+        int saveX1 = (xSize / 2) - (btnWidth / 2);
+        int saveY1 = 105;
+        GuiButton forgeBtn = new GuiButton(saveX1, saveY1, btnWidth, 18, "", () -> {
+            HammerForgeRecipe currentRecipe = getCurrentRecipe();
+            if (canCraft(currentRecipe)) {
+                playClickSound();
+                mc.player.playSound(net.minecraft.init.SoundEvents.BLOCK_ANVIL_USE, 1.0f, 1.0f);
+                ModNetworkHandler.INSTANCE.sendToServer(new PacketForgeHammer(currentRecipe.getId()));
+            }
+        }) {
+            @Override
+            protected void drawSelf(int mouseX, int mouseY, float partialTicks) {
+                boolean craftable = canCraft(getCurrentRecipe());
+                boolean hovered = craftable && isMouseOver(mouseX, mouseY);
+                int absX = getAbsoluteX();
+                int absY = getAbsoluteY();
+                drawRect(absX, absY, absX + width, absY + height, craftable ? (hovered ? 0xFF00C853 : 0xFF16161E) : 0xFF16161E);
+                drawRect(absX, absY, absX + width, absY + 1, craftable ? (hovered ? 0xFFFFFFFF : 0xFF2C2C36) : 0xFF352020);
+                drawRect(absX, absY + height - 1, absX + width, absY + height, craftable ? (hovered ? 0xFFFFFFFF : 0xFF2C2C36) : 0xFF352020);
+                drawRect(absX, absY + 1, absX + 1, absY + height - 1, craftable ? (hovered ? 0xFFFFFFFF : 0xFF2C2C36) : 0xFF352020);
+                drawRect(absX + width - 1, absY + 1, absX + width, absY + height - 1, craftable ? (hovered ? 0xFFFFFFFF : 0xFF2C2C36) : 0xFF352020);
+                String btnText = craftable ? "Forjar" : "Faltan Materiales";
+                mc.fontRenderer.drawString(btnText, absX + (width - mc.fontRenderer.getStringWidth(btnText)) / 2, absY + 5, craftable ? (hovered ? 0xFFFFFFFF : 0xFF00C853) : 0xFFFF5555);
+            }
+        };
+        windowPanel.addChild(forgeBtn);
+        rootPanel.addChild(windowPanel);
+    }
+    @Override
     public boolean doesGuiPauseGame() {
         return false;
+    }
+    @Override
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        this.hoveredTooltip = null;
+        this.hoveredIngredient = null;
+        super.drawScreen(mouseX, mouseY, partialTicks);
+        if (this.hoveredTooltip != null) {
+            drawHoveringText(this.hoveredTooltip, mouseX, mouseY);
+        } else if (this.hoveredIngredient != null) {
+            renderToolTip(this.hoveredIngredient, mouseX, mouseY);
+        }
+    }
+    @Override
+    protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
+        if (rootPanel != null) {
+            rootPanel.drawComponent(mouseX, mouseY, partialTicks);
+        }
     }
 }

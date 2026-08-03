@@ -1,6 +1,6 @@
 # Hammers Unbound — Guía de Usuario
 
-**Versión:** r1.0b5 | Minecraft Forge 1.12.2
+**Versión:** r1.0b6 | Minecraft Forge 1.12.2
 
 Hammers Unbound añade dos tipos de armas pesadas a Minecraft, cada una con su propia filosofía de combate, efectos de estado, estación de crafteo y parámetros configurables.
 

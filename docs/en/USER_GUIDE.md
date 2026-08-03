@@ -1,6 +1,6 @@
 # Hammers Unbound — User Guide
 
-**Version:** r1.0b5 | Minecraft Forge 1.12.2
+**Version:** r1.0b6 | Minecraft Forge 1.12.2
 
 Hammers Unbound adds two distinct heavy weapon types to Minecraft, each with their own combat philosophy, status effects, crafting station, and configurable parameters.
 

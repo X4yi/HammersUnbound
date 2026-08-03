@@ -38,6 +38,7 @@ public class SpikeHammerItem extends ItemHammer {
     }
     @Override
     public void onCriticalHit(EntityLivingBase target, EntityLivingBase attacker, ItemStack stack) {
+        if (attacker.world.isRemote) return;
         if (ServerConfig.spikehammerEnableBleeding) {
             applyBleeding(target);
         }
@@ -74,22 +75,21 @@ public class SpikeHammerItem extends ItemHammer {
     }
     private EntityLivingBase findTargetInFront(EntityPlayer player, float range) {
         if (range <= 0) return null;
+        Vec3d start = player.getPositionEyes(1.0F);
         Vec3d look = player.getLook(1.0F);
-        Vec3d start = new Vec3d(player.posX, player.posY + player.getEyeHeight(), player.posZ);
         Vec3d end = start.addVector(look.x * range, look.y * range, look.z * range);
-        AxisAlignedBB aabb = new AxisAlignedBB(
-                Math.min(start.x, end.x) - 1.0, Math.min(start.y, end.y) - 1.0, Math.min(start.z, end.z) - 1.0,
-                Math.max(start.x, end.x) + 1.0, Math.max(start.y, end.y) + 1.0, Math.max(start.z, end.z) + 1.0
-        );
-        List<EntityLivingBase> entities = player.world.getEntitiesWithinAABB(EntityLivingBase.class, aabb);
         EntityLivingBase closest = null;
-        double closestDist = range;
-        for (EntityLivingBase entity : entities) {
-            if (entity == null || entity.isDead || entity == player) continue;
-            double dist = player.getDistance(entity);
-            if (dist < closestDist) {
-                closestDist = dist;
-                closest = entity;
+        double closestDist = range * range;
+        for (EntityLivingBase entity : player.world.getEntitiesWithinAABB(EntityLivingBase.class, player.getEntityBoundingBox().grow(range))) {
+            if (entity == player || entity.isDead) continue;
+            AxisAlignedBB aabb = entity.getEntityBoundingBox().grow(0.3F);
+            net.minecraft.util.math.RayTraceResult intercept = aabb.calculateIntercept(start, end);
+            if (intercept != null) {
+                double dist = start.squareDistanceTo(intercept.hitVec);
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closest = entity;
+                }
             }
         }
         return closest;
@@ -109,6 +109,7 @@ public class SpikeHammerItem extends ItemHammer {
                             entry.bleeding.decayTicks
                     );
                     cap.getBleedingEffect().apply(target, adjusted);
+                    com.x4yi.hammersunbound.event.HammerCombatHandler.activeBleedingEntities.add(target);
                 }
             }
         }
@@ -136,10 +137,15 @@ public class SpikeHammerItem extends ItemHammer {
     }
     public void performAoE(EntityPlayer player, int targetEntityId) {
         if (player.world.isRemote) return;
-        long lastTrigger = player.getEntityData().getLong("LastSpikeHammerAoETick");
         long currentTick = player.world.getTotalWorldTime();
-        if (currentTick - lastTrigger < 5) return;
-        player.getEntityData().setLong("LastSpikeHammerAoETick", currentTick);
+        if (player.hasCapability(com.x4yi.hammersunbound.capability.ICombatStateCapability.CAPABILITY, null)) {
+            com.x4yi.hammersunbound.capability.ICombatStateCapability cap = player.getCapability(com.x4yi.hammersunbound.capability.ICombatStateCapability.CAPABILITY, null);
+            if (cap != null) {
+                long lastTrigger = cap.getLastSpikeHammerAoETick();
+                if (currentTick - lastTrigger < 5) return;
+                cap.setLastSpikeHammerAoETick(currentTick);
+            }
+        }
         SpikeHammerConfig.SpikeHammerMaterialEntry entry = SpikeHammerConfig.getMaterial(materialName);
         if (entry == null) return;
         EntityLivingBase target = null;

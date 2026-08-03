@@ -16,7 +16,7 @@ public class HammersUnbound {
     public static HammersUnbound instance;
     public static final String MODID = "hammersunbound";
     public static final String NAME = "Hammers Unbound";
-    public static final String VERSION = "r1.0b5";
+    public static final String VERSION = "r1.0b6";
     @SidedProxy(clientSide = "com.x4yi.hammersunbound.proxy.ClientProxy", serverSide = "com.x4yi.hammersunbound.proxy.CommonProxy")
     public static CommonProxy proxy;
     @Mod.EventHandler

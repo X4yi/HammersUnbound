@@ -43,6 +43,12 @@ public class BloodPactEffect {
     private int pingPongTimer = 0;
     private int pingPongPhase = 0;
     private Vec3d pingPongDirection = null;
+    private int prevMadness = -1;
+    private int prevBurstTimer = -1;
+    private int prevBurstImpactTimer = -1;
+    private float prevAccumulatedDamage = -1;
+    private int prevPingPongPhase = -1;
+    private String prevTargetIdsStr = "";
     public BloodPactEffect() {
         this.player = null;
         this.active = false;
@@ -109,12 +115,16 @@ public class BloodPactEffect {
                 }
             }
         }
+        com.x4yi.hammersunbound.event.HammerCombatHandler.activeBloodPactPlayers.add(player);
         syncToTrackingAndSelf();
     }
     public void deactivate() {
         this.active = false;
-        if (player != null && !player.world.isRemote) {
-            BloodPactNetworkManager.sendDeactivation(player);
+        if (player != null) {
+            com.x4yi.hammersunbound.event.HammerCombatHandler.activeBloodPactPlayers.remove(player);
+            if (!player.world.isRemote) {
+                BloodPactNetworkManager.sendDeactivation(player);
+            }
         }
         removeModifiers();
         cancelPingPong();
@@ -201,9 +211,20 @@ public class BloodPactEffect {
             PingPongManager.tickPingPong(this, player);
             BloodPactPhysicsManager.applyRepulsionField(player, targetEntityIds, fieldRadius, repulsionForce);
             BloodPactPhysicsManager.applyAttraction(player, targetEntities, attractionForce);
-            if (player.ticksExisted % 5 == 0) {
-                syncToTrackingAndSelf();
-            }
+            checkAndDeltaSync();
+        }
+    }
+    private void checkAndDeltaSync() {
+        boolean changed = false;
+        if (madness != prevMadness) { changed = true; prevMadness = madness; }
+        if (burstTimer != prevBurstTimer) { changed = true; prevBurstTimer = burstTimer; }
+        if (burstImpactTimer != prevBurstImpactTimer) { changed = true; prevBurstImpactTimer = burstImpactTimer; }
+        if (Math.abs(accumulatedDamage - prevAccumulatedDamage) > 0.1f) { changed = true; prevAccumulatedDamage = accumulatedDamage; }
+        if (pingPongPhase != prevPingPongPhase) { changed = true; prevPingPongPhase = pingPongPhase; }
+        String currTargets = targetEntityIds.toString();
+        if (!currTargets.equals(prevTargetIdsStr)) { changed = true; prevTargetIdsStr = currTargets; }
+        if (changed) {
+            syncToTrackingAndSelf();
         }
     }
     public void onHitTarget(float damageDealt) {

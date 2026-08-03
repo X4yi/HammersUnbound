@@ -29,7 +29,7 @@ repositories {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
-version = "1.0b5"
+version = "1.0b6"
 group = "com.x4yi.hammersunbound"
 archivesBaseName = "hammersunbound"
 sourceCompatibility = targetCompatibility = '1.8'
@@ -41,7 +41,7 @@ minecraft {
 dependencies {
     provided "mezz.jei:jei_1.12.2:4.16.1.302:api"
     runtime "mezz.jei:jei_1.12.2:4.16.1.302"
-    compile "com.x4yi.x4ui:x4ui:1.0.0"
+    deobfCompile "com.x4yi.x4ui:x4ui:r1.0b1"
 }
 tasks.withType(JavaExec) {
     if (name == 'runClient') {

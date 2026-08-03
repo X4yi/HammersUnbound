@@ -82,6 +82,7 @@ public class WarHammerItem extends ItemHammer {
     @Override
     public void onCriticalHit(EntityLivingBase target, EntityLivingBase attacker, ItemStack stack) {
         if (!(attacker instanceof EntityPlayer)) return;
+        if (attacker.world.isRemote) return;
         EntityPlayer player = (EntityPlayer) attacker;
         NBTTagCompound nbt = stack.getTagCompound();
         if (nbt == null) {
@@ -128,7 +129,7 @@ public class WarHammerItem extends ItemHammer {
     }
     private void applyAOEDamage(EntityPlayer attacker, EntityLivingBase primaryTarget,
                                 float radius, float aoeDamage, int aoeStunDuration, int aoeStunAmplifier) {
-        if (attacker == null || attacker.world == null) return;
+        if (attacker == null || attacker.world == null || attacker.world.isRemote) return;
         Vec3d center = new Vec3d(primaryTarget.posX, primaryTarget.posY, primaryTarget.posZ);
         List<EntityLivingBase> entities = getEntitiesInRadius(attacker.world, center, radius, primaryTarget, attacker);
         for (EntityLivingBase entity : entities) {

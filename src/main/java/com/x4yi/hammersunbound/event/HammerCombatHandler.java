@@ -4,7 +4,11 @@ import com.x4yi.hammersunbound.capability.IBloodPactCapability;
 import com.x4yi.hammersunbound.config.SpikeHammerConfig;
 import com.x4yi.hammersunbound.network.ModNetworkHandler;
 import com.x4yi.hammersunbound.network.PacketBleedingSync;
+import com.x4yi.hammersunbound.capability.ICombatStateCapability;
 import com.x4yi.hammersunbound.network.PacketBloodPactVisual;
+import java.util.Set;
+import java.util.Collections;
+import java.util.WeakHashMap;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -16,12 +20,17 @@ import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingKnockBackEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 public class HammerCombatHandler {
+    public static final Set<EntityLivingBase> activeBleedingEntities = Collections.newSetFromMap(new WeakHashMap<>());
+    public static final Set<EntityPlayer> activeBloodPactPlayers = Collections.newSetFromMap(new WeakHashMap<>());
     @SubscribeEvent
     public void onLivingKnockBack(LivingKnockBackEvent event) {
         if (event.getEntityLiving() instanceof EntityPlayer) {
             EntityPlayer player = (EntityPlayer) event.getEntityLiving();
-            if (player.getEntityData().getBoolean("SkybreakerImmunity")) {
-                event.setCanceled(true);
+            if (player.hasCapability(ICombatStateCapability.CAPABILITY, null)) {
+                ICombatStateCapability cap = player.getCapability(ICombatStateCapability.CAPABILITY, null);
+                if (cap != null && cap.hasSkybreakerImmunity()) {
+                    event.setCanceled(true);
+                }
             }
         }
     }
@@ -29,25 +38,33 @@ public class HammerCombatHandler {
     public void onLivingJump(LivingEvent.LivingJumpEvent event) {
         if (event.getEntityLiving() instanceof EntityPlayer) {
             EntityPlayer player = (EntityPlayer) event.getEntityLiving();
-            if (player.getEntityData().getBoolean("SkybreakerJumpBuff")) {
-                net.minecraft.util.math.Vec3d look = player.getLookVec();
-                player.motionX = look.x * 1.5;
-                player.motionY = 2.0;
-                player.motionZ = look.z * 1.5;
-                player.isAirBorne = true;
-                player.getEntityData().removeTag("SkybreakerJumpBuff");
+            if (player.hasCapability(ICombatStateCapability.CAPABILITY, null)) {
+                ICombatStateCapability cap = player.getCapability(ICombatStateCapability.CAPABILITY, null);
+                if (cap != null && cap.hasSkybreakerJumpBuff()) {
+                    net.minecraft.util.math.Vec3d look = player.getLookVec();
+                    player.motionX = look.x * 1.5;
+                    player.motionY = 2.0;
+                    player.motionZ = look.z * 1.5;
+                    player.isAirBorne = true;
+                    cap.setSkybreakerJumpBuff(false);
+                }
             }
         }
     }
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && event.player.getEntityData().getBoolean("SkybreakerJumpBuff")) {
-            int ticks = event.player.getEntityData().getInteger("SkybreakerJumpTicks");
-            if (ticks > 10) {
-                event.player.getEntityData().removeTag("SkybreakerJumpBuff");
-                event.player.getEntityData().removeTag("SkybreakerJumpTicks");
-            } else {
-                event.player.getEntityData().setInteger("SkybreakerJumpTicks", ticks + 1);
+        if (event.phase == TickEvent.Phase.END) {
+            if (event.player.hasCapability(ICombatStateCapability.CAPABILITY, null)) {
+                ICombatStateCapability cap = event.player.getCapability(ICombatStateCapability.CAPABILITY, null);
+                if (cap != null && cap.hasSkybreakerJumpBuff()) {
+                    int ticks = cap.getSkybreakerJumpTicks();
+                    if (ticks > 10) {
+                        cap.setSkybreakerJumpBuff(false);
+                        cap.setSkybreakerJumpTicks(0);
+                    } else {
+                        cap.setSkybreakerJumpTicks(ticks + 1);
+                    }
+                }
             }
         }
     }
@@ -56,7 +73,9 @@ public class HammerCombatHandler {
         EntityLivingBase entity = event.getEntityLiving();
         if (entity == null || entity.isDead) return;
         boolean hasStun = com.x4yi.hammersunbound.init.ModPotions.STUN != null && entity.isPotionActive(com.x4yi.hammersunbound.init.ModPotions.STUN);
-        if (!hasStun && !entity.hasCapability(IBleedingCapability.CAPABILITY, null) && !entity.hasCapability(IBloodPactCapability.CAPABILITY, null)) return;
+        boolean isBleeding = activeBleedingEntities.contains(entity);
+        boolean isBloodPact = entity instanceof EntityPlayer && activeBloodPactPlayers.contains((EntityPlayer) entity);
+        if (!hasStun && !isBleeding && !isBloodPact) return;
         if (hasStun) {
             if (!entity.world.isRemote) {
                 net.minecraft.nbt.NBTTagCompound data = entity.getEntityData();
@@ -231,13 +250,16 @@ public class HammerCombatHandler {
     public void onLivingFall(LivingFallEvent event) {
         if (event.getEntityLiving() instanceof EntityPlayer) {
             EntityPlayer player = (EntityPlayer) event.getEntityLiving();
-            if (player.getEntityData().getBoolean("SkybreakerImmunity")) {
-                event.setCanceled(true);
-                player.getEntityData().removeTag("SkybreakerImmunity");
-                if (player.isSneaking()) {
-                    net.minecraft.item.ItemStack stack = player.getHeldItemMainhand();
-                    if (!stack.isEmpty() && stack.getItem() instanceof com.x4yi.hammersunbound.item.warhammer.WarHammerItem) {
-                        ((com.x4yi.hammersunbound.item.warhammer.WarHammerItem) stack.getItem()).performGroundSlam(player, event.getDistance());
+            if (player.hasCapability(ICombatStateCapability.CAPABILITY, null)) {
+                ICombatStateCapability cap = player.getCapability(ICombatStateCapability.CAPABILITY, null);
+                if (cap != null && cap.hasSkybreakerImmunity()) {
+                    event.setCanceled(true);
+                    cap.setSkybreakerImmunity(false);
+                    if (player.isSneaking()) {
+                        net.minecraft.item.ItemStack stack = player.getHeldItemMainhand();
+                        if (!stack.isEmpty() && stack.getItem() instanceof com.x4yi.hammersunbound.item.warhammer.WarHammerItem) {
+                            ((com.x4yi.hammersunbound.item.warhammer.WarHammerItem) stack.getItem()).performGroundSlam(player, event.getDistance());
+                        }
                     }
                 }
             }

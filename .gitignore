@@ -38,9 +38,10 @@ Thumbs.db
 
 # Forge MDK
 forge*changelog.txt
+docs/changelogs/*.md
 s.md
 p.md
 c.md
 md/
-
+backups/
 docs/INDEX.md

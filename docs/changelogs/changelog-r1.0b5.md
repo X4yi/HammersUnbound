@@ -4,6 +4,10 @@
 ## Resumen de Cambios
 Esta versión introduce una estación de crafteo completamente nueva exclusiva para los martillos del mod, con una interfaz interactiva de estilo oscuro, integración con JEI y varias mejoras de usabilidad.
 
+### Dependencias (Importante)
+- **Nueva Librería X4UI:** Todo el sistema de menús e interfaces gráficas del mod ha sido extraído a su propia librería base llamada **X4UI**. 
+- **Requisito:** A partir de esta versión, es estrictamente necesario descargar e instalar el mod X4UI junto a Hammers Unbound para poder jugar. [Descargar X4UI r1.0b1](https://github.com/X4yi/X4UI/releases/latest)
+
 ### Nueva Mesa de Forja (Hammer Forge)
 - **Bloque Exclusivo:** Los Warhammers y Spikehammers ya no se fabrican en la mesa de crafteo Vanilla. Ahora requieren su propia estación especializada: la **Hammer Forge**.
 - **Receta de Crafteo:** Puedes fabricar la mesa utilizando 1 bloque de hierro, 2 lingotes de hierro y 1 mesa de trabajo en el centro.
@@ -39,6 +43,14 @@ Esta versión introduce una estación de crafteo completamente nueva exclusiva p
 
 ### Corrección de Errores
 - **Crash en Servidores:** Se solucionó un problema crítico que causaba que el servidor se cerrara de forma inesperada al intentar generar las partículas visuales de las habilidades en área.
+- **Entidades Fantasma:** Resuelto un grave problema de desincronización en servidores donde golpear a enemigos con habilidades de área a veces generaba monstruos "inmortales" para el jugador.
+- **Precisión del Spikehammer:** Mejorada drásticamente la puntería del efecto del Spikehammer para asegurar que siempre impacte exactamente en la dirección a la que estás mirando.
+- **Aislamiento de Configuración:** Al unirse a un servidor multijugador, la configuración de ese servidor ya no alterará o sobreescribirá de forma permanente tu configuración personal al volver a un mundo de un jugador.
+
+### Rendimiento y Optimización
+- **Fluidez Multijugador:** El efecto del *Blood Pact* fue completamente reconstruido internamente para evitar que sature la conexión de internet de los jugadores, eliminando los tirones de red (lag spikes).
+- **Carga Gráfica y Fugas de Memoria:** Implementado *Frustum Culling* en las partículas del mod (ahora no se renderizan si no las estás mirando, ahorrando recursos de la tarjeta gráfica) y se ha eliminado una fuga de memoria que ralentizaba el juego en partidas largas.
+- **Mejora de CPU:** Reducción sustancial del estrés en el servidor generado por el chequeo constante de estados de combate, haciendo que el mod sea mucho más liviano en mundos poblados.
 
 ### Interfaz del Jugador (HUD)
 - **Indicador de Enfriamiento:** Se añadió un HUD en pantalla que muestra la barra de recarga de la habilidad del arma equipada.
@@ -48,6 +60,10 @@ Esta versión introduce una estación de crafteo completamente nueva exclusiva p
 [EN]
 ## Changelog Summary
 This version introduces a brand new, exclusive crafting station for the mod's hammers, featuring a dark-themed interactive interface, JEI integration, and several usability improvements.
+
+### Dependencies (Important)
+- **New X4UI Library:** The entire menu and graphical interface system of the mod has been extracted into its own core library called **X4UI**.
+- **Requirement:** Starting from this version, it is strictly required to download and install the X4UI mod alongside Hammers Unbound to play. [Download X4UI r1.0b1](https://github.com/X4yi/X4UI/releases/latest)
 
 ### New Hammer Forge
 - **Exclusive Block:** Warhammers and Spikehammers are no longer crafted in the standard Vanilla crafting table. They now require their own specialized station: the **Hammer Forge**.
@@ -85,6 +101,14 @@ This version introduces a brand new, exclusive crafting station for the mod's ha
 
 ### Bug Fixes
 - **Server Crash:** Fixed a critical issue that caused dedicated servers to crash when attempting to spawn the visual particles for Area of Effect abilities.
+- **Ghost Entities:** Resolved a severe desync bug in multiplayer where attacking enemies with AoE skills would sometimes leave "immortal" monsters on the player's screen.
+- **Spikehammer Precision:** Drastically improved the targeting logic of the Spikehammer's effect to ensure it always hits exactly where you are aiming.
+- **Configuration Isolation:** Joining a multiplayer server will no longer permanently overwrite your personal mod settings when returning to a singleplayer world.
+
+### Performance & Optimization
+- **Multiplayer Smoothness:** The *Blood Pact* visual effect was internally rebuilt to stop flooding the players' internet connection, completely eliminating the classic "lag spikes" when used.
+- **Graphics & Memory Leaks:** Implemented *Frustum Culling* for custom particles (saving GPU resources by hiding them when out of view) and fixed a major memory leak that degraded performance over long play sessions.
+- **CPU Overhead:** Substantially reduced server stress caused by constant combat state checks on monsters, making the mod incredibly lightweight in highly populated worlds.
 
 ### Player HUD
 - **Cooldown Indicator:** Added an on-screen HUD element that displays the skill cooldown progress for the equipped weapon.

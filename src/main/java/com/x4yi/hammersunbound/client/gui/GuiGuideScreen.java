@@ -1,75 +1,55 @@
 package com.x4yi.hammersunbound.client.gui;
-
 import com.x4yi.x4ui.client.gui.base.GuiBaseScreen;
+import com.x4yi.x4ui.client.gui.component.GuiButton;
 import com.x4yi.x4ui.client.gui.component.GuiMarkdown;
+import com.x4yi.x4ui.client.gui.component.GuiPanel;
+import com.x4yi.x4ui.client.gui.component.GuiScrollPanel;
+import com.x4yi.x4ui.client.gui.component.layout.FlexDirection;
 import com.x4yi.hammersunbound.config.ClientConfig;
 import com.x4yi.hammersunbound.config.ConfigManager;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
-
+import net.minecraft.util.ResourceLocation;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-
 public class GuiGuideScreen extends GuiBaseScreen {
-
     private enum GuideSection {
         WARHAMMER("WarHammer", "warhammer"),
         SPIKEHAMMER("SpikeHammer", "spikehammer"),
         CONFIGURATION("Configuration", "configuration");
-
         public final String displayName;
         public final String fileId;
-
         GuideSection(String displayName, String fileId) {
             this.displayName = displayName;
             this.fileId = fileId;
         }
     }
-
     private static final ResourceLocation FLAG_US = new ResourceLocation("hammersunbound", "textures/gui/flag_us.png");
-    private static final ResourceLocation FLAG_ES = new ResourceLocation("hammersunbound", "textures/gui/flag_es.png");
+    private static final ResourceLocation FLAG_MX = new ResourceLocation("hammersunbound", "textures/gui/flag_mx.png");
     private float langPillProgress = 0f;
-
     private GuideSection currentSection = GuideSection.WARHAMMER;
     private final Map<GuideSection, String> cachedMarkdown = new HashMap<>();
-    private GuiMarkdown markdownPanel;
-    
-    private float scrollY = 0;
-    private float targetScrollY = 0;
-    private int maxScrollY = 0;
-
+    private GuiScrollPanel contentScroll;
     public GuiGuideScreen(GuiScreen parent) {
         super(parent, "Hammers Unbound - Guide");
     }
-
-    @Override
-    protected void drawTitle() {
-        // Title drawn manually in drawScreen
+    private void playClickSound() {
+        mc.getSoundHandler().playSound(
+            net.minecraft.client.audio.PositionedSoundRecord.getMasterRecord(
+                net.minecraft.init.SoundEvents.UI_BUTTON_CLICK, 1.0F
+            )
+        );
     }
-
-    @Override
-    protected void initComponents() {
-        components.clear();
-        loadSection(currentSection);
-    }
-
-    private void loadSection(GuideSection section) {
+    private String getSectionText(GuideSection section) {
         if (cachedMarkdown.containsKey(section)) {
-            markdownPanel = new GuiMarkdown(0, 0, 480 - 120 - 30, cachedMarkdown.get(section));
-            return;
+            return cachedMarkdown.get(section);
         }
         String lang = ClientConfig.language.toUpperCase();
         String path = "assets/hammersunbound/guide/" + section.fileId + ".md";
-        
         try {
             InputStream stream = getClass().getClassLoader().getResourceAsStream(path);
             if (stream != null) {
@@ -80,60 +60,37 @@ public class GuiGuideScreen extends GuiBaseScreen {
                     sb.append(line).append("\n");
                 }
                 reader.close();
-                
                 String body = sb.toString();
                 String startTag = "[" + lang + "]";
                 String endTag = "[/" + lang + "]";
-                
                 if (body.contains(startTag) && body.contains(endTag)) {
                     int startIdx = body.indexOf(startTag) + startTag.length();
                     int endIdx = body.indexOf(endTag);
                     if (endIdx > startIdx) {
                         body = body.substring(startIdx, endIdx);
                     }
-                } else if (body.contains("[EN]") && body.contains("[/EN]")) { // Fallback to English
+                } else if (body.contains("[EN]") && body.contains("[/EN]")) {
                      int startIdx = body.indexOf("[EN]") + 4;
                      int endIdx = body.indexOf("[/EN]");
                      if (endIdx > startIdx) {
                          body = body.substring(startIdx, endIdx);
                      }
                 }
-                
-                
                 cachedMarkdown.put(section, body);
-                markdownPanel = new GuiMarkdown(0, 0, 480 - 120 - 30, body);
-            } else {
-                String err = "Error: Could not find guide file for " + section.displayName;
-                cachedMarkdown.put(section, err);
-                markdownPanel = new GuiMarkdown(0, 0, 480 - 120 - 30, err);
+                return body;
             }
         } catch (Exception e) {
             e.printStackTrace();
-            String err = "Error loading guide: " + e.getMessage();
-            cachedMarkdown.put(section, err);
-            markdownPanel = new GuiMarkdown(0, 0, 480 - 120 - 30, err);
         }
+        return "Error loading guide for " + section.displayName;
     }
-
     @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        drawDefaultBackground();
-        updateAnimation();
-
-        scrollY += (targetScrollY - scrollY) * 0.2f;
-        if (Math.abs(targetScrollY - scrollY) < 0.5f) {
-            scrollY = targetScrollY;
-        }
-
-        GlStateManager.pushMatrix();
-        
-        if (animationProgress < 1.0f) {
-            float scale = 0.9f + (0.1f * animationProgress);
-            GlStateManager.translate(width / 2.0f, height / 2.0f, 0);
-            GlStateManager.scale(scale, scale, 1.0f);
-            GlStateManager.translate(-width / 2.0f, -height / 2.0f, 0);
-        }
-
+    protected void drawTitle() {
+    }
+    @Override
+    protected void initComponents() {
+        components.clear();
+        if (rootPanel != null) rootPanel.clearChildren();
         int startX = width / 2 - 240;
         int startY = height / 2 - 130;
         int totalWidth = 480;
@@ -141,266 +98,179 @@ public class GuiGuideScreen extends GuiBaseScreen {
         int headerHeight = 22;
         int footerHeight = 26;
         int sidebarWidth = 120;
-
-        int panelX = startX + sidebarWidth;
-        int panelY = startY + headerHeight;
         int panelWidth = totalWidth - sidebarWidth;
         int panelHeight = totalHeight - headerHeight - footerHeight;
-
-        int pillWidth = 35;
-        int pillHeight = 22;
-        int maxExtrusion = pillWidth;
-        int minExtrusion = 8;
-        int currentExtrusion = minExtrusion + (int)(langPillProgress * (maxExtrusion - minExtrusion));
-        int pillX = startX + totalWidth + currentExtrusion - pillWidth;
-        int pillY = startY + 20;
-
-        boolean langHovered = mouseX >= startX + totalWidth && mouseX <= startX + totalWidth + currentExtrusion &&
-                              mouseY >= pillY && mouseY <= pillY + pillHeight;
-
-        langPillProgress += (langHovered ? 0.15f : -0.15f);
-        if (langPillProgress > 1f) langPillProgress = 1f;
-        if (langPillProgress < 0f) langPillProgress = 0f;
-
-        drawRect(pillX, pillY, pillX + pillWidth, pillY + pillHeight, langHovered ? 0xFF2C2C36 : 0xFF1E1E24);
-        drawBorder(pillX, pillY, pillX + pillWidth, pillY + pillHeight, 0xFF2C2C36);
-
-        boolean isES = ClientConfig.language.equals("es");
-        mc.getTextureManager().bindTexture(isES ? FLAG_ES : FLAG_US);
-        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
-        drawModalRectWithCustomSizedTexture(pillX + 3, pillY + 4, 0, 0, 29, 14, 32, 22);
-
-        // Backgrounds
-        drawRect(startX - 2, startY - 2, startX + totalWidth + 2, startY + totalHeight + 2, 0x55000000);
-        drawRect(startX, startY, startX + totalWidth, startY + totalHeight, 0xFF0B0B0D);
-        drawRect(startX, startY, startX + totalWidth, startY + headerHeight, 0xFF08080A);
-        drawRect(startX, startY + headerHeight - 1, startX + totalWidth, startY + headerHeight, 0xFF222228);
-
-        // Header
-        fontRenderer.drawString("Hammers Unbound - Guide", startX + 8, startY + 7, 0xFFFFFFFF);
-        
-        boolean closeHovered = mouseX >= startX + totalWidth - 18 && mouseX <= startX + totalWidth - 6 &&
-                              mouseY >= startY + 4 && mouseY <= startY + 16;
-        fontRenderer.drawString("x", startX + totalWidth - 14, startY + 5, closeHovered ? 0xFFFF3D00 : 0xFF888892);
-
-        // Footer
-        drawRect(startX, startY + totalHeight - footerHeight, startX + totalWidth, startY + totalHeight, 0xFF08080A);
-        drawRect(startX, startY + totalHeight - footerHeight, startX + totalWidth, startY + totalHeight - footerHeight + 1, 0xFF222228);
-
-        int backX1 = startX + 8;
-        int backY1 = startY + totalHeight - footerHeight + 4;
-        int backX2 = startX + 78;
-        int backY2 = startY + totalHeight - 4;
-        boolean backHovered = mouseX >= backX1 && mouseX <= backX2 && mouseY >= backY1 && mouseY <= backY2;
-        drawRect(backX1, backY1, backX2, backY2, backHovered ? 0xFF00C853 : 0xFF16161E);
-        drawBorder(backX1, backY1, backX2, backY2, backHovered ? 0xFFFFFFFF : 0xFF2C2C36);
-        drawCenteredString("Back", backX1 + 35, backY1 + 5, backHovered ? 0xFFFFFFFF : 0xFFE0E0E6);
-
-        int clX1 = startX + 85;
-        int clY1 = startY + totalHeight - footerHeight + 4;
-        int clX2 = startX + 155;
-        int clY2 = startY + totalHeight - 4;
-        boolean clHovered = mouseX >= clX1 && mouseX <= clX2 && mouseY >= clY1 && mouseY <= clY2;
-        drawRect(clX1, clY1, clX2, clY2, clHovered ? 0xFF6A1B9A : 0xFF16161E);
-        drawBorder(clX1, clY1, clX2, clY2, clHovered ? 0xFFFFFFFF : 0xFF2C2C36);
-        drawCenteredString("Changelog", clX1 + 35, clY1 + 5, clHovered ? 0xFFFFFFFF : 0xFFB580D8);
-
-        int cfgX1 = startX + totalWidth - 78;
-        int cfgY1 = startY + totalHeight - footerHeight + 4;
-        int cfgX2 = startX + totalWidth - 8;
-        int cfgY2 = startY + totalHeight - 4;
-        boolean cfgHovered = mouseX >= cfgX1 && mouseX <= cfgX2 && mouseY >= cfgY1 && mouseY <= cfgY2;
-        drawRect(cfgX1, cfgY1, cfgX2, cfgY2, cfgHovered ? 0xFF1565C0 : 0xFF16161E);
-        drawBorder(cfgX1, cfgY1, cfgX2, cfgY2, cfgHovered ? 0xFFFFFFFF : 0xFF2C2C36);
-        drawCenteredString("Config", cfgX1 + 35, cfgY1 + 5, cfgHovered ? 0xFFFFFFFF : 0xFF90CAF9);
-
-        // Sidebar
-        int sidebarX = startX;
-        int sidebarY1 = startY + headerHeight;
-        int sidebarHeight = totalHeight - headerHeight - footerHeight;
-        
-        drawRect(sidebarX, sidebarY1, sidebarX + sidebarWidth, sidebarY1 + sidebarHeight, 0xFF0F0F12);
-        drawRect(sidebarX + sidebarWidth - 1, sidebarY1, sidebarX + sidebarWidth, sidebarY1 + sidebarHeight, 0xFF222228);
-
-        int secY = sidebarY1 + 6;
+        GuiButton langPill = new GuiButton(startX + totalWidth - 35, startY + 20, 35, 22, "", () -> {
+            playClickSound();
+            ClientConfig.language = ClientConfig.language.equals("es") ? "en" : "es";
+            try { ConfigManager.save(); } catch (Exception ignored) {}
+            cachedMarkdown.clear();
+            initComponents();
+        }) {
+            @Override
+            protected void drawSelf(int mouseX, int mouseY, float partialTicks) {
+                boolean hovered = isMouseOver(mouseX, mouseY);
+                langPillProgress += (hovered ? 0.15f : -0.15f);
+                if (langPillProgress > 1f) langPillProgress = 1f;
+                if (langPillProgress < 0f) langPillProgress = 0f;
+                int maxExtrusion = width;
+                int minExtrusion = 8;
+                int currentExtrusion = minExtrusion + (int)(langPillProgress * (maxExtrusion - minExtrusion));
+                int rightEdge = startX + totalWidth;
+                int pillX = rightEdge + currentExtrusion - maxExtrusion;
+                int pillY = getAbsoluteY();
+                drawRect(pillX, pillY, pillX + width, pillY + height, hovered ? 0xFF2C2C36 : 0xFF1E1E24);
+                drawBorder(pillX, pillY, pillX + width, pillY + height, 0xFF2C2C36);
+                boolean isES = ClientConfig.language.equals("es");
+                mc.getTextureManager().bindTexture(isES ? FLAG_MX : FLAG_US);
+                GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+                drawModalRectWithCustomSizedTexture(pillX + 3, pillY + 4, 0, 0, 29, 14, 32, 22);
+            }
+            protected void drawBorder(int left, int top, int right, int bottom, int color) {
+                drawRect(left, top, right, top + 1, color);
+                drawRect(left, bottom - 1, right, bottom, color);
+                drawRect(left, top + 1, left + 1, bottom - 1, color);
+                drawRect(right - 1, top + 1, right, bottom - 1, color);
+            }
+            @Override
+            public boolean isMouseOver(int mouseX, int mouseY) {
+                int rightEdge = startX + totalWidth;
+                int maxExtrusion = width;
+                int minExtrusion = 8;
+                int currentExtrusion = minExtrusion + (int)(langPillProgress * (maxExtrusion - minExtrusion));
+                return mouseX >= rightEdge && mouseX <= rightEdge + currentExtrusion &&
+                       mouseY >= getAbsoluteY() && mouseY <= getAbsoluteY() + height;
+            }
+        };
+        rootPanel.addChild(langPill);
+        GuiPanel windowPanel = new GuiPanel(startX, startY, totalWidth, totalHeight) {
+            @Override
+            protected void drawSelf(int mouseX, int mouseY, float partialTicks) {
+                int absX = getAbsoluteX();
+                int absY = getAbsoluteY();
+                drawRect(absX - 2, absY - 2, absX + width + 2, absY + height + 2, 0x55000000);
+                drawRect(absX, absY, absX + width, absY + height, 0xFF0B0B0D);
+                drawRect(absX, absY, absX + width, absY + headerHeight, 0xFF08080A);
+                drawRect(absX, absY + headerHeight - 1, absX + width, absY + headerHeight, 0xFF222228);
+                mc.fontRenderer.drawString("Hammers Unbound - Guide", absX + 8, absY + 7, 0xFFFFFFFF);
+                drawRect(absX, absY + height - footerHeight, absX + width, absY + height, 0xFF08080A);
+                drawRect(absX, absY + height - footerHeight, absX + width, absY + height - footerHeight + 1, 0xFF222228);
+                drawRect(absX, absY + headerHeight, absX + sidebarWidth, absY + height - footerHeight, 0xFF0F0F12);
+                drawRect(absX + sidebarWidth - 1, absY + headerHeight, absX + sidebarWidth, absY + height - footerHeight, 0xFF222228);
+                drawRect(absX + sidebarWidth, absY + headerHeight, absX + width, absY + height - footerHeight, 0xFF070708);
+            }
+        };
+        rootPanel.addChild(windowPanel);
+        GuiButton closeBtn = new GuiButton(totalWidth - 18, 4, 12, 12, "x", () -> {
+            playClickSound();
+            closeScreen();
+        }) {
+            @Override
+            protected void drawSelf(int mouseX, int mouseY, float partialTicks) {
+                boolean hovered = isMouseOver(mouseX, mouseY);
+                mc.fontRenderer.drawString(getText(), getAbsoluteX() + 4, getAbsoluteY() + 2, hovered ? 0xFFFF3D00 : 0xFF888892);
+            }
+        };
+        windowPanel.addChild(closeBtn);
+        int btnY = totalHeight - footerHeight + 4;
+        GuiButton backBtn = new GuiButton(8, btnY, 70, 18, "Back", () -> { playClickSound(); closeScreen(); }) {
+            @Override
+            protected void drawSelf(int mouseX, int mouseY, float partialTicks) {
+                boolean hovered = isMouseOver(mouseX, mouseY);
+                int absX = getAbsoluteX(); int absY = getAbsoluteY();
+                drawRect(absX, absY, absX + width, absY + height, hovered ? 0xFF00C853 : 0xFF16161E);
+                drawBorder(absX, absY, absX + width, absY + height, hovered ? 0xFFFFFFFF : 0xFF2C2C36);
+                drawString(getText(), absX + (width - mc.fontRenderer.getStringWidth(getText())) / 2, absY + 5, hovered ? 0xFFFFFFFF : 0xFFE0E0E6);
+            }
+        };
+        windowPanel.addChild(backBtn);
+        GuiButton changelogBtn = new GuiButton(85, btnY, 70, 18, "Changelog", () -> { playClickSound(); mc.displayGuiScreen(new GuiChangelogScreen(parentScreen)); }) {
+            @Override
+            protected void drawSelf(int mouseX, int mouseY, float partialTicks) {
+                boolean hovered = isMouseOver(mouseX, mouseY);
+                int absX = getAbsoluteX(); int absY = getAbsoluteY();
+                drawRect(absX, absY, absX + width, absY + height, hovered ? 0xFF6A1B9A : 0xFF16161E);
+                drawBorder(absX, absY, absX + width, absY + height, hovered ? 0xFFFFFFFF : 0xFF2C2C36);
+                drawString(getText(), absX + (width - mc.fontRenderer.getStringWidth(getText())) / 2, absY + 5, hovered ? 0xFFFFFFFF : 0xFFB580D8);
+            }
+        };
+        windowPanel.addChild(changelogBtn);
+        GuiButton configBtn = new GuiButton(totalWidth - 78, btnY, 70, 18, "Config", () -> { playClickSound(); mc.displayGuiScreen(new GuiConfigScreen(parentScreen)); }) {
+            @Override
+            protected void drawSelf(int mouseX, int mouseY, float partialTicks) {
+                boolean hovered = isMouseOver(mouseX, mouseY);
+                int absX = getAbsoluteX(); int absY = getAbsoluteY();
+                drawRect(absX, absY, absX + width, absY + height, hovered ? 0xFF1565C0 : 0xFF16161E);
+                drawBorder(absX, absY, absX + width, absY + height, hovered ? 0xFFFFFFFF : 0xFF2C2C36);
+                drawString(getText(), absX + (width - mc.fontRenderer.getStringWidth(getText())) / 2, absY + 5, hovered ? 0xFFFFFFFF : 0xFF90CAF9);
+            }
+        };
+        windowPanel.addChild(configBtn);
+        GuiPanel sidebarPanel = new GuiPanel(0, headerHeight + 6, sidebarWidth, totalHeight - headerHeight - footerHeight - 6);
+        sidebarPanel.setFlexDirection(FlexDirection.VERTICAL);
+        sidebarPanel.setGap(2);
+        windowPanel.addChild(sidebarPanel);
         for (GuideSection section : GuideSection.values()) {
             boolean active = section == currentSection;
-            boolean secHovered = mouseX >= sidebarX && mouseX <= sidebarX + sidebarWidth &&
-                                 mouseY >= secY && mouseY <= secY + 22;
-            
-            if (active) {
-                drawRect(sidebarX, secY, sidebarX + sidebarWidth - 1, secY + 22, 0xFF18181F);
-                drawRect(sidebarX, secY, sidebarX + 2, secY + 22, 0xFF00C853);
-                fontRenderer.drawString(section.displayName, sidebarX + 12, secY + 7, 0xFFFFFFFF);
-            } else {
-                if (secHovered) {
-                    drawRect(sidebarX, secY, sidebarX + sidebarWidth - 1, secY + 22, 0xFF121217);
+            GuiButton tabBtn = new GuiButton(0, 0, sidebarWidth, 22, section.displayName, () -> {
+                if (!active) {
+                    playClickSound();
+                    currentSection = section;
+                    initComponents();
                 }
-                fontRenderer.drawString(section.displayName, sidebarX + 12, secY + 7, secHovered ? 0xFFE0E0E6 : 0xFF888892);
+            }) {
+                @Override
+                protected void drawSelf(int mouseX, int mouseY, float partialTicks) {
+                    int absX = getAbsoluteX();
+                    int absY = getAbsoluteY();
+                    boolean hovered = isMouseOver(mouseX, mouseY);
+                    if (active) {
+                        drawRect(absX, absY, absX + width - 1, absY + height, 0xFF18181F);
+                        drawRect(absX, absY, absX + 2, absY + height, 0xFF00C853);
+                        drawString(getText(), absX + 12, absY + 7, 0xFFFFFFFF);
+                    } else {
+                        if (hovered) {
+                            drawRect(absX, absY, absX + width - 1, absY + height, 0xFF121217);
+                        }
+                        drawString(getText(), absX + 12, absY + 7, hovered ? 0xFFE0E0E6 : 0xFF888892);
+                    }
+                }
+            };
+            sidebarPanel.addChild(tabBtn);
+        }
+        contentScroll = new GuiScrollPanel(sidebarWidth, headerHeight, panelWidth, panelHeight);
+        windowPanel.addChild(contentScroll);
+        String text = getSectionText(currentSection);
+        GuiMarkdown md = new GuiMarkdown(15, 10, panelWidth - 30, text);
+        GuiPanel mdWrap = new GuiPanel(0, 0, panelWidth, panelHeight) {
+            @Override
+            public void update() {
+                super.update();
+                this.height = md.getHeight() + 20;
             }
-            secY += 24;
-        }
-
-        // Main Panel (Scissor)
-        drawRect(panelX, panelY, panelX + panelWidth, panelY + panelHeight, 0xFF070708);
-        
-        ScaledResolution sr = new ScaledResolution(mc);
-        int scale = sr.getScaleFactor();
-        int scissorX = panelX * scale;
-        int scissorY = mc.displayHeight - (panelY + panelHeight) * scale;
-        int scissorW = panelWidth * scale;
-        int scissorH = panelHeight * scale;
-
-        GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        GL11.glScissor(scissorX, scissorY, scissorW, scissorH);
-
-        if (markdownPanel != null) {
-            int drawY = panelY + 10 - (int) scrollY;
-            int drawX = panelX + 15;
-            markdownPanel.setX(drawX);
-            markdownPanel.setY(drawY);
-            markdownPanel.drawComponent(mouseX, mouseY, partialTicks);
-            
-            maxScrollY = Math.max(0, markdownPanel.getHeight() - panelHeight + 12);
-        } else {
-            fontRenderer.drawString("Loading...", panelX + 20, panelY + 20, 0xFF888892);
-        }
-
-        GL11.glDisable(GL11.GL_SCISSOR_TEST);
-
-        // Scrollbar
-        if (maxScrollY > 0) {
-            int trackX = panelX + panelWidth - 5;
-            int trackY = panelY + 2;
-            int trackHeight = panelHeight - 4;
-            
-            drawRect(trackX, trackY, trackX + 2, trackY + trackHeight, 0xFF121215);
-            
-            float scrollRatio = (float) scrollY / maxScrollY;
-            int thumbHeight = Math.max(20, (int) ((float) panelHeight / (maxScrollY + panelHeight) * trackHeight));
-            int thumbY = trackY + (int) (scrollRatio * (trackHeight - thumbHeight));
-            
-            drawRect(trackX, thumbY, trackX + 2, thumbY + thumbHeight, 0xFF424248);
-        }
-
-        super.drawScreen(mouseX, mouseY, partialTicks);
-        GlStateManager.popMatrix();
+        };
+        mdWrap.setFlexDirection(FlexDirection.ABSOLUTE);
+        mdWrap.addChild(md);
+        contentScroll.addChild(mdWrap);
     }
-
-    private void drawCenteredString(String text, int x, int y, int color) {
-        fontRenderer.drawString(text, x - fontRenderer.getStringWidth(text) / 2, y, color);
-    }
-
     private void drawBorder(int left, int top, int right, int bottom, int color) {
         drawRect(left, top, right, top + 1, color);
         drawRect(left, bottom - 1, right, bottom, color);
         drawRect(left, top + 1, left + 1, bottom - 1, color);
         drawRect(right - 1, top + 1, right, bottom - 1, color);
     }
-
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        super.mouseClicked(mouseX, mouseY, mouseButton);
-
-        int startX = width / 2 - 240;
-        int startY = height / 2 - 130;
-        int totalWidth = 480;
-        int totalHeight = 260;
-        int headerHeight = 22;
-        int footerHeight = 26;
-        int sidebarWidth = 120;
-        
-        int sidebarX = startX;
-        int sidebarY1 = startY + headerHeight;
-
-        int pillWidth = 35;
-        int pillHeight = 22;
-        int minExtrusion = 8;
-        int currentExtrusion = minExtrusion + (int)(langPillProgress * (pillWidth - minExtrusion));
-        int pillY = startY + 20;
-
-        if (mouseX >= startX + totalWidth && mouseX <= startX + totalWidth + currentExtrusion &&
-            mouseY >= pillY && mouseY <= pillY + pillHeight) {
-            playClickSound();
-            ClientConfig.language = ClientConfig.language.equals("es") ? "en" : "es";
-            try { ConfigManager.save(); } catch (Exception ignored) {}
-            cachedMarkdown.clear();
-            loadSection(currentSection);
-            return;
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        drawDefaultBackground();
+        updateAnimation();
+        GlStateManager.pushMatrix();
+        if (animationProgress < 1.0f) {
+            float scale = 0.9f + (0.1f * animationProgress);
+            GlStateManager.translate(width / 2.0f, height / 2.0f, 0);
+            GlStateManager.scale(scale, scale, 1.0f);
+            GlStateManager.translate(-width / 2.0f, -height / 2.0f, 0);
         }
-
-        // Close button
-        if (mouseX >= startX + totalWidth - 18 && mouseX <= startX + totalWidth - 6 &&
-            mouseY >= startY + 4 && mouseY <= startY + 16) {
-            playClickSound();
-            closeScreen();
-            return;
-        }
-
-        // Back button
-        int backX1 = startX + 8;
-        int backY1 = startY + totalHeight - footerHeight + 4;
-        int backX2 = startX + 78;
-        int backY2 = startY + totalHeight - 4;
-        if (mouseX >= backX1 && mouseX <= backX2 && mouseY >= backY1 && mouseY <= backY2) {
-            playClickSound();
-            closeScreen();
-            return;
-        }
-
-        // Changelog button
-        int clX1 = startX + 85;
-        int clY1 = startY + totalHeight - footerHeight + 4;
-        int clX2 = startX + 155;
-        int clY2 = startY + totalHeight - 4;
-        if (mouseX >= clX1 && mouseX <= clX2 && mouseY >= clY1 && mouseY <= clY2) {
-            playClickSound();
-            mc.displayGuiScreen(new GuiChangelogScreen(parentScreen));
-            return;
-        }
-
-        // Config button
-        int cfgX1 = startX + totalWidth - 78;
-        int cfgY1 = startY + totalHeight - footerHeight + 4;
-        int cfgX2 = startX + totalWidth - 8;
-        int cfgY2 = startY + totalHeight - 4;
-        if (mouseX >= cfgX1 && mouseX <= cfgX2 && mouseY >= cfgY1 && mouseY <= cfgY2) {
-            playClickSound();
-            mc.displayGuiScreen(new GuiConfigScreen(parentScreen));
-            return;
-        }
-
-        // Sidebar clicks
-        int secY = sidebarY1 + 6;
-        for (GuideSection section : GuideSection.values()) {
-            if (mouseX >= sidebarX && mouseX <= sidebarX + sidebarWidth &&
-                mouseY >= secY && mouseY <= secY + 22) {
-                if (currentSection != section) {
-                    playClickSound();
-                    currentSection = section;
-                    scrollY = 0;
-                    targetScrollY = 0;
-                    loadSection(section);
-                }
-                return;
-            }
-            secY += 24;
-        }
-    }
-
-    private void playClickSound() {
-        mc.getSoundHandler().playSound(net.minecraft.client.audio.PositionedSoundRecord.getMasterRecord(net.minecraft.init.SoundEvents.UI_BUTTON_CLICK, 1.0F));
-    }
-
-    @Override
-    public void handleMouseInput() throws IOException {
-        super.handleMouseInput();
-        int wheel = Mouse.getEventDWheel();
-        if (wheel != 0) {
-            int direction = wheel > 0 ? -1 : 1;
-            targetScrollY += direction * 30;
-            if (targetScrollY < 0) targetScrollY = 0;
-            if (targetScrollY > maxScrollY) targetScrollY = maxScrollY;
-        }
+        super.drawScreen(mouseX, mouseY, partialTicks);
+        GlStateManager.popMatrix();
     }
 }

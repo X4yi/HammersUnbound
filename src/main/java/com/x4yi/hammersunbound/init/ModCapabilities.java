@@ -12,15 +12,20 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 public class ModCapabilities {
     private static final ResourceLocation BLEEDING_CAP = new ResourceLocation("hammersunbound", "bleeding");
     private static final ResourceLocation BLOODPACT_CAP = new ResourceLocation("hammersunbound", "bloodpact");
+    private static final ResourceLocation COMBATSTATE_CAP = new ResourceLocation("hammersunbound", "combatstate");
     public static void register() {
         CapabilityManager.INSTANCE.register(IBleedingCapability.class, new IBleedingCapability.BleedingCapabilityStorage(), IBleedingCapability.BleedingCapability.class);
         CapabilityManager.INSTANCE.register(IBloodPactCapability.class, new IBloodPactCapability.BloodPactCapabilityStorage(), IBloodPactCapability.BloodPactCapability.class);
+        CapabilityManager.INSTANCE.register(com.x4yi.hammersunbound.capability.ICombatStateCapability.class, new com.x4yi.hammersunbound.capability.ICombatStateCapability.CombatStateCapabilityStorage(), com.x4yi.hammersunbound.capability.ICombatStateCapability.CombatStateCapability.class);
     }
     @SubscribeEvent
     public static void onAttachEntityCapabilities(AttachCapabilitiesEvent<Entity> event) {
         if (event.getObject() instanceof EntityLivingBase) {
             event.addCapability(BLEEDING_CAP, new IBleedingCapability.BleedingCapabilityProvider());
             event.addCapability(BLOODPACT_CAP, new IBloodPactCapability.BloodPactCapabilityProvider());
+        }
+        if (event.getObject() instanceof net.minecraft.entity.player.EntityPlayer) {
+            event.addCapability(COMBATSTATE_CAP, new com.x4yi.hammersunbound.capability.ICombatStateCapability.CombatStateCapabilityProvider());
         }
     }
 }

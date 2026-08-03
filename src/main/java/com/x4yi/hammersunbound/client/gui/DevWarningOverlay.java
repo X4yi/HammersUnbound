@@ -37,12 +37,10 @@ public class DevWarningOverlay extends GuiBaseScreen {
         }
         contentLines.clear();
         contentLines.addAll(loadLocalizedLines(currentLanguage));
-        
         int maxW = 380 - 24;
         String fullText = String.join("\n", contentLines);
         GuiMarkdown markdownPanel = new GuiMarkdown(width / 2 - 380 / 2 + 10, height / 2 - 200 / 2 + 34, maxW, fullText);
         addComponent(markdownPanel);
-
         int boxW = 380;
         int boxH = 200;
         int x1 = width / 2 - boxW / 2;
@@ -85,7 +83,6 @@ public class DevWarningOverlay extends GuiBaseScreen {
         drawRect(x1, y1, x2, y1 + 24, 0xFF08080A);
         drawRect(x1, y1 + 23, x2, y1 + 24, 0xFF222228);
         fontRenderer.drawString("Development Notice", x1 + 8, y1 + 8, 0xFFFFFFFF);
-        // Markdown is drawn automatically because we added it as a component
         int linkY = y2 - 54;
         boolean linkHovered = mouseX >= x1 + 10 && mouseX <= x2 - 10 && mouseY >= linkY && mouseY <= linkY + 10;
         String linkText = "GitHub Issues: " + ISSUES_URL;
@@ -186,7 +183,6 @@ public class DevWarningOverlay extends GuiBaseScreen {
         }
         return sb.toString();
     }
-
     private void openBrowser(String url) {
         new Thread(() -> {
             try {

@@ -16,14 +16,14 @@ public class ServerConfig {
     }
     public static void parse(JsonObject json) {
         if (json == null) return;
-        JsonObject warhammer = json.getAsJsonObject("warhammer");
+        JsonObject warhammer = json.has("warhammer") && json.get("warhammer").isJsonObject() ? json.getAsJsonObject("warhammer") : null;
         if (warhammer != null) {
             if (warhammer.has("stunDurationMultiplier")) warhammerStunDurationMultiplier = warhammer.get("stunDurationMultiplier").getAsFloat();
             if (warhammer.has("enableAOE")) warhammerEnableAOE = warhammer.get("enableAOE").getAsBoolean();
             if (warhammer.has("enableStun")) warhammerEnableStun = warhammer.get("enableStun").getAsBoolean();
             if (warhammer.has("serverAoeParticleSyncDistance")) serverAoeParticleSyncDistance = warhammer.get("serverAoeParticleSyncDistance").getAsDouble();
         }
-        JsonObject spikehammer = json.getAsJsonObject("spikehammer");
+        JsonObject spikehammer = json.has("spikehammer") && json.get("spikehammer").isJsonObject() ? json.getAsJsonObject("spikehammer") : null;
         if (spikehammer != null) {
             if (spikehammer.has("bleedingDamageMultiplier")) spikehammerBleedingDamageMultiplier = spikehammer.get("bleedingDamageMultiplier").getAsFloat();
             if (spikehammer.has("bleedingDurationMultiplier")) spikehammerBleedingDurationMultiplier = spikehammer.get("bleedingDurationMultiplier").getAsFloat();

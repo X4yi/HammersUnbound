@@ -4,6 +4,7 @@ import com.x4yi.hammersunbound.client.gui.DevWarningOverlay;
 import com.x4yi.hammersunbound.client.gui.GuiChangelogScreen;
 import com.x4yi.hammersunbound.config.ClientConfig;
 import com.x4yi.hammersunbound.network.PacketBloodPactVisual;
+import com.x4yi.hammersunbound.config.ServerConfig;
 import com.x4yi.hammersunbound.capability.IBleedingCapability;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -92,8 +93,13 @@ public class HammerClientHandler {
         float camX = -sinYaw * fCos;
         float camY = fSin;
         float camZ = cosYaw * fCos;
+        net.minecraft.client.renderer.culling.ICamera frustum = new net.minecraft.client.renderer.culling.Frustum();
+        frustum.setPosition(rx, ry, rz);
         for (com.x4yi.hammersunbound.client.particle.ParticleBloodPact p : bloodParticles) {
             if (p.trailPositions.size() < 2) continue;
+            net.minecraft.util.math.Vec3d first = p.trailPositions.get(0);
+            net.minecraft.util.math.AxisAlignedBB pBox = new net.minecraft.util.math.AxisAlignedBB(first.x, first.y, first.z, first.x, first.y, first.z).grow(2.0);
+            if (!frustum.isBoundingBoxInFrustum(pBox)) continue;
             int j = p.getBrightnessForRender(partialTicks);
             int lmapX = j >> 16 & 65535;
             int lmapY = j & 65535;
@@ -186,6 +192,9 @@ public class HammerClientHandler {
     @SubscribeEvent
     public void onClientDisconnect(net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
         PacketBloodPactVisual.getActiveVisuals(null).clear();
+        bloodParticles.clear();
+        tethers.clear();
+        ServerConfig.load();
     }
     private float lockedYaw = 0.0F;
     private float lockedPitch = 0.0F;
